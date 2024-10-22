@@ -1,0 +1,9 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = "1.0"
+serde = "1.0"
+ddex_schema = { path = "../../ddex_schema/ddex_schema"}

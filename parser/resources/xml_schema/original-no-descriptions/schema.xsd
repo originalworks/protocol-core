@@ -1,0 +1,5090 @@
+<!--  SCOW Version v0.8.71 220823.  -->
+<xs:schema xmlns:ern="http://ddex.net/xml/ern/43"
+    xmlns:avs="http://ddex.net/xml/allowed-value-sets"
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ddex.net/xml/ern/43" elementFormDefault="unqualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://ddex.net/xml/allowed-value-sets" schemaLocation="allowed-value-sets.xsd"/>
+    <xs:element name="NewReleaseMessage">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="MessageHeader" type="ern:MessageHeader">
+
+                </xs:element>
+                <xs:element name="ReleaseAdmin" minOccurs="0" maxOccurs="unbounded" type="ern:ReleaseAdmin">
+
+                </xs:element>
+                <xs:element name="PartyList" type="ern:PartyList">
+
+                </xs:element>
+                <xs:element name="CueSheetList" minOccurs="0" type="ern:CueSheetList">
+
+                </xs:element>
+                <xs:element name="ResourceList" type="ern:ResourceList">
+
+                </xs:element>
+                <xs:element name="ChapterList" minOccurs="0" type="ern:ChapterList">
+
+                </xs:element>
+                <xs:element name="ReleaseList" type="ern:ReleaseList">
+
+                </xs:element>
+                <xs:element name="DealList" minOccurs="0" type="ern:DealList">
+
+                </xs:element>
+                <xs:element name="SupplementalDocumentList" minOccurs="0" type="ern:SupplementalDocumentList">
+
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="ReleaseProfileVersionId" type="avs:ReleaseProfileVersionId">
+
+            </xs:attribute>
+            <xs:attribute name="ReleaseProfileVariantVersionId" type="avs:ReleaseProfileVariantVersionId">
+
+            </xs:attribute>
+            <xs:attribute name="AvsVersionId" type="xs:string" use="required">
+
+            </xs:attribute>
+            <xs:attribute name="LanguageAndScriptCode" use="required">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="PurgeReleaseMessage">
+
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="MessageHeader" type="ern:MessageHeader">
+
+                </xs:element>
+                <xs:element name="PurgedRelease" type="ern:PurgedRelease">
+
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="AvsVersionId" type="xs:string" use="required">
+
+            </xs:attribute>
+            <xs:attribute name="LanguageAndScriptCode" use="required">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="AdditionalTitle">
+
+        <xs:sequence>
+            <xs:element name="TitleText" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SubTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplaySubTitle">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="TitleType" type="avs:AdditionalTitleType">
+
+        </xs:attribute>
+        <xs:attribute name="Namespace" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="UserDefinedValue" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="IsInOriginalLanguage" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="AdministratingRecordCompanyWithReference">
+
+        <xs:sequence>
+            <xs:element name="RecordCompanyPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Role" type="ern:AdministratingRecordCompanyRole">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AudioDeliveryFile">
+
+        <xs:sequence>
+            <xs:element name="Type">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="AudioFile"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ContainerFormat" minOccurs="0" type="ern:ContainerFormat">
+
+            </xs:element>
+            <xs:element name="AudioCodecType" minOccurs="0" type="ern:AudioCodecType">
+
+            </xs:element>
+            <xs:element name="BitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+            <xs:element name="OriginalBitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+            <xs:element name="NumberOfChannels" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="NumberOfAudioObjects" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="SamplingRate" minOccurs="0" type="ern:SamplingRate">
+
+            </xs:element>
+            <xs:element name="OriginalSamplingRate" minOccurs="0" type="ern:SamplingRate">
+
+            </xs:element>
+            <xs:element name="BitsPerSample" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AvRating">
+
+        <xs:sequence>
+            <xs:element name="Rating" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Agency" type="ern:RatingAgency">
+
+            </xs:element>
+            <xs:element name="Reason" minOccurs="0" type="ern:RatingReason">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="CLineWithDefault">
+
+        <xs:sequence>
+            <xs:element name="Year" minOccurs="0" type="xs:gYear">
+
+            </xs:element>
+            <xs:element name="CLineCompany" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CLineText" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Channel">
+
+        <xs:sequence>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+            <xs:element name="URL" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Chapter">
+
+        <xs:sequence>
+            <xs:element name="ChapterReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="X[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ChapterId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="SequenceNumber" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="Character" minOccurs="0" maxOccurs="unbounded" type="ern:Character">
+
+            </xs:element>
+            <xs:element name="RepresentativeImageReference" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="StartTime" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="EndTime" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ChapterList">
+
+        <xs:sequence>
+            <xs:element name="Chapter" maxOccurs="unbounded" type="ern:Chapter">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Character">
+
+        <xs:sequence>
+            <xs:element name="CharacterPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Performer" minOccurs="0" type="ern:Contributor">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ClipDetails">
+
+        <xs:sequence>
+            <xs:element name="ClipType" type="ern:ClipType">
+
+            </xs:element>
+            <xs:element name="TopLeftCorner" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="BottomRightCorner" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ExpressionType" type="avs:ExpressionType">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ClipRelease">
+
+        <xs:sequence>
+            <xs:element name="ReleaseReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="ReleaseResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ReleaseLabelReference" maxOccurs="unbounded" type="ern:ReleaseLabelReferenceWithParty">
+
+            </xs:element>
+            <xs:element name="Genre" maxOccurs="unbounded" type="ern:GenreWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CommercialModelType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CommercialModelType_ERN">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ConditionForRightsClaimPolicy">
+
+        <xs:sequence>
+            <xs:element name="Value" type="xs:decimal">
+
+            </xs:element>
+            <xs:element name="Unit" type="avs:UnitOfConditionValue">
+
+            </xs:element>
+            <xs:element name="ReferenceCreation" minOccurs="0" type="avs:ReferenceCreation">
+
+            </xs:element>
+            <xs:element name="RelationalRelator" type="avs:RelationalRelator">
+
+            </xs:element>
+            <xs:element name="MeasurementType" minOccurs="0" type="avs:MeasurementType">
+
+            </xs:element>
+            <xs:element name="Segment" minOccurs="0" maxOccurs="unbounded" type="ern:Segment">
+
+            </xs:element>
+            <xs:element name="ServiceException" minOccurs="0" maxOccurs="unbounded" type="ern:ServiceException">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Contributor">
+
+        <xs:sequence>
+            <xs:element name="ContributorPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Role" minOccurs="0" maxOccurs="unbounded" type="ern:ContributorRole">
+
+            </xs:element>
+            <xs:element name="InstrumentType" minOccurs="0" maxOccurs="unbounded" type="ern:InstrumentType">
+
+            </xs:element>
+            <xs:element name="HasMadeFeaturedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasMadeContractedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsCredited" minOccurs="0" type="ern:IsCredited">
+
+            </xs:element>
+            <xs:element name="DisplayCredits" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayCredits">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="CoreArea">
+
+        <xs:sequence>
+            <xs:element name="TopLeftCorner">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="BottomRightCorner">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CourtesyLineWithDefault">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Cue">
+
+        <xs:sequence>
+            <xs:element name="CueUseType" minOccurs="0" type="ern:CueUseType">
+
+            </xs:element>
+            <xs:element name="CueThemeType" minOccurs="0" type="ern:CueThemeType">
+
+            </xs:element>
+            <xs:element name="CueVocalType" minOccurs="0" type="ern:CueVocalType">
+
+            </xs:element>
+            <xs:element name="CueVisualPerceptionType" minOccurs="0" type="ern:CueVisualPerceptionType">
+
+            </xs:element>
+            <xs:element name="CueOrigin" minOccurs="0" type="ern:CueOrigin">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="ResourceId" type="ern:ResourceId">
+
+                </xs:element>
+                <xs:element name="WorkId" type="ern:MusicalWorkId">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="IsDance" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasMusicalContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="PLine" minOccurs="0" maxOccurs="unbounded" type="ern:PLine">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLine">
+
+            </xs:element>
+            <xs:element name="StartTime" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="EndTime" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CueSheet">
+
+        <xs:sequence>
+            <xs:element name="CueSheetId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+            <xs:element name="CueSheetReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="Q[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="CueSheetType" type="ern:CueSheetType">
+
+            </xs:element>
+            <xs:element name="Cue" maxOccurs="unbounded" type="ern:Cue">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CueSheetList">
+
+        <xs:sequence>
+            <xs:element name="CueSheet" maxOccurs="unbounded" type="ern:CueSheet">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Deal">
+
+        <xs:sequence>
+            <xs:element name="DealReference" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="IsCommunicatedOutOfBand" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DealTerms" minOccurs="0" type="ern:DealTerms">
+
+            </xs:element>
+            <xs:element name="DealTechnicalResourceDetailsReferenceList" minOccurs="0" type="ern:DealTechnicalResourceDetailsReferenceList">
+
+            </xs:element>
+            <xs:element name="DistributionChannelPage" minOccurs="0" maxOccurs="unbounded" type="ern:DistributionChannelPage">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DealList">
+
+        <xs:sequence>
+            <xs:element name="ReleaseDeal" maxOccurs="unbounded" type="ern:ReleaseDeal">
+
+            </xs:element>
+            <xs:element name="ReleaseVisibility" minOccurs="0" maxOccurs="unbounded" type="ern:ReleaseVisibility">
+
+            </xs:element>
+            <xs:element name="TrackReleaseVisibility" minOccurs="0" maxOccurs="unbounded" type="ern:TrackReleaseVisibility">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DealResourceReferenceList">
+
+        <xs:sequence>
+            <xs:element name="DealResourceReference" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DealTechnicalResourceDetailsReferenceList">
+
+        <xs:sequence>
+            <xs:element name="DealTechnicalResourceDetailsReference" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DealTerms">
+
+        <xs:sequence>
+            <xs:choice minOccurs="0">
+                <xs:element name="TerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+                <xs:element name="ExcludedTerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ValidityPeriod" maxOccurs="unbounded" type="ern:PeriodWithStartDate">
+
+            </xs:element>
+            <xs:element name="CommercialModelType" minOccurs="0" maxOccurs="unbounded" type="ern:CommercialModelType">
+
+            </xs:element>
+            <xs:element name="UseType" minOccurs="0" maxOccurs="unbounded" type="ern:DiscoverableUseType">
+
+            </xs:element>
+            <xs:element name="UserInterfaceType" minOccurs="0" maxOccurs="unbounded" type="ern:UserInterfaceType">
+
+            </xs:element>
+            <xs:element name="CarrierType" minOccurs="0" maxOccurs="unbounded" type="ern:CarrierType">
+
+            </xs:element>
+            <xs:element name="TechnicalInstantiation" minOccurs="0" type="ern:DealTermsTechnicalInstantiation">
+
+            </xs:element>
+            <xs:element name="NumberOfUsages" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="DistributionChannel" maxOccurs="unbounded" type="ern:DSP">
+
+                </xs:element>
+                <xs:element name="ExcludedDistributionChannel" maxOccurs="unbounded" type="ern:DSP">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="RightsClaimPolicy" minOccurs="0" maxOccurs="unbounded" type="ern:RightsClaimPolicy">
+
+            </xs:element>
+            <xs:element name="PriceInformation" minOccurs="0" maxOccurs="unbounded" type="ern:PriceInformationWithType">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="IsPromotional" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="PromotionalCode" type="ern:PromotionalCode">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="IsPreOrderDeal" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="InstantGratificationResourceList" minOccurs="0" type="ern:DealResourceReferenceList">
+
+            </xs:element>
+            <xs:element name="PhysicalReturns" minOccurs="0" type="ern:PhysicalReturns">
+
+            </xs:element>
+            <xs:element name="NumberOfProductsPerCarton" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DealTermsTechnicalInstantiation">
+
+        <xs:sequence>
+            <xs:element name="VideoDefinitionType" minOccurs="0" type="ern:VideoDefinitionType">
+
+            </xs:element>
+            <xs:element name="CodingType" minOccurs="0" type="avs:CodingType">
+
+            </xs:element>
+            <xs:element name="BitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Deity">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DelegatedUsageRights">
+
+        <xs:sequence>
+            <xs:element name="UseType" maxOccurs="unbounded" type="ern:UseType">
+
+            </xs:element>
+            <xs:element name="PeriodOfRightsDelegation" minOccurs="0" type="ern:Period">
+
+            </xs:element>
+            <xs:element name="TerritoryOfRightsDelegation" minOccurs="0" maxOccurs="unbounded" type="ern:AllTerritoryCode">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DescriptionWithTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DetailedResourceContributor">
+
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="PartyId" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                </xs:element>
+                <xs:sequence>
+                    <xs:element name="PartyName" maxOccurs="unbounded" type="ern:PartyName">
+
+                    </xs:element>
+                    <xs:element name="PartyId" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                    </xs:element>
+                </xs:sequence>
+            </xs:choice>
+            <xs:element name="Role" minOccurs="0" maxOccurs="unbounded" type="ern:ContributorRole">
+
+            </xs:element>
+            <xs:element name="InstrumentType" minOccurs="0" maxOccurs="unbounded" type="ern:InstrumentType">
+
+            </xs:element>
+            <xs:element name="HasMadeFeaturedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasMadeContractedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DisplayCredits" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayCredits">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="DiscoverableUseType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:UseType_ERN">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="IsDiscoverable" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DisplayArtist">
+
+        <xs:sequence>
+            <xs:element name="ArtistPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="DisplayArtistRole" type="ern:DisplayArtistRole">
+
+            </xs:element>
+            <xs:element name="ArtisticRole" minOccurs="0" maxOccurs="unbounded" type="ern:ContributorRole">
+
+            </xs:element>
+            <xs:element name="TitleDisplayInformation" minOccurs="0" maxOccurs="unbounded" type="ern:TitleDisplayInformation">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="DisplayArtistNameWithDefault">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="IsInOriginalLanguage" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DisplaySubTitle">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="SequenceNumber" type="xs:integer">
+
+                </xs:attribute>
+                <xs:attribute name="IsDisplayedInTitle" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="SubTitleType" type="avs:SubTitleType">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DisplayTitle">
+
+        <xs:sequence>
+            <xs:element name="TitleText" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SubTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplaySubTitle">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="IsInOriginalLanguage" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="DisplayTitleText">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsInOriginalLanguage" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DistributionChannelPage">
+
+        <xs:sequence>
+            <xs:element name="PartyId" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+            </xs:element>
+            <xs:element name="PageName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="URL" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="UserName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="EditionContributor">
+
+        <xs:sequence>
+            <xs:element name="ContributorPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Role" minOccurs="0" maxOccurs="unbounded" type="ern:ContributorRole">
+
+            </xs:element>
+            <xs:element name="HasMadeFeaturedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasMadeContractedContribution" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsCredited" minOccurs="0" type="ern:IsCredited">
+
+            </xs:element>
+            <xs:element name="DisplayCredits" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayCredits">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="EventDateTimeWithoutFlags">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:dateTime">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="LocationDescription" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="EventDateWithCurrentTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_IsoDate">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="LocationDescription" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="EventDateWithDefault">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_IsoDate">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:AllTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="EventDateWithoutFlags">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_IsoDate">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:AllTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="LocationDescription" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ExternalResourceLink">
+
+        <xs:sequence>
+            <xs:element name="URL" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ValidityPeriod" minOccurs="0" type="ern:PeriodWithoutFlags">
+
+            </xs:element>
+            <xs:element name="ExternalLink" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ExternallyLinkedResourceType" minOccurs="0" maxOccurs="unbounded" type="ern:ExternallyLinkedResourceType">
+
+            </xs:element>
+            <xs:element name="FileFormat" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Fingerprint">
+
+        <xs:sequence>
+            <xs:element name="Algorithm" type="ern:FingerprintAlgorithmType">
+
+            </xs:element>
+            <xs:element name="Version" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Parameter" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="File" type="ern:File">
+
+                </xs:element>
+                <xs:sequence>
+                    <xs:element name="DataType" type="avs:BinaryDataType">
+
+                    </xs:element>
+                    <xs:element name="FingerprintValue" type="xs:string">
+
+                    </xs:element>
+                </xs:sequence>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="HdrVideoDynamicMetadataType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:HdrVideoDynamicMetadataType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="SdrDerivationPermitted" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Image">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:ImageType">
+
+            </xs:element>
+            <xs:element name="ResourceId" maxOccurs="unbounded" type="ern:ResourceProprietaryId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FulfillmentDateWithTerritory">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" minOccurs="0" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Description" minOccurs="0" maxOccurs="unbounded" type="ern:DescriptionWithTerritory">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalImageDetails">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="IsCredited">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:boolean">
+                <xs:attribute name="MayBeShared" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="LinkedReleaseResourceReference">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_LocalResourceAnchorReference">
+                <xs:attribute name="LinkDescription" type="avs:LinkDescription">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="SequenceNumber" type="xs:integer">
+
+                </xs:attribute>
+                <xs:attribute name="IsMultiFile" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="LocationAndDateOfSession">
+
+        <xs:sequence>
+            <xs:element name="SessionType" minOccurs="0" maxOccurs="unbounded" type="ern:SessionType">
+
+            </xs:element>
+            <xs:element name="Period" minOccurs="0" type="ern:Period">
+
+            </xs:element>
+            <xs:element name="Venue" minOccurs="0" maxOccurs="unbounded" type="ern:Venue">
+
+            </xs:element>
+            <xs:element name="Comment" minOccurs="0" type="ern:TextWithFormat">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:PartyWithRole">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Party">
+
+        <xs:sequence>
+            <xs:element name="PartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:choice>
+                <xs:element name="PartyId" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                </xs:element>
+                <xs:sequence>
+                    <xs:element name="PartyName" maxOccurs="unbounded" type="ern:PartyNameWithTerritory">
+
+                    </xs:element>
+                    <xs:element name="PartyId" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                    </xs:element>
+                </xs:sequence>
+            </xs:choice>
+            <xs:element name="Affiliation" minOccurs="0" maxOccurs="unbounded" type="ern:Affiliation">
+
+            </xs:element>
+            <xs:element name="RelatedParty" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedParty">
+
+            </xs:element>
+            <xs:element name="ArtistProfilePage" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PartyList">
+
+        <xs:sequence>
+            <xs:element name="Party" maxOccurs="unbounded" type="ern:Party">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PartyNameWithTerritory">
+
+        <xs:sequence>
+            <xs:element name="FullName" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="FullNameAsciiTranscribed" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="FullNameIndexed" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="NamesBeforeKeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="KeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="NamesAfterKeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="AbbreviatedName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="IsNickname" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="IsStageName" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="IsLegalName" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="IsInOriginalLanguage" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="PartyWithRole">
+
+        <xs:sequence>
+            <xs:element name="ISNI" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="DPID" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="PADPIDA[a-zA-Z0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="IpiNameNumber" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]{11}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="IPN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+            <xs:element name="PartyName" minOccurs="0" type="ern:PartyNameWithTerritory">
+
+            </xs:element>
+            <xs:element name="Role" minOccurs="0" type="ern:ResourceContributorRole">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PeriodWithStartDate">
+
+        <xs:choice>
+            <xs:sequence>
+                <xs:element name="StartDate" type="ern:EventDateWithCurrentTerritory">
+
+                </xs:element>
+                <xs:element name="EndDate" minOccurs="0" type="ern:EventDateWithCurrentTerritory">
+
+                </xs:element>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element name="StartDateTime" type="ern:EventDateTimeWithoutFlags">
+
+                </xs:element>
+                <xs:element name="EndDateTime" minOccurs="0" type="ern:EventDateTimeWithoutFlags">
+
+                </xs:element>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="PeriodWithoutFlags">
+
+        <xs:choice>
+            <xs:sequence>
+                <xs:element name="StartDate" minOccurs="0" type="ern:EventDateWithCurrentTerritory">
+
+                </xs:element>
+                <xs:element name="EndDate" minOccurs="0" type="ern:EventDateWithCurrentTerritory">
+
+                </xs:element>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element name="StartDateTime" minOccurs="0" type="ern:EventDateTimeWithoutFlags">
+
+                </xs:element>
+                <xs:element name="EndDateTime" minOccurs="0" type="ern:EventDateTimeWithoutFlags">
+
+                </xs:element>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="PhysicalReturns">
+
+        <xs:sequence>
+            <xs:element name="PhysicalReturnsAllowed" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="LatestDateForPhysicalReturns" minOccurs="0" type="ern:ddex_IsoDate">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PriceInformationWithType">
+
+        <xs:sequence>
+            <xs:element name="PriceCode" minOccurs="0" type="ern:PriceType">
+
+            </xs:element>
+            <xs:element name="WholesalePricePerUnit" minOccurs="0" type="ern:Price">
+
+            </xs:element>
+            <xs:element name="BulkOrderWholesalePricePerUnit" minOccurs="0" type="ern:Price">
+
+            </xs:element>
+            <xs:element name="SuggestedRetailPrice" minOccurs="0" type="ern:Price">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="PriceType" type="avs:PriceInformationType">
+
+        </xs:attribute>
+        <xs:attribute name="Namespace" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="UserDefinedValue" type="xs:string">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="PurgedRelease">
+
+        <xs:sequence>
+            <xs:element name="ReleaseId" minOccurs="0" type="ern:ReleaseId">
+
+            </xs:element>
+            <xs:element name="Title" minOccurs="0" maxOccurs="unbounded" type="ern:Title">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedResourceContributor">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Raga">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RecordingFormat">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:RecordingFormat">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RelatedRelease">
+
+        <xs:sequence>
+            <xs:element name="ReleaseRelationshipType" type="ern:ReleaseRelationshipType">
+
+            </xs:element>
+            <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="ReleaseLabelReference" minOccurs="0" maxOccurs="unbounded" type="ern:ReleaseLabelReference">
+
+            </xs:element>
+            <xs:element name="ReleaseDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="OriginalReleaseDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RelatedResource">
+
+        <xs:sequence>
+            <xs:element name="ResourceRelationshipType" type="avs:ResourceRelationshipType">
+
+            </xs:element>
+            <xs:choice>
+                <xs:element name="ResourceRelatedResourceReference">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="ResourceId" type="ern:ResourceId">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="Timing" minOccurs="0" maxOccurs="unbounded" type="ern:Timing">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Release">
+
+        <xs:sequence>
+            <xs:element name="ReleaseReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ReleaseType" maxOccurs="unbounded" type="ern:ReleaseTypeForReleaseNotification">
+
+            </xs:element>
+            <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="ReleaseLabelReference" maxOccurs="unbounded" type="ern:ReleaseLabelReferenceWithParty">
+
+            </xs:element>
+            <xs:element name="AdministratingRecordCompany" minOccurs="0" maxOccurs="unbounded" type="ern:AdministratingRecordCompanyWithReference">
+
+            </xs:element>
+            <xs:element name="PLine" minOccurs="0" maxOccurs="unbounded" type="ern:PLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="Genre" maxOccurs="unbounded" type="ern:GenreWithTerritory">
+
+            </xs:element>
+            <xs:element name="ReleaseDate" minOccurs="0" maxOccurs="unbounded" type="ern:EventDateWithDefault">
+
+            </xs:element>
+            <xs:element name="OriginalReleaseDate" minOccurs="0" maxOccurs="unbounded" type="ern:EventDateWithDefault">
+
+            </xs:element>
+            <xs:element name="ReleaseVisibilityReference" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="V[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ParentalWarningType" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="AvRating" minOccurs="0" maxOccurs="unbounded" type="ern:AvRating">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="IsSingleArtistCompilation" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="IsMultiArtistCompilation" type="xs:boolean">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ResourceGroup" type="ern:ResourceGroup">
+
+            </xs:element>
+            <xs:element name="ExternalResourceLink" minOccurs="0" maxOccurs="unbounded" type="ern:ExternalResourceLink">
+
+            </xs:element>
+            <xs:element name="TargetURL" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Keywords" minOccurs="0" maxOccurs="unbounded" type="ern:KeywordsWithTerritory">
+
+            </xs:element>
+            <xs:element name="Synopsis" minOccurs="0" maxOccurs="unbounded" type="ern:SynopsisWithTerritory">
+
+            </xs:element>
+            <xs:element name="Raga" minOccurs="0" maxOccurs="unbounded" type="ern:Raga">
+
+            </xs:element>
+            <xs:element name="Tala" minOccurs="0" maxOccurs="unbounded" type="ern:Tala">
+
+            </xs:element>
+            <xs:element name="Deity" minOccurs="0" maxOccurs="unbounded" type="ern:Deity">
+
+            </xs:element>
+            <xs:element name="HiResMusicDescription" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="IsSoundtrack" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsHiResMusic" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="MarketingComment" minOccurs="0" maxOccurs="unbounded" type="ern:MarketingComment">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ReleaseAdmin">
+
+        <xs:sequence>
+            <xs:element name="ReleaseAdminId" type="xs:string">
+
+            </xs:element>
+            <xs:element name="PersonnelDescription" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SystemDescription" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReleaseDeal">
+
+        <xs:sequence>
+            <xs:element name="DealReleaseReference" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Deal" maxOccurs="unbounded" type="ern:Deal">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReleaseId">
+
+        <xs:sequence>
+            <xs:element name="GRid" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ICPN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CatalogNumber" minOccurs="0" type="ern:CatalogNumber">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReleaseLabelReference">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_LocalPartyAnchorReference">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="LabelType" type="avs:LabelType">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ReleaseLabelReferenceWithParty">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_LocalPartyAnchorReference">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="LabelType" type="avs:LabelType">
+
+                </xs:attribute>
+                <xs:attribute name="AccessControlParty" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ReleaseList">
+
+        <xs:sequence>
+            <xs:element name="Release" minOccurs="0" type="ern:Release">
+
+            </xs:element>
+            <xs:element name="TrackRelease" minOccurs="0" maxOccurs="unbounded" type="ern:TrackRelease">
+
+            </xs:element>
+            <xs:element name="ClipRelease" minOccurs="0" maxOccurs="unbounded" type="ern:ClipRelease">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReleaseVisibility">
+
+        <xs:sequence>
+            <xs:element name="VisibilityReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="V[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="TerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+                <xs:element name="ExcludedTerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ReleaseDisplayStartDateTime" minOccurs="0" type="xs:dateTime">
+
+            </xs:element>
+            <xs:element name="CoverArtPreviewStartDateTime" minOccurs="0" type="xs:dateTime">
+
+            </xs:element>
+            <xs:element name="FullTrackListingPreviewStartDateTime" minOccurs="0" type="xs:dateTime">
+
+            </xs:element>
+            <xs:element name="ClipPreviewStartDateTime" minOccurs="0" type="xs:dateTime">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="DoNotDisplayDates" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ResourceGroup">
+
+        <xs:sequence>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="SequenceNumber" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="NoDisplaySequence" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="DisplaySequence" type="xs:string">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="CarrierType" minOccurs="0" maxOccurs="unbounded" type="ern:CarrierType">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="ResourceGroupReleaseReference">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ResourceGroup" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceSubGroup">
+
+            </xs:element>
+            <xs:element name="ResourceGroupContentItem" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceGroupContentItem">
+
+            </xs:element>
+            <xs:element name="LinkedReleaseResourceReference" minOccurs="0" maxOccurs="unbounded" type="ern:LinkedReleaseResourceReference">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceGroupContentItem">
+
+        <xs:sequence>
+            <xs:element name="SequenceNumber" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="NoDisplaySequence" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="DisplaySequence" type="xs:string">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ReleaseResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="LinkedReleaseResourceReference" minOccurs="0" maxOccurs="unbounded" type="ern:LinkedReleaseResourceReference">
+
+            </xs:element>
+            <xs:element name="IsBonusResource" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsInstantGratificationResource" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsPreOrderIncentiveResource" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceList">
+
+        <xs:sequence>
+            <xs:element name="SoundRecording" minOccurs="0" maxOccurs="unbounded" type="ern:SoundRecording">
+
+            </xs:element>
+            <xs:element name="Video" minOccurs="0" maxOccurs="unbounded" type="ern:Video">
+
+            </xs:element>
+            <xs:element name="Image" minOccurs="0" maxOccurs="unbounded" type="ern:Image">
+
+            </xs:element>
+            <xs:element name="Text" minOccurs="0" maxOccurs="unbounded" type="ern:Text">
+
+            </xs:element>
+            <xs:element name="SheetMusic" minOccurs="0" maxOccurs="unbounded" type="ern:SheetMusic">
+
+            </xs:element>
+            <xs:element name="Software" minOccurs="0" maxOccurs="unbounded" type="ern:Software">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceRightsController">
+
+        <xs:sequence>
+            <xs:element name="RightsControllerPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="RightsControlType" minOccurs="0" maxOccurs="unbounded" type="avs:RightsControllerRole">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="RightShareUnknown" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="RightSharePercentage" type="ern:Percentage">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="DelegatedUsageRights" minOccurs="0" maxOccurs="unbounded" type="ern:DelegatedUsageRights">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ResourceSubGroup">
+
+        <xs:sequence>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="SequenceNumber" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="NoDisplaySequence" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="DisplaySequence" type="xs:string">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="CarrierType" minOccurs="0" maxOccurs="unbounded" type="ern:CarrierType">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="ResourceGroupReleaseReference">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ResourceGroup" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceSubGroup">
+
+            </xs:element>
+            <xs:element name="ResourceGroupContentItem" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceGroupContentItem">
+
+            </xs:element>
+            <xs:element name="LinkedReleaseResourceReference" minOccurs="0" maxOccurs="unbounded" type="ern:LinkedReleaseResourceReference">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ResourceGroupType" type="avs:ResourceGroupType" use="required">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="RightsClaimPolicy">
+
+        <xs:sequence>
+            <xs:element name="Condition" minOccurs="0" maxOccurs="unbounded" type="ern:ConditionForRightsClaimPolicy">
+
+            </xs:element>
+            <xs:element name="RightsClaimPolicyType" type="avs:RightsClaimPolicyType">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Segment">
+
+        <xs:sequence>
+            <xs:element name="StartTime" type="xs:duration">
+
+            </xs:element>
+            <xs:choice>
+                <xs:element name="Duration" type="xs:duration">
+
+                </xs:element>
+                <xs:element name="EndTime" type="xs:duration">
+
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ServiceException">
+
+        <xs:sequence>
+            <xs:choice minOccurs="0">
+                <xs:element name="PartyId" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                </xs:element>
+                <xs:sequence>
+                    <xs:element name="PartyName" maxOccurs="unbounded" type="ern:PartyName">
+
+                    </xs:element>
+                    <xs:element name="PartyId" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                    </xs:element>
+                </xs:sequence>
+            </xs:choice>
+            <xs:element name="TradingName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="URL" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Channel" minOccurs="0" maxOccurs="unbounded" type="ern:Channel">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SheetMusic">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:SheetMusicType">
+
+            </xs:element>
+            <xs:element name="ResourceId" maxOccurs="unbounded" type="ern:SheetMusicId">
+
+            </xs:element>
+            <xs:element name="WorkId" minOccurs="0" maxOccurs="unbounded" type="ern:MusicalWorkId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FulfillmentDateWithTerritory">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" minOccurs="0" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="LanguageOfLyrics" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ResourceContainedResourceReferenceList" minOccurs="0" type="ern:ResourceContainedResourceReferenceList">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalSheetMusicDetails">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Software">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:SoftwareType">
+
+            </xs:element>
+            <xs:element name="ResourceId" maxOccurs="unbounded" type="ern:ResourceProprietaryId">
+
+            </xs:element>
+            <xs:element name="WorkId" minOccurs="0" maxOccurs="unbounded" type="ern:MusicalWorkId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="PLine" minOccurs="0" maxOccurs="unbounded" type="ern:PLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FulfillmentDateWithTerritory">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" minOccurs="0" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ResourceContainedResourceReferenceList" minOccurs="0" type="ern:ResourceContainedResourceReferenceList">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalSoftwareDetails">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="SoundRecording">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:SoundRecordingType">
+
+            </xs:element>
+            <xs:element name="SoundRecordingEdition" maxOccurs="unbounded" type="ern:SoundRecordingEdition">
+
+            </xs:element>
+            <xs:element name="RecordingFormat" minOccurs="0" maxOccurs="unbounded" type="ern:RecordingFormat">
+
+            </xs:element>
+            <xs:element name="WorkId" minOccurs="0" maxOccurs="unbounded" type="ern:MusicalWorkId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="Character" minOccurs="0" maxOccurs="unbounded" type="ern:Character">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="Duration" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="MasteredDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="RemasteredDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FirstPublicationDate">
+
+            </xs:element>
+            <xs:element name="LocationAndDateOfSession" minOccurs="0" maxOccurs="unbounded" type="ern:LocationAndDateOfSession">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="CompositeMusicalWorkType" minOccurs="0" type="avs:CompositeMusicalWorkType">
+
+            </xs:element>
+            <xs:element name="IsCover" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasVocalPerformance" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasForegroundVocalPerformance" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsInstrumental" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsRemastered" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsHiResMusic" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DisableCrossfade" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DisableSearch" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DisplayCredits" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayCredits">
+
+            </xs:element>
+            <xs:element name="LanguageOfPerformance" minOccurs="0" maxOccurs="unbounded" type="ern:Language">
+
+            </xs:element>
+            <xs:element name="Raga" minOccurs="0" maxOccurs="unbounded" type="ern:Raga">
+
+            </xs:element>
+            <xs:element name="Tala" minOccurs="0" maxOccurs="unbounded" type="ern:Tala">
+
+            </xs:element>
+            <xs:element name="Deity" minOccurs="0" maxOccurs="unbounded" type="ern:Deity">
+
+            </xs:element>
+            <xs:element name="AudioChapterReference" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="X[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="ApplyClassicalProfileVariant" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="SoundRecordingClipDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ClipType" type="ern:ClipType">
+
+            </xs:element>
+            <xs:element name="Timing" minOccurs="0" maxOccurs="unbounded" type="ern:Timing">
+
+            </xs:element>
+            <xs:element name="ExpressionType" type="avs:ExpressionType">
+
+            </xs:element>
+            <xs:element name="DeliveryFile" minOccurs="0" maxOccurs="unbounded" type="ern:AudioDeliveryFile">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SoundRecordingEdition">
+
+        <xs:sequence>
+            <xs:element name="Type" minOccurs="0" type="avs:EditionType">
+
+            </xs:element>
+            <xs:element name="ResourceId" maxOccurs="unbounded" type="ern:SoundRecordingId">
+
+            </xs:element>
+            <xs:element name="EditionContributor" minOccurs="0" maxOccurs="unbounded" type="ern:EditionContributor">
+
+            </xs:element>
+            <xs:element name="PLine" minOccurs="0" maxOccurs="unbounded" type="ern:PLineWithDefault">
+
+            </xs:element>
+            <xs:element name="RecordingMode" minOccurs="0" type="avs:RecordingMode">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalSoundRecordingDetails">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SupplementalDocumentList">
+
+        <xs:sequence>
+            <xs:element name="SupplementalDocument" maxOccurs="unbounded" type="ern:File">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SynopsisWithTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsShortSynopsis" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Tala">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TechnicalImageDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ImageCodecType" minOccurs="0" type="ern:ImageCodecType">
+
+            </xs:element>
+            <xs:element name="ImageHeight" minOccurs="0" type="ern:Extent">
+
+            </xs:element>
+            <xs:element name="ImageWidth" minOccurs="0" type="ern:Extent">
+
+            </xs:element>
+            <xs:element name="AspectRatio" minOccurs="0" maxOccurs="unbounded" type="ern:AspectRatio">
+
+            </xs:element>
+            <xs:element name="ColorDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="ImageResolution" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:ClipDetails">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TechnicalSheetMusicDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="SheetMusicCodecType" minOccurs="0" type="ern:SheetMusicCodecType">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:ClipDetails">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TechnicalSoftwareDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="OperatingSystemType" minOccurs="0" type="ern:OperatingSystemType">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:ClipDetails">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TechnicalSoundRecordingDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="DeliveryFile" minOccurs="0" maxOccurs="unbounded" type="ern:AudioDeliveryFile">
+
+            </xs:element>
+            <xs:element name="HasImmersiveAudioMetadata" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:SoundRecordingClipDetails">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TechnicalTextDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="TextCodecType" minOccurs="0" type="ern:TextCodecType">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:ClipDetails">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TechnicalVideoDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="OverallBitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+            <xs:element name="DeliveryFile" minOccurs="0" maxOccurs="unbounded" type="ern:VideoDeliveryFile">
+
+            </xs:element>
+            <xs:element name="IsClip" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ClipDetails" minOccurs="0" maxOccurs="unbounded" type="ern:VideoClipDetails">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Text">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:TextType">
+
+            </xs:element>
+            <xs:element name="ResourceId" minOccurs="0" maxOccurs="unbounded" type="ern:TextId">
+
+            </xs:element>
+            <xs:element name="WorkId" minOccurs="0" maxOccurs="unbounded" type="ern:MusicalWorkId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FulfillmentDateWithTerritory">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" minOccurs="0" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ResourceContainedResourceReferenceList" minOccurs="0" type="ern:ResourceContainedResourceReferenceList">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalTextDetails">
+
+            </xs:element>
+            <xs:element name="LanguageOfText" minOccurs="0" maxOccurs="unbounded" type="ern:Language">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Timing">
+
+        <xs:sequence>
+            <xs:element name="StartPoint" type="xs:decimal">
+
+            </xs:element>
+            <xs:element name="EndPoint" minOccurs="0" type="xs:decimal">
+
+            </xs:element>
+            <xs:element name="DurationUsed" minOccurs="0" maxOccurs="unbounded" type="xs:duration">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Title">
+
+        <xs:sequence>
+            <xs:element name="TitleText" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SubTitle" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="TitleType" type="avs:AdditionalTitleType">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TrackRelease">
+
+        <xs:sequence>
+            <xs:element name="ReleaseReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ReleaseId" type="ern:ReleaseId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="ReleaseResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="LinkedReleaseResourceReference" minOccurs="0" maxOccurs="unbounded" type="ern:LinkedReleaseResourceReference">
+
+            </xs:element>
+            <xs:element name="ReleaseLabelReference" maxOccurs="unbounded" type="ern:ReleaseLabelReferenceWithParty">
+
+            </xs:element>
+            <xs:element name="Genre" maxOccurs="unbounded" type="ern:GenreWithTerritory">
+
+            </xs:element>
+            <xs:element name="ReleaseVisibilityReference" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="V[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="TargetURL" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Keywords" minOccurs="0" maxOccurs="unbounded" type="ern:KeywordsWithTerritory">
+
+            </xs:element>
+            <xs:element name="Synopsis" minOccurs="0" maxOccurs="unbounded" type="ern:SynopsisWithTerritory">
+
+            </xs:element>
+            <xs:element name="MarketingComment" minOccurs="0" maxOccurs="unbounded" type="ern:MarketingComment">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsMainRelease" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TrackReleaseVisibility">
+
+        <xs:sequence>
+            <xs:element name="VisibilityReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="V[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="TerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+                <xs:element name="ExcludedTerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="TrackListingPreviewStartDateTime" type="xs:dateTime">
+
+            </xs:element>
+            <xs:element name="ClipPreviewStartDateTime" minOccurs="0" type="xs:dateTime">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="DoNotDisplayDates" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="UseType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:UseType_ERN">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="UserInterfaceType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:UserInterfaceType_ERN">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Video">
+
+        <xs:sequence>
+            <xs:element name="ResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="Type" type="ern:VideoType">
+
+            </xs:element>
+            <xs:element name="VideoEdition" maxOccurs="unbounded" type="ern:VideoEdition">
+
+            </xs:element>
+            <xs:element name="RecordingFormat" minOccurs="0" maxOccurs="unbounded" type="ern:RecordingFormat">
+
+            </xs:element>
+            <xs:element name="WorkId" minOccurs="0" maxOccurs="unbounded" type="ern:MusicalWorkId">
+
+            </xs:element>
+            <xs:element name="DisplayTitleText" maxOccurs="unbounded" type="ern:DisplayTitleText">
+
+            </xs:element>
+            <xs:element name="DisplayTitle" maxOccurs="unbounded" type="ern:DisplayTitle">
+
+            </xs:element>
+            <xs:element name="AdditionalTitle" minOccurs="0" maxOccurs="unbounded" type="ern:AdditionalTitle">
+
+            </xs:element>
+            <xs:element name="VersionType" minOccurs="0" maxOccurs="unbounded" type="ern:VersionType">
+
+            </xs:element>
+            <xs:element name="DisplayArtistName" maxOccurs="unbounded" type="ern:DisplayArtistNameWithDefault">
+
+            </xs:element>
+            <xs:element name="DisplayArtist" maxOccurs="unbounded" type="ern:DisplayArtist">
+
+            </xs:element>
+            <xs:element name="Contributor" minOccurs="0" maxOccurs="unbounded" type="ern:Contributor">
+
+            </xs:element>
+            <xs:element name="Character" minOccurs="0" maxOccurs="unbounded" type="ern:Character">
+
+            </xs:element>
+            <xs:element name="ResourceRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:ResourceRightsController">
+
+            </xs:element>
+            <xs:element name="WorkRightsController" minOccurs="0" maxOccurs="unbounded" type="ern:WorkRightsController">
+
+            </xs:element>
+            <xs:element name="CourtesyLine" minOccurs="0" maxOccurs="unbounded" type="ern:CourtesyLineWithDefault">
+
+            </xs:element>
+            <xs:element name="Duration" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="CreationDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="MasteredDate" minOccurs="0" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="RemasteredDate" minOccurs="0" maxOccurs="unbounded" type="ern:EventDateWithoutFlags">
+
+            </xs:element>
+            <xs:element name="FirstPublicationDate" minOccurs="0" maxOccurs="unbounded" type="ern:FulfillmentDateWithTerritory">
+
+            </xs:element>
+            <xs:element name="ParentalWarningType" maxOccurs="unbounded" type="ern:ParentalWarningTypeWithTerritory">
+
+            </xs:element>
+            <xs:element name="AvRating" minOccurs="0" maxOccurs="unbounded" type="ern:AvRating">
+
+            </xs:element>
+            <xs:element name="RelatedRelease" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedRelease">
+
+            </xs:element>
+            <xs:element name="RelatedResource" minOccurs="0" maxOccurs="unbounded" type="ern:RelatedResource">
+
+            </xs:element>
+            <xs:element name="CompositeMusicalWorkType" minOccurs="0" type="avs:CompositeMusicalWorkType">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="VideoCueSheetReference" maxOccurs="unbounded">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="Q[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="ReasonForCueSheetAbsence" type="ern:Reason">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="IsCover" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasVocalPerformance" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="HasForegroundVocalPerformance" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsInstrumental" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ContainsHiddenContent" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="IsRemastered" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="DisplayCredits" minOccurs="0" maxOccurs="unbounded" type="ern:DisplayCredits">
+
+            </xs:element>
+            <xs:element name="LanguageOfPerformance" minOccurs="0" maxOccurs="unbounded" type="ern:Language">
+
+            </xs:element>
+            <xs:element name="LanguageOfDubbing" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="SubTitleLanguage" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ResourceContainedResourceReferenceList" minOccurs="0" type="ern:ResourceContainedResourceReferenceList">
+
+            </xs:element>
+            <xs:element name="Raga" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Tala" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Deity" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="VideoChapterReference" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="X[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode">
+
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="IsSupplemental" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="ApplyClassicalProfileVariant" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="VideoClipDetails">
+
+        <xs:sequence>
+            <xs:element name="TechnicalResourceDetailsReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:ID">
+                        <xs:pattern value="T[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ClipType" type="ern:ClipType">
+
+            </xs:element>
+            <xs:element name="Timing" minOccurs="0" maxOccurs="unbounded" type="ern:Timing">
+
+            </xs:element>
+            <xs:element name="TopLeftCorner" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="BottomRightCorner" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]+,[0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="ExpressionType" type="avs:ExpressionType">
+
+            </xs:element>
+            <xs:element name="DeliveryFile" minOccurs="0" maxOccurs="unbounded" type="ern:VideoDeliveryFile">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="VideoDeliveryFile">
+
+        <xs:sequence>
+            <xs:element name="Type" type="avs:DeliveryFileType">
+
+            </xs:element>
+            <xs:element name="ContainerFormat" minOccurs="0" type="ern:ContainerFormat">
+
+            </xs:element>
+            <xs:element name="VideoCodecType" minOccurs="0" type="ern:VideoCodecType">
+
+            </xs:element>
+            <xs:element name="VideoBitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+            <xs:element name="FrameRate" minOccurs="0" type="ern:FrameRate">
+
+            </xs:element>
+            <xs:element name="ImageHeight" minOccurs="0" type="ern:Extent">
+
+            </xs:element>
+            <xs:element name="ImageWidth" minOccurs="0" type="ern:Extent">
+
+            </xs:element>
+            <xs:element name="AspectRatio" minOccurs="0" maxOccurs="unbounded" type="ern:AspectRatio">
+
+            </xs:element>
+            <xs:element name="CoreArea" minOccurs="0" type="ern:CoreArea">
+
+            </xs:element>
+            <xs:element name="ColorDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="VideoDefinitionType" minOccurs="0" type="ern:VideoDefinitionType">
+
+            </xs:element>
+            <xs:element name="AudioCodecType" minOccurs="0" type="ern:AudioCodecType">
+
+            </xs:element>
+            <xs:element name="HasImmersiveAudioMetadata" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="ElectroOpticalTransferFunctionType" minOccurs="0" type="avs:ElectroOpticalTransferFunctionType">
+
+            </xs:element>
+            <xs:element name="PrimaryColorType" minOccurs="0" type="avs:PrimaryColorType">
+
+            </xs:element>
+            <xs:element name="HdrVideoDynamicMetadataType" minOccurs="0" type="ern:HdrVideoDynamicMetadataType">
+
+            </xs:element>
+            <xs:element name="HdrVideoStaticMetadataType" minOccurs="0" type="avs:HdrVideoStaticMetadataType">
+
+            </xs:element>
+            <xs:element name="AudioBitRate" minOccurs="0" type="ern:BitRate">
+
+            </xs:element>
+            <xs:element name="NumberOfAudioChannels" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="NumberOfAudioObjects" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="AudioSamplingRate" minOccurs="0" type="ern:SamplingRate">
+
+            </xs:element>
+            <xs:element name="AudioBitsPerSample" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="Duration" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="BitDepth" minOccurs="0" type="xs:integer">
+
+            </xs:element>
+            <xs:element name="File" minOccurs="0" type="ern:File">
+
+            </xs:element>
+            <xs:element name="Fingerprint" minOccurs="0" maxOccurs="unbounded" type="ern:Fingerprint">
+
+            </xs:element>
+            <xs:element name="IsProvidedInDelivery" minOccurs="0" type="xs:boolean">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="VideoEdition">
+
+        <xs:sequence>
+            <xs:element name="Type" minOccurs="0" type="avs:EditionType">
+
+            </xs:element>
+            <xs:element name="ResourceId" maxOccurs="unbounded" type="ern:VideoId">
+
+            </xs:element>
+            <xs:element name="EditionContributor" minOccurs="0" maxOccurs="unbounded" type="ern:EditionContributor">
+
+            </xs:element>
+            <xs:element name="PLine" minOccurs="0" maxOccurs="unbounded" type="ern:PLineWithDefault">
+
+            </xs:element>
+            <xs:element name="CLine" minOccurs="0" maxOccurs="unbounded" type="ern:CLineWithDefault">
+
+            </xs:element>
+            <xs:element name="RecordingMode" minOccurs="0" type="avs:RecordingMode">
+
+            </xs:element>
+            <xs:element name="TechnicalDetails" minOccurs="0" maxOccurs="unbounded" type="ern:TechnicalVideoDetails">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="VideoType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VideoType_ERN43">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="WorkRightsController">
+
+        <xs:sequence>
+            <xs:element name="RightsControllerPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="RightsControlType" minOccurs="0" maxOccurs="unbounded" type="avs:RightsControllerRole">
+
+            </xs:element>
+            <xs:element name="RightsControllerType" minOccurs="0" type="avs:RightsControllerType">
+
+            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="RightShareUnknown" type="xs:boolean">
+
+                </xs:element>
+                <xs:element name="RightSharePercentage" type="xs:decimal">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="Territory" minOccurs="0" maxOccurs="unbounded" type="ern:AllTerritoryCode">
+
+            </xs:element>
+            <xs:element name="StartDate" minOccurs="0" type="ern:ddex_IsoDate">
+
+            </xs:element>
+            <xs:element name="EndDate" minOccurs="0" type="ern:ddex_IsoDate">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AdministratingRecordCompanyRole">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:AdministratingRecordCompanyRole">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Affiliation">
+
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="CompanyName" type="xs:string">
+
+                </xs:element>
+                <xs:element name="PartyAffiliateReference">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:choice>
+            <xs:element name="Type" type="avs:AffiliationType">
+
+            </xs:element>
+            <xs:choice>
+                <xs:element name="TerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+                <xs:element name="ExcludedTerritoryCode" maxOccurs="unbounded" type="ern:CurrentTerritoryCode">
+
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ValidityPeriod" minOccurs="0" type="ern:ValidityPeriod">
+
+            </xs:element>
+            <xs:element name="RightsType" minOccurs="0" maxOccurs="unbounded" type="ern:RightsType">
+
+            </xs:element>
+            <xs:element name="PercentageOfRightsAssignment" minOccurs="0" type="xs:decimal">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AllTerritoryCode">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:AllTerritoryCode">
+                <xs:attribute name="IdentifierType" type="avs:TerritoryCodeTypeIncludingDeprecatedCodes">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="AspectRatio">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="AspectRatioType" type="avs:AspectRatioType">
+
+                </xs:attribute>
+                <xs:attribute name="AppliesToCroppedResource" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="AudioCodecType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:AudioCodecType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="BitRate">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="UnitOfMeasure" type="avs:UnitOfBitRate">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CLine">
+
+        <xs:sequence>
+            <xs:element name="Year" minOccurs="0" type="xs:gYear">
+
+            </xs:element>
+            <xs:element name="CLineCompany" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CLineText" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="CarrierType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CarrierType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CatalogNumber">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Namespace" type="xs:string" use="required">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ClipType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ClipType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ContainerFormat">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ContainerFormat">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ContributorRole">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ContributorRole">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueOrigin">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CueOrigin">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueSheetType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CueSheetType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueThemeType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ThemeType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueUseType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CueUseType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueVisualPerceptionType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VisualPerceptionType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CueVocalType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VocalType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="CurrentTerritoryCode">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:CurrentTerritoryCode">
+                <xs:attribute name="IdentifierType" type="avs:TerritoryCodeType">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DSP">
+
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="PartyId" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                </xs:element>
+                <xs:sequence>
+                    <xs:element name="PartyName" maxOccurs="unbounded" type="ern:PartyName">
+
+                    </xs:element>
+                    <xs:element name="PartyId" minOccurs="0" maxOccurs="unbounded" type="ern:DetailedPartyId">
+
+                    </xs:element>
+                </xs:sequence>
+            </xs:choice>
+            <xs:element name="TradingName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="URL" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DetailedHashSum">
+
+        <xs:sequence>
+            <xs:element name="Algorithm" type="ern:HashSumAlgorithmType">
+
+            </xs:element>
+            <xs:element name="Version" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="Parameter" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="DataType" minOccurs="0" type="avs:BinaryDataType">
+
+            </xs:element>
+            <xs:element name="HashSumValue" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DetailedPartyId">
+
+        <xs:sequence>
+            <xs:element name="ISNI" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="DPID" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="PADPIDA[a-zA-Z0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="IpiNameNumber" minOccurs="0">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[0-9]{11}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="IPN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CisacSocietyId" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DisplayArtistRole">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:DisplayArtistRole">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="DisplayCredits">
+
+        <xs:sequence>
+            <xs:element name="DisplayCreditText" type="xs:string">
+
+            </xs:element>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="DisplayCreditParty">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:IDREF">
+                            <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name="NameUsedInDisplayCredit" minOccurs="0" type="xs:string">
+
+                </xs:element>
+            </xs:sequence>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="EventDate">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_IsoDate">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsBefore" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsAfter" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:AllTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="LocationDescription" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="EventDateTime">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:dateTime">
+                <xs:attribute name="IsApproximate" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsBefore" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="IsAfter" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="TerritoryCode" type="avs:AllTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="LocationDescription" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Extent">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="UnitOfMeasure" type="avs:UnitOfExtent">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ExternallyLinkedResourceType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ExternallyLinkedResourceType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="File">
+
+        <xs:sequence>
+            <xs:element name="URI" type="xs:string">
+
+            </xs:element>
+            <xs:element name="HashSum" minOccurs="0" type="ern:DetailedHashSum">
+
+            </xs:element>
+            <xs:element name="FileSize" minOccurs="0" type="xs:decimal">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FingerprintAlgorithmType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:FingerprintAlgorithmType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="FirstPublicationDate">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_IsoDate">
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="FrameRate">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="UnitOfMeasure" type="avs:UnitOfFrameRate">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="FulfillmentDateWithTerritory">
+
+        <xs:sequence>
+            <xs:element name="FulfillmentDate" type="ern:ddex_IsoDate">
+
+            </xs:element>
+            <xs:element name="ResourceReleaseReference" minOccurs="0" maxOccurs="unbounded">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="R[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="GenreCategory">
+
+        <xs:sequence>
+            <xs:element name="Value" type="ern:GenreCategoryValue">
+
+            </xs:element>
+            <xs:element name="Description" minOccurs="0" maxOccurs="unbounded" type="ern:TextWithoutTerritory">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="GenreCategoryValue">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ClassifiedGenre">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="GenreWithTerritory">
+
+        <xs:sequence>
+            <xs:element name="GenreText" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SubGenre" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="GenreCategory" minOccurs="0" maxOccurs="unbounded" type="ern:GenreCategory">
+
+            </xs:element>
+            <xs:element name="SubGenreCategory" minOccurs="0" maxOccurs="unbounded" type="ern:SubGenreCategory">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="HashSumAlgorithmType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:HashSumAlgorithmType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ImageCodecType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ImageCodecType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ImageType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ImageType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="InstrumentType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:InstrumentType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="KeywordsWithTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Language">
+
+        <xs:simpleContent>
+            <xs:extension base="ern:ddex_LanguageAndScriptCodeWithRestriction">
+                <xs:attribute name="IsMainLanguage" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="MarketingComment">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="MessageAuditTrail">
+
+        <xs:sequence>
+            <xs:element name="MessageAuditTrailEvent" maxOccurs="unbounded" type="ern:MessageAuditTrailEvent">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageAuditTrailEvent">
+
+        <xs:sequence>
+            <xs:element name="MessagingPartyDescriptor" type="ern:MessagingPartyWithoutCode">
+
+            </xs:element>
+            <xs:element name="DateTime" type="xs:dateTime">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageHeader">
+
+        <xs:sequence>
+            <xs:element name="MessageThreadId" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="MessageId" type="xs:string">
+
+            </xs:element>
+            <xs:element name="MessageFileName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="MessageSender" type="ern:MessagingPartyWithoutCode">
+
+            </xs:element>
+            <xs:element name="SentOnBehalfOf" minOccurs="0" type="ern:MessagingPartyWithoutCode">
+
+            </xs:element>
+            <xs:element name="MessageRecipient" maxOccurs="unbounded" type="ern:MessagingPartyWithoutCode">
+
+            </xs:element>
+            <xs:element name="MessageCreatedDateTime" type="xs:dateTime">
+
+            </xs:element>
+            <xs:element name="MessageAuditTrail" minOccurs="0" type="ern:MessageAuditTrail">
+
+            </xs:element>
+            <xs:element name="MessageControlType" minOccurs="0" type="avs:MessageControlType">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessagingPartyWithoutCode">
+
+        <xs:sequence>
+            <xs:element name="PartyId">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="PADPIDA[a-zA-Z0-9]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="PartyName" minOccurs="0" type="ern:PartyNameWithoutCode">
+
+            </xs:element>
+            <xs:element name="TradingName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MusicalWorkId">
+
+        <xs:sequence>
+            <xs:element name="ISWC" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="OpusNumber" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ComposerCatalogNumber" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Name">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="OperatingSystemType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:OperatingSystemType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PLine">
+
+        <xs:sequence>
+            <xs:element name="Year" minOccurs="0" type="xs:gYear">
+
+            </xs:element>
+            <xs:element name="PLineCompany" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="PLineText" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="PLineType" type="avs:PLineType">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="PLineWithDefault">
+
+        <xs:sequence>
+            <xs:element name="Year" minOccurs="0" type="xs:gYear">
+
+            </xs:element>
+            <xs:element name="PLineCompany" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="PLineText" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+        </xs:attribute>
+        <xs:attribute name="IsDefault" type="xs:boolean">
+
+        </xs:attribute>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ParentalWarningTypeWithTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ParentalWarningType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PartyName">
+
+        <xs:sequence>
+            <xs:element name="FullName" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="FullNameAsciiTranscribed" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="FullNameIndexed" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="NamesBeforeKeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="KeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="NamesAfterKeyName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+            <xs:element name="AbbreviatedName" minOccurs="0" type="ern:Name">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="PartyNameWithoutCode">
+
+        <xs:sequence>
+            <xs:element name="FullName" type="xs:string">
+
+            </xs:element>
+            <xs:element name="FullNameAsciiTranscribed" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="FullNameIndexed" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="NamesBeforeKeyName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="KeyName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="NamesAfterKeyName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="AbbreviatedName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PartyRelationshipType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:PartyRelationshipType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="MayBeShared" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Percentage">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="HasMaxValueOfOne" type="xs:boolean">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Period">
+
+        <xs:choice>
+            <xs:sequence>
+                <xs:element name="StartDate" minOccurs="0" type="ern:EventDate">
+
+                </xs:element>
+                <xs:element name="EndDate" minOccurs="0" type="ern:EventDate">
+
+                </xs:element>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element name="StartDateTime" minOccurs="0" type="ern:EventDateTime">
+
+                </xs:element>
+                <xs:element name="EndDateTime" minOccurs="0" type="ern:EventDateTime">
+
+                </xs:element>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="Prefix">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Price">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="CurrencyCode" type="avs:CurrencyCode" use="required">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PriceType">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Namespace" type="xs:string" use="required">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PromotionalCode">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ProprietaryId">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Namespace" type="xs:string" use="required">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Purpose">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:Purpose">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RatingAgency">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:RatingAgency">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RatingReason">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:RatingReason">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="Reason">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RelatedParty">
+
+        <xs:sequence>
+            <xs:element name="PartyRelatedPartyReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="PartyRelationshipType" type="ern:PartyRelationshipType">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReleaseRelationshipType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ReleaseRelationshipType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ReleaseTypeForReleaseNotification">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ReleaseType_ERN4">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ResourceContainedResourceReference">
+
+        <xs:sequence>
+            <xs:element name="ResourceContainedResourceReference">
+
+                <xs:simpleType>
+                    <xs:restriction base="xs:IDREF">
+                        <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="DurationUsed" minOccurs="0" type="xs:duration">
+
+            </xs:element>
+            <xs:element name="StartPoint" minOccurs="0" type="xs:decimal">
+
+            </xs:element>
+            <xs:element name="Purpose" minOccurs="0" type="ern:Purpose">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceContainedResourceReferenceList">
+
+        <xs:sequence>
+            <xs:element name="ResourceContainedResourceReference" maxOccurs="unbounded" type="ern:ResourceContainedResourceReference">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ResourceContributorRole">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:ResourceContributorRole">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ResourceId">
+
+        <xs:sequence>
+            <xs:element name="ISRC" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISMN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISAN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="VISAN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISBN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISSN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SICI" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CatalogNumber" minOccurs="0" type="ern:CatalogNumber">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ResourceProprietaryId">
+
+        <xs:sequence>
+            <xs:element name="ProprietaryId" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="RightsType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:RightsCoverage">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SamplingRate">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="UnitOfMeasure" type="avs:UnitOfFrequency">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SessionType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SessionType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SheetMusicCodecType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SheetMusicCodecType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SheetMusicId">
+
+        <xs:sequence>
+            <xs:element name="ISMN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="SheetMusicType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SheetMusicType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SoftwareType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SoftwareType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SoundRecordingId">
+
+        <xs:sequence>
+            <xs:element name="ISRC" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CatalogNumber" minOccurs="0" type="ern:CatalogNumber">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="SoundRecordingType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SoundRecordingType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SubGenreCategory">
+
+        <xs:sequence>
+            <xs:element name="Value" maxOccurs="unbounded" type="ern:SubGenreCategoryValue">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SubGenreCategoryValue">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:SubGenre">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TextCodecType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:TextCodecType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TextId">
+
+        <xs:sequence>
+            <xs:element name="ISBN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISSN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="SICI" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="TextType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:TextType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TextWithFormat">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="Format" type="avs:TextCodecType">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TextWithoutTerritory">
+
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="LanguageAndScriptCode">
+
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="ApplicableTerritoryCode" type="avs:CurrentTerritoryCode">
+
+                </xs:attribute>
+                <xs:attribute name="IsDefault" type="xs:boolean">
+
+                </xs:attribute>
+                <xs:attribute name="Format" type="avs:TextCodecType">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TitleDisplayInformation">
+
+        <xs:sequence>
+            <xs:element name="IsDisplayedInTitle" type="xs:boolean">
+
+            </xs:element>
+            <xs:element name="Prefix" minOccurs="0" maxOccurs="unbounded" type="ern:Prefix">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="LanguageAndScriptCode" type="xs:string">
+
+        </xs:attribute>
+        <xs:attribute name="SequenceNumber" type="xs:integer">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ValidityPeriod">
+
+        <xs:sequence>
+            <xs:element name="StartDate" minOccurs="0" type="ern:EventDate">
+
+            </xs:element>
+            <xs:element name="EndDate" minOccurs="0" type="ern:EventDate">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Venue">
+
+        <xs:sequence>
+            <xs:element name="VenueName" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="VenueAddress" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="TerritoryCode" minOccurs="0" type="ern:AllTerritoryCode">
+
+            </xs:element>
+            <xs:element name="LocationCode" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="VenueRoom" minOccurs="0" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="VersionType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VersionType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="VideoCodecType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VideoCodecType">
+                <xs:attribute name="Version" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="VideoDefinitionType">
+
+        <xs:simpleContent>
+            <xs:extension base="avs:VideoDefinitionType">
+                <xs:attribute name="Namespace" type="xs:string">
+
+                </xs:attribute>
+                <xs:attribute name="UserDefinedValue" type="xs:string">
+
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="VideoId">
+
+        <xs:sequence>
+            <xs:element name="ISRC" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="ISAN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="VISAN" minOccurs="0" type="xs:string">
+
+            </xs:element>
+            <xs:element name="CatalogNumber" minOccurs="0" type="ern:CatalogNumber">
+
+            </xs:element>
+            <xs:element name="ProprietaryId" minOccurs="0" maxOccurs="unbounded" type="ern:ProprietaryId">
+
+            </xs:element>
+            <xs:element name="EIDR" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="IsReplaced" type="xs:boolean">
+
+        </xs:attribute>
+    </xs:complexType>
+    <xs:simpleType name="ddex_IsoDate">
+
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{4}(-[0-9]{2}){0,1}(-[0-9]{2}){0,1}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ddex_LanguageAndScriptCodeWithRestriction">
+
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ddex_LocalPartyAnchorReference">
+
+        <xs:restriction base="xs:IDREF">
+            <xs:pattern value="P[\d\-_a-zA-Z]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ddex_LocalResourceAnchorReference">
+
+        <xs:restriction base="xs:IDREF">
+            <xs:pattern value="A[\d\-_a-zA-Z]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

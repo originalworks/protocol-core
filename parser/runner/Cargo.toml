@@ -1,0 +1,10 @@
+[package]
+name = "runner"
+version = "0.1.0"
+authors = ["Daniel Cybulka <daniel.cybulka@rumblefish.com>"]
+edition = "2021"
+
+[dependencies]
+ddex_schema = { path = "../ddex_schema" }
+yaserde = {path = "../yaserde"}
+simple_logger = "5.0.0"

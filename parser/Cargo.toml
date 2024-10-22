@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "yaserde",
+  "yaserde_derive",
+  "ddex_schema",
+  "runner",
+]

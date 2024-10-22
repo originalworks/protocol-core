@@ -1,0 +1,12 @@
+[package]
+name = "ddex_schema"
+version = "0.1.0"
+authors = ["Daniel Cybulka <daniel.cybulka@rumblefish.com>"]
+edition = "2021"
+
+[dependencies]
+yaserde = { path = "../yaserde" }
+yaserde_derive = { path = "../yaserde_derive" }
+xml-rs = "0.8.20"
+regex = "1.10.6"
+serde = {version = "1.0.0", features = ["derive"]}
