@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ern:NewReleaseMessage xmlns:ern="http://ddex.net/xml/ern/43"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ddex.net/xml/ern/43 http://ddex.net/xml/ern/43/release-notification.xsd" ReleaseProfileVersionId="Audio" LanguageAndScriptCode="en" AvsVersionId="3">
+    <MessageHeader>
+        <MessageThreadId>Test1</MessageThreadId>
+        <MessageId>Test1.1</MessageId>
+        <MessageSender>
+            <PartyId>PADPIDA2013042401U</PartyId>
+            <PartyName>
+                <FullName>UniversalMusicGroup</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2009101501Y</PartyId>
+            <PartyName>
+                <FullName>Sony DADC</FullName>
+            </PartyName>
+        </MessageRecipient>
+        <MessageCreatedDateTime>2014-09-24T14:57:25+01:00</MessageCreatedDateTime>
+    </MessageHeader>
+    <PartyList>
+        <Party>
+            <PartyReference>PSaekoShu</PartyReference>
+            <PartyName>
+                <FullName>Saeko Shu</FullName>
+                <FullNameIndexed>Shu, Saeko</FullNameIndexed>
+            </PartyName>
+            <PartyName LanguageAndScriptCode="ja-Jpan">
+                <FullName>しゅうさえこ</FullName>
+            </PartyName>
+        </Party>
+        <Party>
+            <PartyReference>PEMI</PartyReference>
+            <PartyName>
+                <FullName>EMI MUSIC JAPAN INC.</FullName>
+            </PartyName>
+        </Party>
+    </PartyList>
+    <ResourceList>
+        <SoundRecording>
+            <ResourceReference>A1</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <ResourceId>
+                    <ISRC>JPTO09404900</ISRC>
+                </ResourceId>
+                <PLine>
+                    <Year>1994</Year>
+                    <PLineText>(P) 1994 EMI Music Japan Inc.</PLineText>
+                </PLine>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>0094631432057_01_001.wav</URI>
+                        </File>
+                    </DeliveryFile>
+                    <ClipDetails>
+                        <TechnicalResourceDetailsReference>T1C</TechnicalResourceDetailsReference>
+                        <ClipType>Preview</ClipType>
+                        <Timing>
+                            <StartPoint>45</StartPoint>
+                        </Timing>
+                        <ExpressionType>Instructive</ExpressionType>
+                    </ClipDetails>
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <DisplayTitleText>Yume no Lullaby</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Yume no Lullaby</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>夢のララバイ</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Jpan">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <Contributor SequenceNumber="1">
+                <ContributorPartyReference>PSaekoShu</ContributorPartyReference>
+                <Role>Artist</Role>
+            </Contributor>
+            <Duration>PT2M28S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+        <SoundRecording>
+            <ResourceReference>A2</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <ResourceId>
+                    <ISRC>JPTO09404910</ISRC>
+                </ResourceId>
+                <PLine>
+                    <Year>1994</Year>
+                    <PLineText>(P) 1994 EMI Music Japan Inc.</PLineText>
+                </PLine>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>0094631432057_01_002.wav</URI>
+                        </File>
+                    </DeliveryFile>
+                    <ClipDetails>
+                        <TechnicalResourceDetailsReference>T2C</TechnicalResourceDetailsReference>
+                        <ClipType>Preview</ClipType>
+                        <Timing>
+                            <StartPoint>45</StartPoint>
+                        </Timing>
+                        <ExpressionType>Instructive</ExpressionType>
+                    </ClipDetails>
+
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <DisplayTitleText>Yume no Hajimari - Kaze no Okuri Mono (Introduction)</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Yume no Hajimari - Kaze no Okuri Mono (Introduction)</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>夢のはじまり－風のおくりもの（イントロダクション）</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Jpan">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <Duration>PT1M42S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+        <SoundRecording>
+            <ResourceReference>A3</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <ResourceId>
+                    <ISRC>JPTO09404920</ISRC>
+                </ResourceId>
+                <PLine>
+                    <Year>1994</Year>
+                    <PLineText>(P) 1994 EMI Music Japan Inc.</PLineText>
+                </PLine>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T3</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>0094631432057_01_003.wav</URI>
+                        </File>
+                    </DeliveryFile>
+                    <ClipDetails>
+                        <TechnicalResourceDetailsReference>T3C</TechnicalResourceDetailsReference>
+                        <ClipType>Preview</ClipType>
+                        <Timing>
+                            <StartPoint>0</StartPoint>
+                        </Timing>
+                        <ExpressionType>Instructive</ExpressionType>
+                    </ClipDetails>
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <DisplayTitleText>-Haru- Soushunfu</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>-Haru- Soushunfu</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>-春-　早春賦</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Jpan">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <Contributor SequenceNumber="1">
+                <ContributorPartyReference>PSaekoShu</ContributorPartyReference>
+                <Role>Artist</Role>
+            </Contributor>
+            <Duration>PT1M12S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+        <SoundRecording>
+            <ResourceReference>A4</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <ResourceId>
+                    <ISRC>JPTO09404930</ISRC>
+                </ResourceId>
+                <PLine>
+                    <Year>1994</Year>
+                    <PLineText>(P) 1994 EMI Music Japan Inc.</PLineText>
+                </PLine>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T4</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>0094631432057_01_004.wav</URI>
+                        </File>
+                    </DeliveryFile>
+                    <ClipDetails>
+                        <TechnicalResourceDetailsReference>T4C</TechnicalResourceDetailsReference>
+                        <ClipType>Preview</ClipType>
+                        <Timing>
+                            <StartPoint>45</StartPoint>
+                        </Timing>
+                        <ExpressionType>Instructive</ExpressionType>
+                    </ClipDetails>
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <DisplayTitleText>Dokoka de Haru ga</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Dokoka de Haru ga</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>～どこかで春が</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Jpan">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <Contributor SequenceNumber="1">
+                <ContributorPartyReference>PSaekoShu</ContributorPartyReference>
+                <Role>Artist</Role>
+            </Contributor>
+            <Duration>PT1M22S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+        <SoundRecording>
+            <ResourceReference>A5</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <ResourceId>
+                    <ISRC>JPTO09404940</ISRC>
+                </ResourceId>
+                <PLine>
+                    <Year>1994</Year>
+                    <PLineText>(P) 1994 EMI Music Japan Inc.</PLineText>
+                </PLine>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T5</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>0094631432057_01_005.wav</URI>
+                        </File>
+                    </DeliveryFile>
+                    <ClipDetails>
+                        <TechnicalResourceDetailsReference>T5C</TechnicalResourceDetailsReference>
+                        <ClipType>Preview</ClipType>
+                        <Timing>
+                            <StartPoint>45</StartPoint>
+                        </Timing>
+                        <ExpressionType>Instructive</ExpressionType>
+                    </ClipDetails>
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <DisplayTitleText>Haru ga Kita</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Haru ga Kita</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>～春が来た</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Jpan">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <Contributor SequenceNumber="1">
+                <ContributorPartyReference>PSaekoShu</ContributorPartyReference>
+                <Role>Artist</Role>
+            </Contributor>
+            <Duration>PT1M32S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+        <Image>
+            <ResourceReference>A22</ResourceReference>
+            <Type>FrontCoverImage</Type>
+            <ResourceId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">PACKSHOT:0094631432057</ProprietaryId>
+            </ResourceId>
+            <ParentalWarningType>NotExplicit</ParentalWarningType>
+            <TechnicalDetails>
+                <TechnicalResourceDetailsReference>T22</TechnicalResourceDetailsReference>
+                <File>
+                    <URI>0094631432057.jpg</URI>
+                </File>
+            </TechnicalDetails>
+        </Image>
+    </ResourceList>
+    <ReleaseList>
+        <Release>
+            <ReleaseReference>R0</ReleaseReference>
+            <ReleaseType>Album</ReleaseType>
+            <ReleaseId>
+                <ICPN>00094631432057</ICPN>
+            </ReleaseId>
+            <DisplayTitleText>Yume no Hajmari</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Yume no Hajmari</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">
+                <TitleText>夢のはじまり</TitleText>
+            </DisplayTitle>
+            <DisplayTitle LanguageAndScriptCode="ja-Kana" ApplicableTerritoryCode="Worldwide">
+                <TitleText>ﾕﾒﾉﾊｼﾞﾏﾘ</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">しゅうさえこ</DisplayArtistName>
+            <DisplayArtistName LanguageAndScriptCode="ja-Kana" ApplicableTerritoryCode="Worldwide">ｼｭｳｻｴｺ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PSaekoShu</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Duration>PT36M30S</Duration>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <RelatedRelease>
+                <ReleaseRelationshipType>IsDigitalEquivalentToPhysical</ReleaseRelationshipType>
+                <ReleaseId>
+                    <ICPN>04988006110809</ICPN>
+                </ReleaseId>
+            </RelatedRelease>
+            <IsMultiArtistCompilation>false</IsMultiArtistCompilation>
+            <ResourceGroup>
+                <AdditionalTitle>
+                    <TitleText>Component 1</TitleText>
+                </AdditionalTitle>
+                <ResourceGroup ResourceGroupType="Component">
+                    <AdditionalTitle>
+                        <TitleText>Component 1</TitleText>
+                    </AdditionalTitle>
+                    <ResourceGroup ResourceGroupType="Component">
+                        <AdditionalTitle>
+                            <TitleText>Component 1</TitleText>
+                        </AdditionalTitle>
+                    </ResourceGroup>
+                </ResourceGroup>
+                <SequenceNumber>1</SequenceNumber>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>1</SequenceNumber>
+                    <ReleaseResourceReference>A1</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>2</SequenceNumber>
+                    <ReleaseResourceReference>A2</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>3</SequenceNumber>
+                    <ReleaseResourceReference>A3</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>4</SequenceNumber>
+                    <ReleaseResourceReference>A4</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>5</SequenceNumber>
+                    <ReleaseResourceReference>A5</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>6</SequenceNumber>
+                    <ReleaseResourceReference>A6</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>7</SequenceNumber>
+                    <ReleaseResourceReference>A7</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>8</SequenceNumber>
+                    <ReleaseResourceReference>A8</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>9</SequenceNumber>
+                    <ReleaseResourceReference>A9</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>10</SequenceNumber>
+                    <ReleaseResourceReference>A10</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>11</SequenceNumber>
+                    <ReleaseResourceReference>A11</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>12</SequenceNumber>
+                    <ReleaseResourceReference>A12</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>13</SequenceNumber>
+                    <ReleaseResourceReference>A13</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>14</SequenceNumber>
+                    <ReleaseResourceReference>A14</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>15</SequenceNumber>
+                    <ReleaseResourceReference>A15</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>16</SequenceNumber>
+                    <ReleaseResourceReference>A16</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>17</SequenceNumber>
+                    <ReleaseResourceReference>A17</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>18</SequenceNumber>
+                    <ReleaseResourceReference>A18</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>19</SequenceNumber>
+                    <ReleaseResourceReference>A19</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>20</SequenceNumber>
+                    <ReleaseResourceReference>A20</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                    <SequenceNumber>21</SequenceNumber>
+                    <ReleaseResourceReference>A21</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <LinkedReleaseResourceReference>A22</LinkedReleaseResourceReference>
+            </ResourceGroup>
+        </Release>
+        <TrackRelease>
+            <ReleaseReference>R1</ReleaseReference>
+            <ReleaseId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404900_R1</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A1</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+        </TrackRelease>
+        <TrackRelease>
+            <ReleaseReference>R2</ReleaseReference>
+            <ReleaseId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404910_R2</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A2</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+        </TrackRelease>
+        <TrackRelease>
+            <ReleaseReference>R3</ReleaseReference>
+            <ReleaseId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404920_R3</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A3</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+        </TrackRelease>
+        <TrackRelease>
+            <ReleaseReference>R4</ReleaseReference>
+            <ReleaseId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404930_R4</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A4</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+        </TrackRelease>
+        <TrackRelease>
+            <ReleaseReference>R5</ReleaseReference>
+            <ReleaseId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404940_R5</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A5</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PEMI</ReleaseLabelReference>
+            <Genre ApplicableTerritoryCode="Worldwide">
+                <GenreText>J-Pop</GenreText>
+            </Genre>
+        </TrackRelease>
+    </ReleaseList>
+</ern:NewReleaseMessage>

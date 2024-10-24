@@ -1,4 +1,3 @@
-mod deserializer;
 mod schema;
 mod validation;
 
@@ -10,7 +9,6 @@ use regex::Regex;
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum DdexMessage {
     NewRelease(NewReleaseMessage),
-    PurgeRelease(PurgeReleaseMessage),
 }
 
 pub fn ddex_parse_str(str: String) -> Result<DdexMessage, String> {
@@ -21,12 +19,6 @@ pub fn ddex_parse_str(str: String) -> Result<DdexMessage, String> {
         "NewReleaseMessage" => {
             let parsed: Result<NewReleaseMessage, String> = yaserde::de::from_str(&str);
             return Ok(DdexMessage::NewRelease(
-                parsed.or_else(|err| Err(format!("Parse error: {}", err)))?,
-            ));
-        }
-        "PurseReleaseMessage" => {
-            let parsed: Result<PurgeReleaseMessage, String> = yaserde::de::from_str(&str);
-            return Ok(DdexMessage::PurgeRelease(
                 parsed.or_else(|err| Err(format!("Parse error: {}", err)))?,
             ));
         }
@@ -51,12 +43,6 @@ pub fn ddex_parse_file(path: &str) -> Result<DdexMessage, String> {
             "NewReleaseMessage" => {
                 let parsed: Result<NewReleaseMessage, String> = yaserde::de::from_reader(reader);
                 return Ok(DdexMessage::NewRelease(
-                    parsed.or_else(|err| Err(format!("Parse error: {}", err)))?,
-                ));
-            }
-            "PurseReleaseMessage" => {
-                let parsed: Result<PurgeReleaseMessage, String> = yaserde::de::from_reader(reader);
-                return Ok(DdexMessage::PurgeRelease(
                     parsed.or_else(|err| Err(format!("Parse error: {}", err)))?,
                 ));
             }

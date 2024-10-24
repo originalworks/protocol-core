@@ -1,8 +1,8 @@
 use ddex_schema::ddex_parse_file;
 use simple_logger::SimpleLogger;
 fn main() {
-    // SimpleLogger::new().init().unwrap();
-    let res = ddex_parse_file("resources/example_messages/1Audio.xml").unwrap();
+    SimpleLogger::new().init().unwrap();
+    let res = ddex_parse_file("resources/example_messages/0Audio_lite.xml").unwrap();
     // let res = ddex_parse_file("resources/example_messages/2Video.xml").unwrap();
     // let res = ddex_parse_file("resources/example_messages/3MixedMedia.xml").unwrap();
     // let res =
