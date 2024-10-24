@@ -19,5 +19,6 @@ fn main() {
     // Produce a receipt by proving the specified ELF binary.
     let receipt = prover.prove(env, DDEX_PARSER_GUEST_ELF).unwrap().receipt;
     // let outputsFromReceipt: Outputs = receipt.journal.decode().unwrap(); // This reads data from receipt
-    // let outputsFromStdout: Outputs = from_slice(&writer).unwrap(); // This reads private data
+    let outputsFromStdout: Outputs = from_slice(&writer).unwrap();
+    dbg!(outputsFromStdout); // This reads private data
 }

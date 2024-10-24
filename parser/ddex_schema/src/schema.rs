@@ -79,34 +79,34 @@ pub struct AdministratingRecordCompanyWithReference {
 pub struct AudioDeliveryFile {
     #[yaserde(rename = "Type", prefix = "ern", validation = "TypeValidator")]
     pub kind: String,
-    #[yaserde(rename = "ContainerFormat", prefix = "ern")]
-    pub container_format: Option<ContainerFormat>,
-    #[yaserde(rename = "AudioCodecType", prefix = "ern")]
-    pub audio_codec_type: Option<AudioCodecType>,
-    #[yaserde(rename = "BitRate", prefix = "ern")]
-    pub bit_rate: Option<BitRate>,
-    #[yaserde(rename = "OriginalBitRate", prefix = "ern")]
-    pub original_bit_rate: Option<BitRate>,
-    #[yaserde(rename = "NumberOfChannels", prefix = "ern")]
-    pub number_of_channels: Option<String>,
-    #[yaserde(rename = "NumberOfAudioObjects", prefix = "ern")]
-    pub number_of_audio_objects: Option<i32>,
-    #[yaserde(rename = "SamplingRate", prefix = "ern")]
-    pub sampling_rate: Option<SamplingRate>,
-    #[yaserde(rename = "OriginalSamplingRate", prefix = "ern")]
-    pub original_sampling_rate: Option<SamplingRate>,
-    #[yaserde(rename = "BitsPerSample", prefix = "ern")]
-    pub bits_per_sample: Option<i32>,
-    #[yaserde(rename = "Duration", prefix = "ern")]
-    pub duration: Option<String>,
-    #[yaserde(rename = "BitDepth", prefix = "ern")]
-    pub bit_depth: Option<i32>,
+    // #[yaserde(rename = "ContainerFormat", prefix = "ern")]
+    // pub container_format: Option<ContainerFormat>,
+    // #[yaserde(rename = "AudioCodecType", prefix = "ern")]
+    // pub audio_codec_type: Option<AudioCodecType>,
+    // #[yaserde(rename = "BitRate", prefix = "ern")]
+    // pub bit_rate: Option<BitRate>,
+    // #[yaserde(rename = "OriginalBitRate", prefix = "ern")]
+    // pub original_bit_rate: Option<BitRate>,
+    // #[yaserde(rename = "NumberOfChannels", prefix = "ern")]
+    // pub number_of_channels: Option<String>,
+    // #[yaserde(rename = "NumberOfAudioObjects", prefix = "ern")]
+    // pub number_of_audio_objects: Option<i32>,
+    // #[yaserde(rename = "SamplingRate", prefix = "ern")]
+    // pub sampling_rate: Option<SamplingRate>,
+    // #[yaserde(rename = "OriginalSamplingRate", prefix = "ern")]
+    // pub original_sampling_rate: Option<SamplingRate>,
+    // #[yaserde(rename = "BitsPerSample", prefix = "ern")]
+    // pub bits_per_sample: Option<i32>,
+    // #[yaserde(rename = "Duration", prefix = "ern")]
+    // pub duration: Option<String>,
+    // #[yaserde(rename = "BitDepth", prefix = "ern")]
+    // pub bit_depth: Option<i32>,
     #[yaserde(rename = "File", prefix = "ern")]
     pub file: Option<File>,
     #[yaserde(rename = "Fingerprint", prefix = "ern")]
     pub fingerprints: Vec<Fingerprint>,
-    #[yaserde(rename = "IsProvidedInDelivery", prefix = "ern")]
-    pub is_provided_in_delivery: Option<bool>,
+    // #[yaserde(rename = "IsProvidedInDelivery", prefix = "ern")]
+    // pub is_provided_in_delivery: Option<bool>,
 }
 #[derive(
     Clone,
@@ -273,8 +273,8 @@ pub struct Character {
     pub character_party_reference: String,
     #[yaserde(rename = "Performer", prefix = "ern")]
     pub performer: Option<Contributor>,
-    #[yaserde(attribute, rename = "SequenceNumber")]
-    pub sequence_number: Option<i32>,
+    // #[yaserde(attribute, rename = "SequenceNumber")]
+    // pub sequence_number: Option<i32>,
 }
 #[derive(
     Clone,
@@ -430,16 +430,16 @@ pub struct Contributor {
     pub contributor_party_reference: String,
     #[yaserde(rename = "Role", prefix = "ern")]
     pub roles: Vec<ContributorRole>,
-    #[yaserde(rename = "InstrumentType", prefix = "ern")]
-    pub instrument_types: Vec<InstrumentType>,
-    #[yaserde(rename = "HasMadeFeaturedContribution", prefix = "ern")]
-    pub has_made_featured_contribution: Option<bool>,
-    #[yaserde(rename = "HasMadeContractedContribution", prefix = "ern")]
-    pub has_made_contracted_contribution: Option<bool>,
-    #[yaserde(rename = "IsCredited", prefix = "ern")]
-    pub is_credited: Option<IsCredited>,
-    #[yaserde(rename = "DisplayCredits", prefix = "ern")]
-    pub display_creditss: Vec<DisplayCredits>,
+    // #[yaserde(rename = "InstrumentType", prefix = "ern")]
+    // pub instrument_types: Vec<InstrumentType>,
+    // #[yaserde(rename = "HasMadeFeaturedContribution", prefix = "ern")]
+    // pub has_made_featured_contribution: Option<bool>,
+    // #[yaserde(rename = "HasMadeContractedContribution", prefix = "ern")]
+    // pub has_made_contracted_contribution: Option<bool>,
+    // #[yaserde(rename = "IsCredited", prefix = "ern")]
+    // pub is_credited: Option<IsCredited>,
+    // #[yaserde(rename = "DisplayCredits", prefix = "ern")]
+    // pub display_creditss: Vec<DisplayCredits>,
     #[yaserde(attribute, rename = "SequenceNumber")]
     pub sequence_number: Option<i32>,
 }
@@ -774,8 +774,8 @@ pub struct Deity {
 pub struct DelegatedUsageRights {
     #[yaserde(rename = "UseType", prefix = "ern")]
     pub use_types: Vec<UseType>,
-    #[yaserde(rename = "PeriodOfRightsDelegation", prefix = "ern")]
-    pub period_of_rights_delegation: Option<Period>,
+    // #[yaserde(rename = "PeriodOfRightsDelegation", prefix = "ern")]
+    // pub period_of_rights_delegation: Option<Period>,
     #[yaserde(rename = "TerritoryOfRightsDelegation", prefix = "ern")]
     pub territory_of_rights_delegations: Vec<AllTerritoryCode>,
 }
@@ -876,8 +876,8 @@ pub struct DisplayArtist {
     pub display_artist_role: DisplayArtistRole,
     #[yaserde(rename = "ArtisticRole", prefix = "ern")]
     pub artistic_roles: Vec<ContributorRole>,
-    #[yaserde(rename = "TitleDisplayInformation", prefix = "ern")]
-    pub title_display_informations: Vec<TitleDisplayInformation>,
+    // #[yaserde(rename = "TitleDisplayInformation", prefix = "ern")]
+    // pub title_display_informations: Vec<TitleDisplayInformation>,
     #[yaserde(attribute, rename = "SequenceNumber")]
     pub sequence_number: Option<i32>,
 }
@@ -897,8 +897,8 @@ pub struct DisplayArtistNameWithDefault {
     pub content: String,
     #[yaserde(attribute, rename = "LanguageAndScriptCode")]
     pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "IsInOriginalLanguage")]
-    pub is_in_original_language: Option<bool>,
+    // #[yaserde(attribute, rename = "IsInOriginalLanguage")]
+    // pub is_in_original_language: Option<bool>,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
@@ -922,16 +922,16 @@ pub struct DisplayArtistNameWithDefault {
 pub struct DisplaySubTitle {
     #[yaserde(text)]
     pub content: String,
-    #[yaserde(attribute, rename = "SequenceNumber")]
-    pub sequence_number: Option<i32>,
-    #[yaserde(attribute, rename = "IsDisplayedInTitle")]
-    pub is_displayed_in_title: Option<bool>,
-    #[yaserde(
-        attribute,
-        rename = "SubTitleType",
-        validation = "AvsSubTitleTypeValidator"
-    )]
-    pub sub_title_type: Option<String>,
+    // #[yaserde(attribute, rename = "SequenceNumber")]
+    // pub sequence_number: Option<i32>,
+    // #[yaserde(attribute, rename = "IsDisplayedInTitle")]
+    // pub is_displayed_in_title: Option<bool>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "SubTitleType",
+    //     validation = "AvsSubTitleTypeValidator"
+    // )]
+    // pub sub_title_type: Option<String>,
 }
 #[derive(
     Clone,
@@ -949,12 +949,12 @@ pub struct DisplayTitle {
     pub title_text: String,
     #[yaserde(rename = "SubTitle", prefix = "ern")]
     pub sub_titles: Vec<DisplaySubTitle>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
@@ -963,8 +963,8 @@ pub struct DisplayTitle {
     pub applicable_territory_code: Option<String>,
     #[yaserde(attribute, rename = "IsDefault")]
     pub is_default: Option<bool>,
-    #[yaserde(attribute, rename = "IsInOriginalLanguage")]
-    pub is_in_original_language: Option<bool>,
+    // #[yaserde(attribute, rename = "IsInOriginalLanguage")]
+    // pub is_in_original_language: Option<bool>,
 }
 #[derive(
     Clone,
@@ -980,22 +980,22 @@ pub struct DisplayTitle {
 pub struct DisplayTitleText {
     #[yaserde(text)]
     pub content: String,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
-    #[yaserde(attribute, rename = "IsInOriginalLanguage")]
-    pub is_in_original_language: Option<bool>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "IsInOriginalLanguage")]
+    // pub is_in_original_language: Option<bool>,
 }
 #[derive(
     Clone,
@@ -1189,20 +1189,20 @@ pub struct EventDateWithoutFlags {
     pub content: String,
     #[yaserde(attribute, rename = "IsApproximate")]
     pub is_approximate: Option<bool>,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsAllTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "LocationDescription")]
-    pub location_description: Option<String>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsAllTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "LocationDescription")]
+    // pub location_description: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
 }
 
 #[derive(
@@ -1279,16 +1279,16 @@ pub struct Fingerprint {
     pub version: Option<String>,
     #[yaserde(rename = "Parameter", prefix = "ern")]
     pub parameter: Option<String>,
-    #[yaserde(rename = "File", prefix = "ern")]
-    pub file: Option<File>,
-    #[yaserde(
-        rename = "DataType",
-        prefix = "ern",
-        validation = "AvsBinaryDataTypeValidator"
-    )]
-    pub data_type: Option<String>,
-    #[yaserde(rename = "FingerprintValue", prefix = "ern")]
-    pub fingerprint_value: Option<String>,
+    // #[yaserde(rename = "File", prefix = "ern")]
+    // pub file: Option<File>,
+    // #[yaserde(
+    //     rename = "DataType",
+    //     prefix = "ern",
+    //     validation = "AvsBinaryDataTypeValidator"
+    // )]
+    // pub data_type: Option<String>,
+    // #[yaserde(rename = "FingerprintValue", prefix = "ern")]
+    // pub fingerprint_value: Option<String>,
 }
 
 #[derive(
@@ -1332,52 +1332,52 @@ pub struct Image {
     pub kind: ImageType,
     #[yaserde(rename = "ResourceId", prefix = "ern")]
     pub resource_ids: Vec<ResourceProprietaryId>,
-    #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
-    pub display_title_texts: Vec<DisplayTitleText>,
-    #[yaserde(rename = "DisplayTitle", prefix = "ern")]
-    pub display_titles: Vec<DisplayTitle>,
-    #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
-    pub additional_titles: Vec<AdditionalTitle>,
-    #[yaserde(rename = "VersionType", prefix = "ern")]
-    pub version_types: Vec<VersionType>,
-    #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
-    pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
-    #[yaserde(rename = "DisplayArtist", prefix = "ern")]
-    pub display_artists: Vec<DisplayArtist>,
-    #[yaserde(rename = "Contributor", prefix = "ern")]
-    pub contributors: Vec<Contributor>,
-    #[yaserde(rename = "ResourceRightsController", prefix = "ern")]
-    pub resource_rights_controllers: Vec<ResourceRightsController>,
-    #[yaserde(rename = "WorkRightsController", prefix = "ern")]
-    pub work_rights_controllers: Vec<WorkRightsController>,
-    #[yaserde(rename = "CLine", prefix = "ern")]
-    pub c_lines: Vec<CLineWithDefault>,
-    #[yaserde(rename = "CourtesyLine", prefix = "ern")]
-    pub courtesy_lines: Vec<CourtesyLineWithDefault>,
-    #[yaserde(rename = "CreationDate", prefix = "ern")]
-    pub creation_date: Option<EventDateWithoutFlags>,
-    #[yaserde(rename = "FirstPublicationDate", prefix = "ern")]
-    pub first_publication_dates: Vec<FulfillmentDateWithTerritory>,
+    // #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
+    // pub display_title_texts: Vec<DisplayTitleText>,
+    // #[yaserde(rename = "DisplayTitle", prefix = "ern")]
+    // pub display_titles: Vec<DisplayTitle>,
+    // #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
+    // pub additional_titles: Vec<AdditionalTitle>,
+    // #[yaserde(rename = "VersionType", prefix = "ern")]
+    // pub version_types: Vec<VersionType>,
+    // #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
+    // pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
+    // #[yaserde(rename = "DisplayArtist", prefix = "ern")]
+    // pub display_artists: Vec<DisplayArtist>,
+    // #[yaserde(rename = "Contributor", prefix = "ern")]
+    // pub contributors: Vec<Contributor>,
+    // #[yaserde(rename = "ResourceRightsController", prefix = "ern")]
+    // pub resource_rights_controllers: Vec<ResourceRightsController>,
+    // #[yaserde(rename = "WorkRightsController", prefix = "ern")]
+    // pub work_rights_controllers: Vec<WorkRightsController>,
+    // #[yaserde(rename = "CLine", prefix = "ern")]
+    // pub c_lines: Vec<CLineWithDefault>,
+    // #[yaserde(rename = "CourtesyLine", prefix = "ern")]
+    // pub courtesy_lines: Vec<CourtesyLineWithDefault>,
+    // #[yaserde(rename = "CreationDate", prefix = "ern")]
+    // pub creation_date: Option<EventDateWithoutFlags>,
+    // #[yaserde(rename = "FirstPublicationDate", prefix = "ern")]
+    // pub first_publication_dates: Vec<FulfillmentDateWithTerritory>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
-    #[yaserde(rename = "RelatedRelease", prefix = "ern")]
-    pub related_releases: Vec<RelatedRelease>,
-    #[yaserde(rename = "RelatedResource", prefix = "ern")]
-    pub related_resources: Vec<RelatedResource>,
-    #[yaserde(rename = "ContainsHiddenContent", prefix = "ern")]
-    pub contains_hidden_content: Option<bool>,
-    #[yaserde(rename = "Description", prefix = "ern")]
-    pub descriptions: Vec<DescriptionWithTerritory>,
+    // #[yaserde(rename = "RelatedRelease", prefix = "ern")]
+    // pub related_releases: Vec<RelatedRelease>,
+    // #[yaserde(rename = "RelatedResource", prefix = "ern")]
+    // pub related_resources: Vec<RelatedResource>,
+    // #[yaserde(rename = "ContainsHiddenContent", prefix = "ern")]
+    // pub contains_hidden_content: Option<bool>,
+    // #[yaserde(rename = "Description", prefix = "ern")]
+    // pub descriptions: Vec<DescriptionWithTerritory>,
     #[yaserde(rename = "TechnicalDetails", prefix = "ern")]
     pub technical_detailss: Vec<TechnicalImageDetails>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "IsSupplemental")]
-    pub is_supplemental: Option<bool>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsSupplemental")]
+    // pub is_supplemental: Option<bool>,
 }
 #[derive(
     Clone,
@@ -1472,10 +1472,10 @@ pub struct Party {
     pub party_reference: String,
     #[yaserde(rename = "Affiliation", prefix = "ern")]
     pub affiliations: Vec<Affiliation>,
-    #[yaserde(rename = "RelatedParty", prefix = "ern")]
-    pub related_partys: Vec<RelatedParty>,
-    #[yaserde(rename = "ArtistProfilePage", prefix = "ern")]
-    pub artist_profile_pages: Vec<String>,
+    // #[yaserde(rename = "RelatedParty", prefix = "ern")]
+    // pub related_partys: Vec<RelatedParty>,
+    // #[yaserde(rename = "ArtistProfilePage", prefix = "ern")]
+    // pub artist_profile_pages: Vec<String>,
     #[yaserde(rename = "PartyName", prefix = "ern")]
     pub parties_names: Vec<PartyNameWithTerritory>,
     #[yaserde(rename = "PartyId", prefix = "ern")]
@@ -1511,36 +1511,36 @@ pub struct PartyList {
 pub struct PartyNameWithTerritory {
     #[yaserde(rename = "FullName", prefix = "ern")]
     pub full_name: Name,
-    #[yaserde(rename = "FullNameAsciiTranscribed", prefix = "ern")]
-    pub full_name_ascii_transcribed: Option<String>,
+    // #[yaserde(rename = "FullNameAsciiTranscribed", prefix = "ern")]
+    // pub full_name_ascii_transcribed: Option<String>,
     #[yaserde(rename = "FullNameIndexed", prefix = "ern")]
     pub full_name_indexed: Option<Name>,
-    #[yaserde(rename = "NamesBeforeKeyName", prefix = "ern")]
-    pub names_before_key_name: Option<Name>,
-    #[yaserde(rename = "KeyName", prefix = "ern")]
-    pub key_name: Option<Name>,
-    #[yaserde(rename = "NamesAfterKeyName", prefix = "ern")]
-    pub names_after_key_name: Option<Name>,
-    #[yaserde(rename = "AbbreviatedName", prefix = "ern")]
-    pub abbreviated_name: Option<Name>,
-    #[yaserde(attribute, rename = "LanguageAndScriptCode")]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "IsNickname")]
-    pub is_nickname: Option<bool>,
-    #[yaserde(attribute, rename = "IsStageName")]
-    pub is_stage_name: Option<bool>,
-    #[yaserde(attribute, rename = "IsLegalName")]
-    pub is_legal_name: Option<bool>,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
-    #[yaserde(attribute, rename = "IsInOriginalLanguage")]
-    pub is_in_original_language: Option<bool>,
+    // #[yaserde(rename = "NamesBeforeKeyName", prefix = "ern")]
+    // pub names_before_key_name: Option<Name>,
+    // #[yaserde(rename = "KeyName", prefix = "ern")]
+    // pub key_name: Option<Name>,
+    // #[yaserde(rename = "NamesAfterKeyName", prefix = "ern")]
+    // pub names_after_key_name: Option<Name>,
+    // #[yaserde(rename = "AbbreviatedName", prefix = "ern")]
+    // pub abbreviated_name: Option<Name>,
+    // #[yaserde(attribute, rename = "LanguageAndScriptCode")]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsNickname")]
+    // pub is_nickname: Option<bool>,
+    // #[yaserde(attribute, rename = "IsStageName")]
+    // pub is_stage_name: Option<bool>,
+    // #[yaserde(attribute, rename = "IsLegalName")]
+    // pub is_legal_name: Option<bool>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "IsInOriginalLanguage")]
+    // pub is_in_original_language: Option<bool>,
 }
 #[derive(
     Clone,
@@ -1682,10 +1682,10 @@ pub struct Raga {
 pub struct RecordingFormat {
     #[yaserde(text, validation = "AvsRecordingFormatValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
 }
 #[derive(
     Clone,
@@ -1772,80 +1772,80 @@ pub struct Release {
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
     pub display_titles: Vec<DisplayTitle>,
-    #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
-    pub additional_titles: Vec<AdditionalTitle>,
-    #[yaserde(rename = "VersionType", prefix = "ern")]
-    pub version_types: Vec<VersionType>,
+    // #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
+    // pub additional_titles: Vec<AdditionalTitle>,
+    // #[yaserde(rename = "VersionType", prefix = "ern")]
+    // pub version_types: Vec<VersionType>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
     pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "ReleaseLabelReference", prefix = "ern")]
     pub release_label_references: Vec<ReleaseLabelReferenceWithParty>,
-    #[yaserde(rename = "AdministratingRecordCompany", prefix = "ern")]
-    pub administrating_record_companys: Vec<AdministratingRecordCompanyWithReference>,
-    #[yaserde(rename = "PLine", prefix = "ern")]
-    pub p_lines: Vec<PLineWithDefault>,
-    #[yaserde(rename = "CLine", prefix = "ern")]
-    pub c_lines: Vec<CLineWithDefault>,
-    #[yaserde(rename = "CourtesyLine", prefix = "ern")]
-    pub courtesy_lines: Vec<CourtesyLineWithDefault>,
+    // #[yaserde(rename = "AdministratingRecordCompany", prefix = "ern")]
+    // pub administrating_record_companys: Vec<AdministratingRecordCompanyWithReference>,
+    // #[yaserde(rename = "PLine", prefix = "ern")]
+    // pub p_lines: Vec<PLineWithDefault>,
+    // #[yaserde(rename = "CLine", prefix = "ern")]
+    // pub c_lines: Vec<CLineWithDefault>,
+    // #[yaserde(rename = "CourtesyLine", prefix = "ern")]
+    // pub courtesy_lines: Vec<CourtesyLineWithDefault>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: Option<String>,
     #[yaserde(rename = "Genre", prefix = "ern")]
     pub genres: Vec<GenreWithTerritory>,
-    #[yaserde(rename = "ReleaseDate", prefix = "ern")]
-    pub release_dates: Vec<EventDateWithDefault>,
-    #[yaserde(rename = "OriginalReleaseDate", prefix = "ern")]
-    pub original_release_dates: Vec<EventDateWithDefault>,
-    #[yaserde(
-        rename = "ReleaseVisibilityReference",
-        prefix = "ern",
-        validation = "ReleaseVisibilityReferenceValidator"
-    )]
-    pub release_visibility_references: Vec<String>,
+    // #[yaserde(rename = "ReleaseDate", prefix = "ern")]
+    // pub release_dates: Vec<EventDateWithDefault>,
+    // #[yaserde(rename = "OriginalReleaseDate", prefix = "ern")]
+    // pub original_release_dates: Vec<EventDateWithDefault>,
+    // #[yaserde(
+    //     rename = "ReleaseVisibilityReference",
+    //     prefix = "ern",
+    //     validation = "ReleaseVisibilityReferenceValidator"
+    // )]
+    // pub release_visibility_references: Vec<String>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
-    #[yaserde(rename = "AvRating", prefix = "ern")]
-    pub av_ratings: Vec<AvRating>,
-    #[yaserde(rename = "RelatedRelease", prefix = "ern")]
-    pub related_releases: Vec<RelatedRelease>,
-    #[yaserde(rename = "RelatedResource", prefix = "ern")]
-    pub related_resources: Vec<RelatedResource>,
+    // #[yaserde(rename = "AvRating", prefix = "ern")]
+    // pub av_ratings: Vec<AvRating>,
+    // #[yaserde(rename = "RelatedRelease", prefix = "ern")]
+    // pub related_releases: Vec<RelatedRelease>,
+    // #[yaserde(rename = "RelatedResource", prefix = "ern")]
+    // pub related_resources: Vec<RelatedResource>,
     #[yaserde(rename = "ResourceGroup", prefix = "ern")]
     pub resource_group: ResourceGroup,
-    #[yaserde(rename = "ExternalResourceLink", prefix = "ern")]
-    pub external_resource_links: Vec<ExternalResourceLink>,
-    #[yaserde(rename = "TargetURL", prefix = "ern")]
-    pub target_url: Option<String>,
-    #[yaserde(rename = "Keywords", prefix = "ern")]
-    pub keywordss: Vec<KeywordsWithTerritory>,
-    #[yaserde(rename = "Synopsis", prefix = "ern")]
-    pub synopsiss: Vec<SynopsisWithTerritory>,
-    #[yaserde(rename = "Raga", prefix = "ern")]
-    pub ragas: Vec<Raga>,
-    #[yaserde(rename = "Tala", prefix = "ern")]
-    pub talas: Vec<Tala>,
-    #[yaserde(rename = "Deity", prefix = "ern")]
-    pub deitys: Vec<Deity>,
-    #[yaserde(rename = "HiResMusicDescription", prefix = "ern")]
-    pub hi_res_music_description: Option<String>,
-    #[yaserde(rename = "IsSoundtrack", prefix = "ern")]
-    pub is_soundtrack: Option<bool>,
-    #[yaserde(rename = "IsHiResMusic", prefix = "ern")]
-    pub is_hi_res_music: Option<bool>,
-    #[yaserde(rename = "MarketingComment", prefix = "ern")]
-    pub marketing_comments: Vec<MarketingComment>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(rename = "IsSingleArtistCompilation", prefix = "ern")]
-    pub is_single_artist_compilation: Option<bool>,
-    #[yaserde(rename = "IsMultiArtistCompilation", prefix = "ern")]
-    pub is_multi_artist_compilation: Option<bool>,
+    // #[yaserde(rename = "ExternalResourceLink", prefix = "ern")]
+    // pub external_resource_links: Vec<ExternalResourceLink>,
+    // #[yaserde(rename = "TargetURL", prefix = "ern")]
+    // pub target_url: Option<String>,
+    // #[yaserde(rename = "Keywords", prefix = "ern")]
+    // pub keywordss: Vec<KeywordsWithTerritory>,
+    // #[yaserde(rename = "Synopsis", prefix = "ern")]
+    // pub synopsiss: Vec<SynopsisWithTerritory>,
+    // #[yaserde(rename = "Raga", prefix = "ern")]
+    // pub ragas: Vec<Raga>,
+    // #[yaserde(rename = "Tala", prefix = "ern")]
+    // pub talas: Vec<Tala>,
+    // #[yaserde(rename = "Deity", prefix = "ern")]
+    // pub deitys: Vec<Deity>,
+    // #[yaserde(rename = "HiResMusicDescription", prefix = "ern")]
+    // pub hi_res_music_description: Option<String>,
+    // #[yaserde(rename = "IsSoundtrack", prefix = "ern")]
+    // pub is_soundtrack: Option<bool>,
+    // #[yaserde(rename = "IsHiResMusic", prefix = "ern")]
+    // pub is_hi_res_music: Option<bool>,
+    // #[yaserde(rename = "MarketingComment", prefix = "ern")]
+    // pub marketing_comments: Vec<MarketingComment>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(rename = "IsSingleArtistCompilation", prefix = "ern")]
+    // pub is_single_artist_compilation: Option<bool>,
+    // #[yaserde(rename = "IsMultiArtistCompilation", prefix = "ern")]
+    // pub is_multi_artist_compilation: Option<bool>,
 }
 
 #[derive(
@@ -1904,10 +1904,10 @@ pub struct ReleaseId {
     pub g_rid: Option<String>,
     #[yaserde(rename = "ICPN", prefix = "ern")]
     pub icpn: Option<String>,
-    #[yaserde(rename = "CatalogNumber", prefix = "ern")]
-    pub catalog_number: Option<CatalogNumber>,
-    #[yaserde(rename = "ProprietaryId", prefix = "ern")]
-    pub proprietary_ids: Vec<ProprietaryId>,
+    // #[yaserde(rename = "CatalogNumber", prefix = "ern")]
+    // pub catalog_number: Option<CatalogNumber>,
+    // #[yaserde(rename = "ProprietaryId", prefix = "ern")]
+    // pub proprietary_ids: Vec<ProprietaryId>,
 }
 #[derive(
     Clone,
@@ -1958,22 +1958,22 @@ pub struct ReleaseLabelReference {
 pub struct ReleaseLabelReferenceWithParty {
     #[yaserde(text, validation = "DdexLocalPartyAnchorReferenceValidator")]
     pub content: String,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
-    #[yaserde(attribute, rename = "LabelType", validation = "AvsLabelTypeValidator")]
-    pub label_type: Option<String>,
-    #[yaserde(attribute, rename = "AccessControlParty")]
-    pub access_control_party: Option<String>,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "LabelType", validation = "AvsLabelTypeValidator")]
+    // pub label_type: Option<String>,
+    // #[yaserde(attribute, rename = "AccessControlParty")]
+    // pub access_control_party: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
@@ -1997,8 +1997,8 @@ pub struct ReleaseList {
     pub release: Option<Release>,
     #[yaserde(rename = "TrackRelease", prefix = "ern")]
     pub track_releases: Vec<TrackRelease>,
-    #[yaserde(rename = "ClipRelease", prefix = "ern")]
-    pub clip_releases: Vec<ClipRelease>,
+    // #[yaserde(rename = "ClipRelease", prefix = "ern")]
+    // pub clip_releases: Vec<ClipRelease>,
 }
 #[derive(
     Clone,
@@ -2066,7 +2066,6 @@ pub struct ResourceGroup {
     pub carrier_types: Vec<CarrierType>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: Option<String>,
-    // TODO
     #[yaserde(rename = "ResourceGroup", prefix = "ern")]
     pub resource_groups: Vec<ResourceSubGroup>,
     #[yaserde(rename = "ResourceGroupContentItem", prefix = "ern")]
@@ -2133,16 +2132,16 @@ pub struct ResourceGroupContentItem {
 pub struct ResourceList {
     #[yaserde(rename = "SoundRecording", prefix = "ern")]
     pub sound_recordings: Vec<SoundRecording>,
-    #[yaserde(rename = "Video", prefix = "ern")]
-    pub videos: Vec<Video>,
+    // #[yaserde(rename = "Video", prefix = "ern")]
+    // pub videos: Vec<Video>,
     #[yaserde(rename = "Image", prefix = "ern")]
     pub images: Vec<Image>,
-    #[yaserde(rename = "Text", prefix = "ern")]
-    pub texts: Vec<Text>,
-    #[yaserde(rename = "SheetMusic", prefix = "ern")]
-    pub sheet_musics: Vec<SheetMusic>,
-    #[yaserde(rename = "Software", prefix = "ern")]
-    pub softwares: Vec<Software>,
+    // #[yaserde(rename = "Text", prefix = "ern")]
+    // pub texts: Vec<Text>,
+    // #[yaserde(rename = "SheetMusic", prefix = "ern")]
+    // pub sheet_musics: Vec<SheetMusic>,
+    // #[yaserde(rename = "Software", prefix = "ern")]
+    // pub softwares: Vec<Software>,
 }
 #[derive(
     Clone,
@@ -2169,12 +2168,12 @@ pub struct ResourceRightsController {
     pub rights_control_types: Vec<String>,
     #[yaserde(rename = "DelegatedUsageRights", prefix = "ern")]
     pub delegated_usage_rightss: Vec<DelegatedUsageRights>,
-    #[yaserde(attribute, rename = "SequenceNumber")]
-    pub sequence_number: Option<i32>,
-    #[yaserde(rename = "RightShareUnknown", prefix = "ern")]
-    pub right_share_unknown: Option<bool>,
-    #[yaserde(rename = "RightSharePercentage", prefix = "ern")]
-    pub right_share_percentage: Option<String>,
+    // #[yaserde(attribute, rename = "SequenceNumber")]
+    // pub sequence_number: Option<i32>,
+    // #[yaserde(rename = "RightShareUnknown", prefix = "ern")]
+    // pub right_share_unknown: Option<bool>,
+    // #[yaserde(rename = "RightSharePercentage", prefix = "ern")]
+    // pub right_share_percentage: Option<String>,
 }
 
 #[derive(
@@ -2471,8 +2470,8 @@ pub struct SoundRecording {
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
     pub display_titles: Vec<DisplayTitle>,
-    #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
-    pub additional_titles: Vec<AdditionalTitle>,
+    // #[yaserde(rename = "AdditionalTitle", prefix = "ern")]
+    // pub additional_titles: Vec<AdditionalTitle>,
     #[yaserde(rename = "VersionType", prefix = "ern")]
     pub version_types: Vec<VersionType>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
@@ -2485,78 +2484,78 @@ pub struct SoundRecording {
     pub characters: Vec<Character>,
     #[yaserde(rename = "ResourceRightsController", prefix = "ern")]
     pub resource_rights_controllers: Vec<ResourceRightsController>,
-    #[yaserde(rename = "WorkRightsController", prefix = "ern")]
-    pub work_rights_controllers: Vec<WorkRightsController>,
-    #[yaserde(rename = "CourtesyLine", prefix = "ern")]
-    pub courtesy_lines: Vec<CourtesyLineWithDefault>,
+    // #[yaserde(rename = "WorkRightsController", prefix = "ern")]
+    // pub work_rights_controllers: Vec<WorkRightsController>,
+    // #[yaserde(rename = "CourtesyLine", prefix = "ern")]
+    // pub courtesy_lines: Vec<CourtesyLineWithDefault>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: String,
     #[yaserde(rename = "CreationDate", prefix = "ern")]
     pub creation_date: Option<EventDateWithoutFlags>,
-    #[yaserde(rename = "MasteredDate", prefix = "ern")]
-    pub mastered_date: Option<EventDateWithoutFlags>,
-    #[yaserde(rename = "RemasteredDate", prefix = "ern")]
-    pub remastered_date: Option<EventDateWithoutFlags>,
-    #[yaserde(rename = "FirstPublicationDate", prefix = "ern")]
-    pub first_publication_dates: Vec<FirstPublicationDate>,
-    #[yaserde(rename = "LocationAndDateOfSession", prefix = "ern")]
-    pub location_and_date_of_sessions: Vec<LocationAndDateOfSession>,
+    // #[yaserde(rename = "MasteredDate", prefix = "ern")]
+    // pub mastered_date: Option<EventDateWithoutFlags>,
+    // #[yaserde(rename = "RemasteredDate", prefix = "ern")]
+    // pub remastered_date: Option<EventDateWithoutFlags>,
+    // #[yaserde(rename = "FirstPublicationDate", prefix = "ern")]
+    // pub first_publication_dates: Vec<FirstPublicationDate>,
+    // #[yaserde(rename = "LocationAndDateOfSession", prefix = "ern")]
+    // pub location_and_date_of_sessions: Vec<LocationAndDateOfSession>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
-    #[yaserde(rename = "RelatedRelease", prefix = "ern")]
-    pub related_releases: Vec<RelatedRelease>,
-    #[yaserde(rename = "RelatedResource", prefix = "ern")]
-    pub related_resources: Vec<RelatedResource>,
-    #[yaserde(
-        rename = "CompositeMusicalWorkType",
-        prefix = "ern",
-        validation = "AvsCompositeMusicalWorkTypeValidator"
-    )]
-    pub composite_musical_work_type: Option<String>,
-    #[yaserde(rename = "IsCover", prefix = "ern")]
-    pub is_cover: Option<bool>,
-    #[yaserde(rename = "HasVocalPerformance", prefix = "ern")]
-    pub has_vocal_performance: Option<bool>,
-    #[yaserde(rename = "HasForegroundVocalPerformance", prefix = "ern")]
-    pub has_foreground_vocal_performance: Option<bool>,
+    // #[yaserde(rename = "RelatedRelease", prefix = "ern")]
+    // pub related_releases: Vec<RelatedRelease>,
+    // #[yaserde(rename = "RelatedResource", prefix = "ern")]
+    // pub related_resources: Vec<RelatedResource>,
+    // #[yaserde(
+    //     rename = "CompositeMusicalWorkType",
+    //     prefix = "ern",
+    //     validation = "AvsCompositeMusicalWorkTypeValidator"
+    // )]
+    // pub composite_musical_work_type: Option<String>,
+    // #[yaserde(rename = "IsCover", prefix = "ern")]
+    // pub is_cover: Option<bool>,
+    // #[yaserde(rename = "HasVocalPerformance", prefix = "ern")]
+    // pub has_vocal_performance: Option<bool>,
+    // #[yaserde(rename = "HasForegroundVocalPerformance", prefix = "ern")]
+    // pub has_foreground_vocal_performance: Option<bool>,
     #[yaserde(rename = "IsInstrumental", prefix = "ern")]
     pub is_instrumental: Option<bool>,
-    #[yaserde(rename = "ContainsHiddenContent", prefix = "ern")]
-    pub contains_hidden_content: Option<bool>,
-    #[yaserde(rename = "IsRemastered", prefix = "ern")]
-    pub is_remastered: Option<bool>,
-    #[yaserde(rename = "IsHiResMusic", prefix = "ern")]
-    pub is_hi_res_music: Option<bool>,
-    #[yaserde(rename = "DisableCrossfade", prefix = "ern")]
-    pub disable_crossfade: Option<bool>,
-    #[yaserde(rename = "DisableSearch", prefix = "ern")]
-    pub disable_search: Option<bool>,
-    #[yaserde(rename = "DisplayCredits", prefix = "ern")]
-    pub display_creditss: Vec<DisplayCredits>,
+    // #[yaserde(rename = "ContainsHiddenContent", prefix = "ern")]
+    // pub contains_hidden_content: Option<bool>,
+    // #[yaserde(rename = "IsRemastered", prefix = "ern")]
+    // pub is_remastered: Option<bool>,
+    // #[yaserde(rename = "IsHiResMusic", prefix = "ern")]
+    // pub is_hi_res_music: Option<bool>,
+    // #[yaserde(rename = "DisableCrossfade", prefix = "ern")]
+    // pub disable_crossfade: Option<bool>,
+    // #[yaserde(rename = "DisableSearch", prefix = "ern")]
+    // pub disable_search: Option<bool>,
+    // #[yaserde(rename = "DisplayCredits", prefix = "ern")]
+    // pub display_creditss: Vec<DisplayCredits>,
     #[yaserde(rename = "LanguageOfPerformance", prefix = "ern")]
     pub language_of_performances: Vec<Language>,
-    #[yaserde(rename = "Raga", prefix = "ern")]
-    pub ragas: Vec<Raga>,
-    #[yaserde(rename = "Tala", prefix = "ern")]
-    pub talas: Vec<Tala>,
-    #[yaserde(rename = "Deity", prefix = "ern")]
-    pub deitys: Vec<Deity>,
-    #[yaserde(
-        rename = "AudioChapterReference",
-        prefix = "ern",
-        validation = "AudioChapterReferenceValidator"
-    )]
-    pub audio_chapter_references: Vec<String>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "IsSupplemental")]
-    pub is_supplemental: Option<bool>,
-    #[yaserde(attribute, rename = "ApplyClassicalProfileVariant")]
-    pub apply_classical_profile_variant: Option<bool>,
+    // #[yaserde(rename = "Raga", prefix = "ern")]
+    // pub ragas: Vec<Raga>,
+    // #[yaserde(rename = "Tala", prefix = "ern")]
+    // pub talas: Vec<Tala>,
+    // #[yaserde(rename = "Deity", prefix = "ern")]
+    // pub deitys: Vec<Deity>,
+    // #[yaserde(
+    //     rename = "AudioChapterReference",
+    //     prefix = "ern",
+    //     validation = "AudioChapterReferenceValidator"
+    // )]
+    // pub audio_chapter_references: Vec<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsSupplemental")]
+    // pub is_supplemental: Option<bool>,
+    // #[yaserde(attribute, rename = "ApplyClassicalProfileVariant")]
+    // pub apply_classical_profile_variant: Option<bool>,
 }
 #[derive(
     Clone,
@@ -2705,44 +2704,44 @@ pub struct TechnicalImageDetails {
         validation = "TechnicalResourceDetailsReferenceValidator"
     )]
     pub technical_resource_details_reference: String,
-    #[yaserde(rename = "ImageCodecType", prefix = "ern")]
-    pub image_codec_type: Option<ImageCodecType>,
-    #[yaserde(rename = "ImageHeight", prefix = "ern")]
-    pub image_height: Option<Extent>,
-    #[yaserde(rename = "ImageWidth", prefix = "ern")]
-    pub image_width: Option<Extent>,
-    #[yaserde(rename = "AspectRatio", prefix = "ern")]
-    pub aspect_ratios: Vec<AspectRatio>,
-    #[yaserde(rename = "ColorDepth", prefix = "ern")]
-    pub color_depth: Option<i32>,
-    #[yaserde(rename = "ImageResolution", prefix = "ern")]
-    pub image_resolution: Option<i32>,
-    #[yaserde(rename = "BitDepth", prefix = "ern")]
-    pub bit_depth: Option<i32>,
-    #[yaserde(rename = "IsClip", prefix = "ern")]
-    pub is_clip: Option<bool>,
-    #[yaserde(rename = "ClipDetails", prefix = "ern")]
-    pub clip_detailss: Vec<ClipDetails>,
+    // #[yaserde(rename = "ImageCodecType", prefix = "ern")]
+    // pub image_codec_type: Option<ImageCodecType>,
+    // #[yaserde(rename = "ImageHeight", prefix = "ern")]
+    // pub image_height: Option<Extent>,
+    // #[yaserde(rename = "ImageWidth", prefix = "ern")]
+    // pub image_width: Option<Extent>,
+    // #[yaserde(rename = "AspectRatio", prefix = "ern")]
+    // pub aspect_ratios: Vec<AspectRatio>,
+    // #[yaserde(rename = "ColorDepth", prefix = "ern")]
+    // pub color_depth: Option<i32>,
+    // #[yaserde(rename = "ImageResolution", prefix = "ern")]
+    // pub image_resolution: Option<i32>,
+    // #[yaserde(rename = "BitDepth", prefix = "ern")]
+    // pub bit_depth: Option<i32>,
+    // #[yaserde(rename = "IsClip", prefix = "ern")]
+    // pub is_clip: Option<bool>,
+    // #[yaserde(rename = "ClipDetails", prefix = "ern")]
+    // pub clip_detailss: Vec<ClipDetails>,
     #[yaserde(rename = "File", prefix = "ern")]
     pub file: Option<File>,
-    #[yaserde(rename = "IsProvidedInDelivery", prefix = "ern")]
-    pub is_provided_in_delivery: Option<bool>,
+    // #[yaserde(rename = "IsProvidedInDelivery", prefix = "ern")]
+    // pub is_provided_in_delivery: Option<bool>,
     #[yaserde(rename = "Fingerprint", prefix = "ern")]
     pub fingerprints: Vec<Fingerprint>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
 }
 #[derive(
     Clone,
@@ -2858,26 +2857,26 @@ pub struct TechnicalSoundRecordingDetails {
     pub technical_resource_details_reference: String,
     #[yaserde(rename = "DeliveryFile", prefix = "ern")]
     pub delivery_files: Vec<AudioDeliveryFile>,
-    #[yaserde(rename = "HasImmersiveAudioMetadata", prefix = "ern")]
-    pub has_immersive_audio_metadata: Option<bool>,
-    #[yaserde(rename = "IsClip", prefix = "ern")]
-    pub is_clip: Option<bool>,
-    #[yaserde(rename = "ClipDetails", prefix = "ern")]
-    pub clip_detailss: Vec<SoundRecordingClipDetails>,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: Option<String>,
+    // #[yaserde(rename = "HasImmersiveAudioMetadata", prefix = "ern")]
+    // pub has_immersive_audio_metadata: Option<bool>,
+    // #[yaserde(rename = "IsClip", prefix = "ern")]
+    // pub is_clip: Option<bool>,
+    // #[yaserde(rename = "ClipDetails", prefix = "ern")]
+    // pub clip_detailss: Vec<SoundRecordingClipDetails>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "LanguageAndScriptCode",
+    //     validation = "LanguageAndScriptCodeValidator"
+    // )]
+    // pub language_and_script_code: Option<String>,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
     pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
 }
 #[derive(
     Clone,
@@ -3632,12 +3631,12 @@ pub struct Affiliation {
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
     pub territory_codes: Vec<String>,
-    #[yaserde(
-        rename = "ExcludedTerritoryCode",
-        prefix = "ern",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub excluded_territory_codes: Vec<String>,
+    // #[yaserde(
+    //     rename = "ExcludedTerritoryCode",
+    //     prefix = "ern",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub excluded_territory_codes: Vec<String>,
 }
 
 #[derive(
@@ -3654,12 +3653,12 @@ pub struct Affiliation {
 pub struct AllTerritoryCode {
     #[yaserde(text, validation = "AvsAllTerritoryCodeValidator")]
     pub content: String,
-    #[yaserde(
-        attribute,
-        rename = "IdentifierType",
-        validation = "AvsTerritoryCodeTypeIncludingDeprecatedCodesValidator"
-    )]
-    pub identifier_type: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "IdentifierType",
+    //     validation = "AvsTerritoryCodeTypeIncludingDeprecatedCodesValidator"
+    // )]
+    // pub identifier_type: Option<String>,
 }
 #[derive(
     Clone,
@@ -3835,10 +3834,10 @@ pub struct ContainerFormat {
 pub struct ContributorRole {
     #[yaserde(text, validation = "AvsContributorRoleValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
 }
 #[derive(
     Clone,
@@ -4039,18 +4038,18 @@ pub struct DetailedPartyId {
     pub isni: Option<String>,
     #[yaserde(rename = "DPID", prefix = "ern", validation = "DPIDValidator")]
     pub dpid: Option<String>,
-    #[yaserde(
-        rename = "IpiNameNumber",
-        prefix = "ern",
-        validation = "IpiNameNumberValidator"
-    )]
-    pub ipi_name_number: Option<String>,
-    #[yaserde(rename = "IPN", prefix = "ern")]
-    pub ipn: Option<String>,
-    #[yaserde(rename = "CisacSocietyId", prefix = "ern")]
-    pub cisac_society_id: Option<String>,
-    #[yaserde(rename = "ProprietaryId", prefix = "ern")]
-    pub proprietary_ids: Vec<ProprietaryId>,
+    // #[yaserde(
+    //     rename = "IpiNameNumber",
+    //     prefix = "ern",
+    //     validation = "IpiNameNumberValidator"
+    // )]
+    // pub ipi_name_number: Option<String>,
+    // #[yaserde(rename = "IPN", prefix = "ern")]
+    // pub ipn: Option<String>,
+    // #[yaserde(rename = "CisacSocietyId", prefix = "ern")]
+    // pub cisac_society_id: Option<String>,
+    // #[yaserde(rename = "ProprietaryId", prefix = "ern")]
+    // pub proprietary_ids: Vec<ProprietaryId>,
 }
 #[derive(
     Clone,
@@ -4067,10 +4066,10 @@ pub struct DetailedPartyId {
 pub struct DisplayArtistRole {
     #[yaserde(text, validation = "AvsDisplayArtistRoleValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
 }
 #[derive(
     Clone,
@@ -4257,10 +4256,10 @@ pub struct ExternallyLinkedResourceType {
 pub struct File {
     #[yaserde(rename = "URI", prefix = "ern")]
     pub uri: String,
-    #[yaserde(rename = "HashSum", prefix = "ern")]
-    pub hash_sum: Option<DetailedHashSum>,
-    #[yaserde(rename = "FileSize", prefix = "ern")]
-    pub file_size: Option<String>,
+    // #[yaserde(rename = "HashSum", prefix = "ern")]
+    // pub hash_sum: Option<DetailedHashSum>,
+    // #[yaserde(rename = "FileSize", prefix = "ern")]
+    // pub file_size: Option<String>,
 }
 #[derive(
     Clone,
@@ -4554,8 +4553,8 @@ pub struct KeywordsWithTerritory {
 pub struct Language {
     #[yaserde(text, validation = "DdexLanguageAndScriptCodeWithRestrictionValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "IsMainLanguage")]
-    pub is_main_language: Option<bool>,
+    // #[yaserde(attribute, rename = "IsMainLanguage")]
+    // pub is_main_language: Option<bool>,
 }
 #[derive(
     Clone,
@@ -4626,28 +4625,28 @@ pub struct MessageAuditTrailEvent {
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct MessageHeader {
-    #[yaserde(rename = "MessageThreadId", prefix = "ern")]
-    pub message_thread_id: Option<String>,
+    // #[yaserde(rename = "MessageThreadId", prefix = "ern")]
+    // pub message_thread_id: Option<String>,
     #[yaserde(rename = "MessageId", prefix = "ern")]
     pub message_id: String,
-    #[yaserde(rename = "MessageFileName", prefix = "ern")]
-    pub message_file_name: Option<String>,
+    // #[yaserde(rename = "MessageFileName", prefix = "ern")]
+    // pub message_file_name: Option<String>,
     #[yaserde(rename = "MessageSender", prefix = "ern")]
     pub message_sender: MessagingPartyWithoutCode,
-    #[yaserde(rename = "SentOnBehalfOf", prefix = "ern")]
-    pub sent_on_behalf_of: Option<MessagingPartyWithoutCode>,
+    // #[yaserde(rename = "SentOnBehalfOf", prefix = "ern")]
+    // pub sent_on_behalf_of: Option<MessagingPartyWithoutCode>,
     #[yaserde(rename = "MessageRecipient", prefix = "ern")]
     pub message_recipients: Vec<MessagingPartyWithoutCode>,
     #[yaserde(rename = "MessageCreatedDateTime", prefix = "ern")]
     pub message_created_date_time: String,
-    #[yaserde(rename = "MessageAuditTrail", prefix = "ern")]
-    pub message_audit_trail: Option<MessageAuditTrail>,
-    #[yaserde(
-        rename = "MessageControlType",
-        prefix = "ern",
-        validation = "AvsMessageControlTypeValidator"
-    )]
-    pub message_control_type: Option<String>,
+    // #[yaserde(rename = "MessageAuditTrail", prefix = "ern")]
+    // pub message_audit_trail: Option<MessageAuditTrail>,
+    // #[yaserde(
+    //     rename = "MessageControlType",
+    //     prefix = "ern",
+    //     validation = "AvsMessageControlTypeValidator"
+    // )]
+    // pub message_control_type: Option<String>,
 }
 #[derive(
     Clone,
@@ -4665,8 +4664,8 @@ pub struct MessagingPartyWithoutCode {
     pub party_id: String,
     #[yaserde(rename = "PartyName", prefix = "ern")]
     pub party_name: Option<PartyNameWithoutCode>,
-    #[yaserde(rename = "TradingName", prefix = "ern")]
-    pub trading_name: Option<String>,
+    // #[yaserde(rename = "TradingName", prefix = "ern")]
+    // pub trading_name: Option<String>,
 }
 #[derive(
     Clone,
@@ -4682,12 +4681,12 @@ pub struct MessagingPartyWithoutCode {
 pub struct MusicalWorkId {
     #[yaserde(rename = "ISWC", prefix = "ern")]
     pub iswc: Option<String>,
-    #[yaserde(rename = "OpusNumber", prefix = "ern")]
-    pub opus_number: Option<String>,
-    #[yaserde(rename = "ComposerCatalogNumber", prefix = "ern")]
-    pub composer_catalog_numbers: Vec<String>,
-    #[yaserde(rename = "ProprietaryId", prefix = "ern")]
-    pub proprietary_ids: Vec<ProprietaryId>,
+    // #[yaserde(rename = "OpusNumber", prefix = "ern")]
+    // pub opus_number: Option<String>,
+    // #[yaserde(rename = "ComposerCatalogNumber", prefix = "ern")]
+    // pub composer_catalog_numbers: Vec<String>,
+    // #[yaserde(rename = "ProprietaryId", prefix = "ern")]
+    // pub proprietary_ids: Vec<ProprietaryId>,
     #[yaserde(attribute, rename = "IsReplaced")]
     pub is_replaced: Option<bool>,
 }
@@ -4705,8 +4704,8 @@ pub struct MusicalWorkId {
 pub struct Name {
     #[yaserde(text)]
     pub content: String,
-    #[yaserde(attribute, rename = "LanguageAndScriptCode")]
-    pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "LanguageAndScriptCode")]
+    // pub language_and_script_code: Option<String>,
 }
 #[derive(
     Clone,
@@ -4766,20 +4765,20 @@ pub struct PLine {
 pub struct PLineWithDefault {
     #[yaserde(rename = "Year", prefix = "ern")]
     pub year: Option<u16>,
-    #[yaserde(rename = "PLineCompany", prefix = "ern")]
-    pub p_line_company: Option<String>,
+    // #[yaserde(rename = "PLineCompany", prefix = "ern")]
+    // pub p_line_company: Option<String>,
     #[yaserde(rename = "PLineText", prefix = "ern")]
     pub p_line_text: String,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
-    #[yaserde(attribute, rename = "LanguageAndScriptCode")]
-    pub language_and_script_code: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "LanguageAndScriptCode")]
+    // pub language_and_script_code: Option<String>,
 }
 #[derive(
     Clone,
@@ -4795,18 +4794,18 @@ pub struct PLineWithDefault {
 pub struct ParentalWarningTypeWithTerritory {
     #[yaserde(text, validation = "AvsParentalWarningTypeValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(
-        attribute,
-        rename = "ApplicableTerritoryCode",
-        validation = "AvsCurrentTerritoryCodeValidator"
-    )]
-    pub applicable_territory_code: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
-    #[yaserde(attribute, rename = "IsDefault")]
-    pub is_default: Option<bool>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(
+    //     attribute,
+    //     rename = "ApplicableTerritoryCode",
+    //     validation = "AvsCurrentTerritoryCodeValidator"
+    // )]
+    // pub applicable_territory_code: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "IsDefault")]
+    // pub is_default: Option<bool>,
 }
 #[derive(
     Clone,
@@ -4851,18 +4850,18 @@ pub struct PartyName {
 pub struct PartyNameWithoutCode {
     #[yaserde(rename = "FullName", prefix = "ern")]
     pub full_name: String,
-    #[yaserde(rename = "FullNameAsciiTranscribed", prefix = "ern")]
-    pub full_name_ascii_transcribed: Option<String>,
-    #[yaserde(rename = "FullNameIndexed", prefix = "ern")]
-    pub full_name_indexed: Option<String>,
-    #[yaserde(rename = "NamesBeforeKeyName", prefix = "ern")]
-    pub names_before_key_name: Option<String>,
-    #[yaserde(rename = "KeyName", prefix = "ern")]
-    pub key_name: Option<String>,
-    #[yaserde(rename = "NamesAfterKeyName", prefix = "ern")]
-    pub names_after_key_name: Option<String>,
-    #[yaserde(rename = "AbbreviatedName", prefix = "ern")]
-    pub abbreviated_name: Option<String>,
+    // #[yaserde(rename = "FullNameAsciiTranscribed", prefix = "ern")]
+    // pub full_name_ascii_transcribed: Option<String>,
+    // #[yaserde(rename = "FullNameIndexed", prefix = "ern")]
+    // pub full_name_indexed: Option<String>,
+    // #[yaserde(rename = "NamesBeforeKeyName", prefix = "ern")]
+    // pub names_before_key_name: Option<String>,
+    // #[yaserde(rename = "KeyName", prefix = "ern")]
+    // pub key_name: Option<String>,
+    // #[yaserde(rename = "NamesAfterKeyName", prefix = "ern")]
+    // pub names_after_key_name: Option<String>,
+    // #[yaserde(rename = "AbbreviatedName", prefix = "ern")]
+    // pub abbreviated_name: Option<String>,
 }
 #[derive(
     Clone,
@@ -5147,10 +5146,10 @@ pub struct ReleaseRelationshipType {
 pub struct ReleaseTypeForReleaseNotification {
     #[yaserde(text, validation = "AvsReleaseTypeERN4Validator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
 }
 #[derive(
     Clone,
@@ -5258,8 +5257,8 @@ pub struct ResourceId {
 pub struct ResourceProprietaryId {
     #[yaserde(rename = "ProprietaryId", prefix = "ern")]
     pub proprietary_ids: Vec<ProprietaryId>,
-    #[yaserde(attribute, rename = "IsReplaced")]
-    pub is_replaced: Option<bool>,
+    // #[yaserde(attribute, rename = "IsReplaced")]
+    // pub is_replaced: Option<bool>,
 }
 #[derive(
     Clone,
@@ -5275,10 +5274,10 @@ pub struct ResourceProprietaryId {
 pub struct RightsType {
     #[yaserde(text, validation = "AvsRightsCoverageValidator")]
     pub content: String,
-    #[yaserde(attribute, rename = "Namespace")]
-    pub namespace: Option<String>,
-    #[yaserde(attribute, rename = "UserDefinedValue")]
-    pub user_defined_value: Option<String>,
+    // #[yaserde(attribute, rename = "Namespace")]
+    // pub namespace: Option<String>,
+    // #[yaserde(attribute, rename = "UserDefinedValue")]
+    // pub user_defined_value: Option<String>,
 }
 #[derive(
     Clone,
@@ -5416,8 +5415,8 @@ pub struct SoundRecordingId {
     pub catalog_number: Option<CatalogNumber>,
     #[yaserde(rename = "ProprietaryId", prefix = "ern")]
     pub proprietary_ids: Vec<ProprietaryId>,
-    #[yaserde(attribute, rename = "IsReplaced")]
-    pub is_replaced: Option<bool>,
+    // #[yaserde(attribute, rename = "IsReplaced")]
+    // pub is_replaced: Option<bool>,
 }
 #[derive(
     Clone,
@@ -5619,12 +5618,12 @@ pub struct TextWithoutTerritory {
 pub struct TitleDisplayInformation {
     #[yaserde(rename = "IsDisplayedInTitle", prefix = "ern")]
     pub is_displayed_in_title: bool,
-    #[yaserde(rename = "Prefix", prefix = "ern")]
-    pub prefixs: Vec<Prefix>,
-    #[yaserde(attribute, rename = "LanguageAndScriptCode")]
-    pub language_and_script_code: Option<String>,
-    #[yaserde(attribute, rename = "SequenceNumber")]
-    pub sequence_number: Option<i32>,
+    // #[yaserde(rename = "Prefix", prefix = "ern")]
+    // pub prefixs: Vec<Prefix>,
+    // #[yaserde(attribute, rename = "LanguageAndScriptCode")]
+    // pub language_and_script_code: Option<String>,
+    // #[yaserde(attribute, rename = "SequenceNumber")]
+    // pub sequence_number: Option<i32>,
 }
 #[derive(
     Clone,
@@ -5772,41 +5771,12 @@ pub struct NewReleaseMessage {
     pub release_admins: Vec<ReleaseAdmin>,
     #[yaserde(rename = "PartyList", prefix = "ern")]
     pub party_list: PartyList,
-    #[yaserde(rename = "CueSheetList", prefix = "ern")]
-    pub cue_sheet_list: Option<CueSheetList>,
     #[yaserde(rename = "ResourceList", prefix = "ern")]
     pub resource_list: ResourceList,
-    #[yaserde(rename = "ChapterList", prefix = "ern")]
-    pub chapter_list: Option<ChapterList>,
     #[yaserde(rename = "ReleaseList", prefix = "ern")]
     pub release_list: ReleaseList,
-    #[yaserde(rename = "DealList", prefix = "ern")]
-    pub deal_list: Option<DealList>,
-    #[yaserde(rename = "SupplementalDocumentList", prefix = "ern")]
-    pub supplemental_document_list: Option<SupplementalDocumentList>,
-    #[yaserde(
-        attribute,
-        rename = "ReleaseProfileVersionId",
-        prefix = "ern",
-        validation = "AvsReleaseProfileVersionIdValidator"
-    )]
-    pub release_profile_version_id: Option<String>,
-    #[yaserde(
-        attribute,
-        rename = "ReleaseProfileVariantVersionId",
-        prefix = "ern",
-        validation = "AvsReleaseProfileVariantVersionIdValidator"
-    )]
-    pub release_profile_variant_version_id: Option<String>,
-    #[yaserde(attribute, rename = "AvsVersionId", prefix = "ern")]
-    pub avs_version_id: String,
-    #[yaserde(
-        attribute,
-        rename = "LanguageAndScriptCode",
-        prefix = "ern",
-        validation = "LanguageAndScriptCodeValidator"
-    )]
-    pub language_and_script_code: String,
+    // #[yaserde(rename = "DealList", prefix = "ern")]
+    // pub deal_list: Option<DealList>,
 }
 #[derive(
     Clone,
