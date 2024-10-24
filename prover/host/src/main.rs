@@ -3,7 +3,7 @@ use methods::DDEX_PARSER_GUEST_ELF;
 use risc0_zkvm::{default_prover, serde::from_slice, ExecutorEnv};
 
 fn main() {
-    let data = include_str!("../../res/2Video.xml");
+    let data = include_str!("../../res/0Audio_lite.xml");
     let mut writer = Vec::new();
 
     let env = ExecutorEnv::builder()
