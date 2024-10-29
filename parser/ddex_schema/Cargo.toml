@@ -10,3 +10,6 @@ yaserde_derive = { path = "../yaserde_derive" }
 xml-rs = "0.8.20"
 regex = "1.10.6"
 serde = {version = "1.0.0", features = ["derive"]}
+
+[features]
+cuda = []
