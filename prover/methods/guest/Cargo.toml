@@ -9,4 +9,5 @@ edition = "2021"
 risc0-zkvm = { version = "1.0.4", default-features = false, features = ['std'] }
 core = { path = "../../core" }
 ddex_schema = { path = "../../../parser/ddex_schema"}
+serde_json = "1.0"
 
