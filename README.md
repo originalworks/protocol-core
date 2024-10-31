@@ -8,11 +8,14 @@
 5. runner - binary file to play around with the parser.
 
 ## Installation
-Just `cd` to parser and hit `cargo run` to fire `runner`
+1. Clone repo
+2. `cd parser`
+3. To run with CPU: `cargo run --release`
+4. To run with GPU: `cargo run --release -F cuda`
 
-# Prover
+Note on GPU: Running on GPU requires a GPU with a lot of memory. We have tested it working on Nvidia cards with 8GB of RAM
 
-Structure is pretty much cloned from risc0 examples.
+On line 23 of `/prover/host/src/main.rs` you have the value `.segment_limit_po2(19)`, which should work for cards with 8GB of RAM. For higher end cards (24GB) you can comment to entire line to improve performance.
 
 ## Contents
 1. core - shared interface between guest and host
