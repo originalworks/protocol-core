@@ -6,6 +6,7 @@ fn main() {
     let mut writer = Vec::new();
 
     let env = ExecutorEnv::builder()
+        .segment_limit_po2(19)
         .write(&data)
         .unwrap()
         .stdout(&mut writer) // 'Private' data sharing between guest and host, data is not stored in the receipt
