@@ -8,3 +8,4 @@ edition = "2021"
 ddex_schema = { path = "../ddex_schema" }
 yaserde = {path = "../yaserde"}
 simple_logger = "5.0.0"
+serde_json = "1.0"
