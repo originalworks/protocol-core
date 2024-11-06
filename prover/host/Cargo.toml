@@ -6,11 +6,11 @@ edition = "2021"
 [dependencies]
 methods = { path = "../methods" }
 core = { path = "../core" }
-risc0-zkvm = { version = "1.0.4" }
+risc0-zkvm = { version = "1.1.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
 ddex_schema = {path = '../../parser/ddex_schema'}
-serde_json = "1.0"
+env_logger = "0.11.5"
 
 [features]
 cuda = ["risc0-zkvm/cuda"]
