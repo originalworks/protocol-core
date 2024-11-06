@@ -9,17 +9,19 @@ use crate::validation::*;
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct NewReleaseMessage {
     #[yaserde(rename = "MessageHeader", prefix = "ern")]
-    pub message_header: MessageHeader, //done
+    #[validate]
+    pub message_header: MessageHeader,
     #[yaserde(rename = "ReleaseAdmin", prefix = "ern")]
-    pub release_admins: Vec<ReleaseAdmin>, //done
+    pub release_admins: Vec<ReleaseAdmin>,
     #[yaserde(rename = "PartyList", prefix = "ern")]
-    pub party_list: PartyList, //done
+    pub party_list: PartyList,
     #[yaserde(rename = "ResourceList", prefix = "ern")]
-    pub resource_list: ResourceList, // done
+    pub resource_list: ResourceList,
     #[yaserde(rename = "ReleaseList", prefix = "ern")]
     pub release_list: ReleaseList,
 }
@@ -33,14 +35,17 @@ pub struct NewReleaseMessage {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct MessageHeader {
     #[yaserde(rename = "MessageId", prefix = "ern")]
     pub message_id: String,
     #[yaserde(rename = "MessageSender", prefix = "ern")]
+    #[validate]
     pub message_sender: MessagingPartyWithoutCode,
     #[yaserde(rename = "MessageRecipient", prefix = "ern")]
+    #[validate]
     pub message_recipients: Vec<MessagingPartyWithoutCode>,
     #[yaserde(rename = "MessageCreatedDateTime", prefix = "ern")]
     pub message_created_date_time: String,
@@ -55,10 +60,12 @@ pub struct MessageHeader {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct MessagingPartyWithoutCode {
     #[yaserde(rename = "PartyId", prefix = "ern", validation = "PartyIdValidator")]
+    #[validate(custom = PartyIdValidator::json_validate)]
     pub party_id: String,
     #[yaserde(rename = "PartyName", prefix = "ern")]
     pub party_name: Option<PartyNameWithoutCode>,
@@ -109,10 +116,12 @@ pub struct ReleaseAdmin {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct PartyList {
     #[yaserde(rename = "Party", prefix = "ern")]
+    #[validate]
     pub partys: Vec<Party>,
 }
 
@@ -125,6 +134,7 @@ pub struct PartyList {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Party {
@@ -133,12 +143,15 @@ pub struct Party {
         prefix = "ern",
         validation = "PartyReferenceValidator"
     )]
+    #[validate(custom = PartyReferenceValidator::json_validate)]
     pub party_reference: String,
     #[yaserde(rename = "Affiliation", prefix = "ern")]
+    #[validate]
     pub affiliations: Vec<Affiliation>,
     #[yaserde(rename = "PartyName", prefix = "ern")]
     pub parties_names: Vec<PartyNameWithTerritory>,
     #[yaserde(rename = "PartyId", prefix = "ern")]
+    #[validate]
     pub parties_ids: Vec<DetailedPartyId>,
 }
 
@@ -151,6 +164,7 @@ pub struct Party {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Affiliation {
@@ -159,10 +173,12 @@ pub struct Affiliation {
         prefix = "ern",
         validation = "AvsAffiliationTypeValidator"
     )]
+    #[validate(custom = AvsAffiliationTypeValidator::json_validate)]
     pub kind: String,
     #[yaserde(rename = "ValidityPeriod", prefix = "ern")]
     pub validity_period: Option<ValidityPeriod>,
     #[yaserde(rename = "RightsType", prefix = "ern")]
+    #[validate]
     pub rights_types: Vec<RightsType>,
     #[yaserde(rename = "PercentageOfRightsAssignment", prefix = "ern")]
     pub percentage_of_rights_assignment: Option<String>,
@@ -173,12 +189,14 @@ pub struct Affiliation {
         prefix = "ern",
         validation = "PartyAffiliateReferenceValidator"
     )]
+    #[validate(custom = PartyAffiliateReferenceValidator::json_validate)]
     pub party_affiliate_reference: Option<String>,
     #[yaserde(
         rename = "TerritoryCode",
         prefix = "ern",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate_vec)]
     pub territory_codes: Vec<String>,
 }
 
@@ -191,12 +209,15 @@ pub struct Affiliation {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ValidityPeriod {
     #[yaserde(rename = "StartDate", prefix = "ern")]
+    #[validate]
     pub start_date: Option<EventDate>,
     #[yaserde(rename = "EndDate", prefix = "ern")]
+    #[validate]
     pub end_date: Option<EventDate>,
 }
 
@@ -209,10 +230,12 @@ pub struct ValidityPeriod {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct EventDate {
     #[yaserde(text, validation = "DdexIsoDateValidator")]
+    #[validate(custom = DdexIsoDateValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "IsApproximate")]
     pub is_approximate: Option<bool>,
@@ -225,6 +248,7 @@ pub struct EventDate {
         rename = "ApplicableTerritoryCode",
         validation = "AvsAllTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsAllTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
     #[yaserde(attribute, rename = "LocationDescription")]
     pub location_description: Option<String>,
@@ -241,10 +265,12 @@ pub struct EventDate {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct RightsType {
     #[yaserde(text, validation = "AvsRightsCoverageValidator")]
+    #[validate(custom = AvsRightsCoverageValidator::json_validate)]
     pub content: String,
 }
 
@@ -291,12 +317,14 @@ pub struct Name {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DetailedPartyId {
     #[yaserde(rename = "ISNI", prefix = "ern")]
     pub isni: Option<String>,
     #[yaserde(rename = "DPID", prefix = "ern", validation = "DPIDValidator")]
+    #[validate(custom = DPIDValidator::json_validate)]
     pub dpid: Option<String>,
 }
 
@@ -309,12 +337,15 @@ pub struct DetailedPartyId {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceList {
     #[yaserde(rename = "SoundRecording", prefix = "ern")]
-    pub sound_recordings: Vec<SoundRecording>, // done
+    #[validate]
+    pub sound_recordings: Vec<SoundRecording>,
     #[yaserde(rename = "Image", prefix = "ern")]
+    #[validate]
     pub images: Vec<Image>,
 }
 
@@ -327,6 +358,7 @@ pub struct ResourceList {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct SoundRecording {
@@ -335,40 +367,54 @@ pub struct SoundRecording {
         prefix = "ern",
         validation = "ResourceReferenceValidator"
     )]
+    #[validate(custom = ResourceReferenceValidator::json_validate)]
     pub resource_reference: String,
     #[yaserde(rename = "Type", prefix = "ern")]
+    #[validate]
     pub kind: SoundRecordingType,
     #[yaserde(rename = "SoundRecordingEdition", prefix = "ern")]
-    pub sound_recording_editions: Vec<SoundRecordingEdition>, //done
+    #[validate]
+    pub sound_recording_editions: Vec<SoundRecordingEdition>,
     #[yaserde(rename = "RecordingFormat", prefix = "ern")]
+    #[validate]
     pub recording_formats: Vec<RecordingFormat>,
     #[yaserde(rename = "WorkId", prefix = "ern")]
-    pub work_ids: Vec<MusicalWorkId>, //done
+    pub work_ids: Vec<MusicalWorkId>,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
+    #[validate]
     pub display_titles: Vec<DisplayTitle>,
     #[yaserde(rename = "VersionType", prefix = "ern")]
+    #[validate]
     pub version_types: Vec<VersionType>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
+    #[validate]
     pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
+    #[validate]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "Contributor", prefix = "ern")]
+    #[validate]
     pub contributors: Vec<Contributor>,
     #[yaserde(rename = "Character", prefix = "ern")]
+    #[validate]
     pub characters: Vec<Character>,
     #[yaserde(rename = "ResourceRightsController", prefix = "ern")]
+    #[validate]
     pub resource_rights_controllers: Vec<ResourceRightsController>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: String,
     #[yaserde(rename = "CreationDate", prefix = "ern")]
+    #[validate]
     pub creation_date: Option<EventDateWithoutFlags>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
+    #[validate]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "IsInstrumental", prefix = "ern")]
     pub is_instrumental: Option<bool>,
     #[yaserde(rename = "LanguageOfPerformance", prefix = "ern")]
+    #[validate]
     pub language_of_performances: Vec<Language>,
 }
 
@@ -381,10 +427,12 @@ pub struct SoundRecording {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct SoundRecordingType {
     #[yaserde(text, validation = "AvsSoundRecordingTypeValidator")]
+    #[validate(custom = AvsSoundRecordingTypeValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "Namespace")]
     pub namespace: Option<String>,
@@ -401,6 +449,7 @@ pub struct SoundRecordingType {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct SoundRecordingEdition {
@@ -409,10 +458,12 @@ pub struct SoundRecordingEdition {
         prefix = "ern",
         validation = "AvsEditionTypeValidator"
     )]
+    #[validate(custom = AvsEditionTypeValidator::json_validate)]
     pub kind: Option<String>,
     #[yaserde(rename = "ResourceId", prefix = "ern")]
     pub resource_ids: Vec<SoundRecordingId>,
     #[yaserde(rename = "EditionContributor", prefix = "ern")]
+    #[validate]
     pub edition_contributors: Vec<EditionContributor>,
     #[yaserde(rename = "PLine", prefix = "ern")]
     pub p_lines: Vec<PLineWithDefault>,
@@ -421,8 +472,10 @@ pub struct SoundRecordingEdition {
         prefix = "ern",
         validation = "AvsRecordingModeValidator"
     )]
+    #[validate(custom = AvsRecordingModeValidator::json_validate)]
     pub recording_mode: Option<String>,
     #[yaserde(rename = "TechnicalDetails", prefix = "ern")]
+    #[validate]
     pub technical_detailss: Vec<TechnicalSoundRecordingDetails>,
 }
 
@@ -491,6 +544,7 @@ pub struct ProprietaryId {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct EditionContributor {
@@ -499,8 +553,10 @@ pub struct EditionContributor {
         prefix = "ern",
         validation = "ContributorPartyReferenceValidator"
     )]
+    #[validate(custom = ContributorPartyReferenceValidator::json_validate)]
     pub contributor_party_reference: String,
     #[yaserde(rename = "Role", prefix = "ern")]
+    #[validate]
     pub roles: Vec<ContributorRole>,
     #[yaserde(rename = "HasMadeFeaturedContribution", prefix = "ern")]
     pub has_made_featured_contribution: Option<bool>,
@@ -509,6 +565,7 @@ pub struct EditionContributor {
     #[yaserde(rename = "IsCredited", prefix = "ern")]
     pub is_credited: Option<IsCredited>,
     #[yaserde(rename = "DisplayCredits", prefix = "ern")]
+    #[validate]
     pub display_creditss: Vec<DisplayCredits>,
     #[yaserde(attribute, rename = "SequenceNumber")]
     pub sequence_number: Option<i32>,
@@ -523,10 +580,12 @@ pub struct EditionContributor {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ContributorRole {
     #[yaserde(text, validation = "AvsContributorRoleValidator")]
+    #[validate(custom = AvsContributorRoleValidator::json_validate)]
     pub content: String,
 }
 
@@ -556,6 +615,7 @@ pub struct IsCredited {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DisplayCredits {
@@ -566,6 +626,7 @@ pub struct DisplayCredits {
         prefix = "ern",
         validation = "DisplayCreditPartyValidator"
     )]
+    #[validate(custom = DisplayCreditPartyValidator::json_validate_vec)]
     pub display_credit_parties: Vec<String>,
     #[yaserde(rename = "NameUsedInDisplayCredit", prefix = "ern")]
     pub names_used_in_display_credits: Vec<String>,
@@ -576,6 +637,7 @@ pub struct DisplayCredits {
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
     #[yaserde(attribute, rename = "IsDefault")]
     pub is_default: Option<bool>,
@@ -608,6 +670,7 @@ pub struct PLineWithDefault {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct TechnicalSoundRecordingDetails {
@@ -616,14 +679,17 @@ pub struct TechnicalSoundRecordingDetails {
         prefix = "ern",
         validation = "TechnicalResourceDetailsReferenceValidator"
     )]
+    #[validate(custom = TechnicalResourceDetailsReferenceValidator::json_validate)]
     pub technical_resource_details_reference: String,
     #[yaserde(rename = "DeliveryFile", prefix = "ern")]
+    #[validate]
     pub delivery_files: Vec<AudioDeliveryFile>,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
 }
 
@@ -636,10 +702,12 @@ pub struct TechnicalSoundRecordingDetails {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct AudioDeliveryFile {
     #[yaserde(rename = "Type", prefix = "ern", validation = "TypeValidator")]
+    #[validate(custom = TypeValidator::json_validate)]
     pub kind: String,
     #[yaserde(rename = "File", prefix = "ern")]
     pub file: Option<File>,
@@ -672,10 +740,12 @@ pub struct File {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Fingerprint {
     #[yaserde(rename = "Algorithm", prefix = "ern")]
+    #[validate]
     pub algorithm: FingerprintAlgorithmType,
     #[yaserde(rename = "Version", prefix = "ern")]
     pub version: Option<String>,
@@ -692,10 +762,12 @@ pub struct Fingerprint {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct FingerprintAlgorithmType {
     #[yaserde(text, validation = "AvsFingerprintAlgorithmTypeValidator")]
+    #[validate(custom = AvsFingerprintAlgorithmTypeValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "Namespace")]
     pub namespace: Option<String>,
@@ -712,10 +784,12 @@ pub struct FingerprintAlgorithmType {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct RecordingFormat {
     #[yaserde(text, validation = "AvsRecordingFormatValidator")]
+    #[validate(custom = AvsRecordingFormatValidator::json_validate)]
     pub content: String,
 }
 
@@ -762,6 +836,7 @@ pub struct DisplayTitleText {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DisplayTitle {
@@ -774,6 +849,7 @@ pub struct DisplayTitle {
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
     #[yaserde(attribute, rename = "IsDefault")]
     pub is_default: Option<bool>,
@@ -804,10 +880,12 @@ pub struct DisplaySubTitle {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct VersionType {
     #[yaserde(text, validation = "AvsVersionTypeValidator")]
+    #[validate(custom = AvsVersionTypeValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "Namespace")]
     pub namespace: Option<String>,
@@ -824,6 +902,7 @@ pub struct VersionType {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DisplayArtistNameWithDefault {
@@ -836,6 +915,7 @@ pub struct DisplayArtistNameWithDefault {
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
     #[yaserde(attribute, rename = "IsDefault")]
     pub is_default: Option<bool>,
@@ -850,6 +930,7 @@ pub struct DisplayArtistNameWithDefault {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DisplayArtist {
@@ -858,10 +939,13 @@ pub struct DisplayArtist {
         prefix = "ern",
         validation = "ArtistPartyReferenceValidator"
     )]
+    #[validate(custom = ArtistPartyReferenceValidator::json_validate)]
     pub artist_party_reference: String,
     #[yaserde(rename = "DisplayArtistRole", prefix = "ern")]
+    #[validate]
     pub display_artist_role: DisplayArtistRole,
     #[yaserde(rename = "ArtisticRole", prefix = "ern")]
+    #[validate]
     pub artistic_roles: Vec<ContributorRole>,
     #[yaserde(rename = "TitleDisplayInformation", prefix = "ern")]
     pub title_display_informations: Vec<TitleDisplayInformation>,
@@ -878,10 +962,12 @@ pub struct DisplayArtist {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DisplayArtistRole {
     #[yaserde(text, validation = "AvsDisplayArtistRoleValidator")]
+    #[validate(custom = AvsDisplayArtistRoleValidator::json_validate)]
     pub content: String,
 }
 
@@ -910,6 +996,7 @@ pub struct TitleDisplayInformation {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Contributor {
@@ -918,8 +1005,10 @@ pub struct Contributor {
         prefix = "ern",
         validation = "ContributorPartyReferenceValidator"
     )]
+    #[validate(custom = ContributorPartyReferenceValidator::json_validate)]
     pub contributor_party_reference: String,
     #[yaserde(rename = "Role", prefix = "ern")]
+    #[validate]
     pub roles: Vec<ContributorRole>,
     #[yaserde(attribute, rename = "SequenceNumber")]
     pub sequence_number: Option<i32>,
@@ -934,6 +1023,7 @@ pub struct Contributor {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Character {
@@ -942,8 +1032,10 @@ pub struct Character {
         prefix = "ern",
         validation = "CharacterPartyReferenceValidator"
     )]
+    #[validate(custom = CharacterPartyReferenceValidator::json_validate)]
     pub character_party_reference: String,
     #[yaserde(rename = "Performer", prefix = "ern")]
+    #[validate]
     pub performer: Option<Contributor>,
 }
 
@@ -956,6 +1048,7 @@ pub struct Character {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceRightsController {
@@ -964,12 +1057,14 @@ pub struct ResourceRightsController {
         prefix = "ern",
         validation = "RightsControllerPartyReferenceValidator"
     )]
+    #[validate(custom = RightsControllerPartyReferenceValidator::json_validate)]
     pub rights_controller_party_reference: String,
     #[yaserde(
         rename = "RightsControlType",
         prefix = "ern",
         validation = "AvsRightsControllerRoleValidator"
     )]
+    #[validate(custom = AvsRightsControllerRoleValidator::json_validate_vec)]
     pub rights_control_types: Vec<String>,
     #[yaserde(rename = "DelegatedUsageRights", prefix = "ern")]
     pub delegated_usage_rightss: Vec<DelegatedUsageRights>,
@@ -984,10 +1079,12 @@ pub struct ResourceRightsController {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct UseType {
     #[yaserde(text, validation = "AvsUseTypeERNValidator")]
+    #[validate(custom = AvsUseTypeERNValidator::json_validate)]
     pub content: String,
 }
 
@@ -1000,12 +1097,15 @@ pub struct UseType {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct DelegatedUsageRights {
     #[yaserde(rename = "UseType", prefix = "ern")]
+    #[validate]
     pub use_types: Vec<UseType>,
     #[yaserde(rename = "TerritoryOfRightsDelegation", prefix = "ern")]
+    #[validate]
     pub territory_of_rights_delegations: Vec<AllTerritoryCode>,
 }
 
@@ -1018,10 +1118,12 @@ pub struct DelegatedUsageRights {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct AllTerritoryCode {
     #[yaserde(text, validation = "AvsAllTerritoryCodeValidator")]
+    #[validate(custom = AvsAllTerritoryCodeValidator::json_validate)]
     pub content: String,
 }
 
@@ -1034,10 +1136,12 @@ pub struct AllTerritoryCode {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct EventDateWithoutFlags {
     #[yaserde(text, validation = "DdexIsoDateValidator")]
+    #[validate(custom = DdexIsoDateValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "IsApproximate")]
     pub is_approximate: Option<bool>,
@@ -1052,10 +1156,12 @@ pub struct EventDateWithoutFlags {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ParentalWarningTypeWithTerritory {
     #[yaserde(text, validation = "AvsParentalWarningTypeValidator")]
+    #[validate(custom = AvsParentalWarningTypeValidator::json_validate)]
     pub content: String,
 }
 
@@ -1068,10 +1174,12 @@ pub struct ParentalWarningTypeWithTerritory {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Language {
     #[yaserde(text, validation = "DdexLanguageAndScriptCodeWithRestrictionValidator")]
+    #[validate(custom = DdexLanguageAndScriptCodeWithRestrictionValidator::json_validate)]
     pub content: String,
 }
 
@@ -1084,6 +1192,7 @@ pub struct Language {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Image {
@@ -1092,14 +1201,18 @@ pub struct Image {
         prefix = "ern",
         validation = "ResourceReferenceValidator"
     )]
+    #[validate(custom = ResourceReferenceValidator::json_validate)]
     pub resource_reference: String,
     #[yaserde(rename = "Type", prefix = "ern")]
+    #[validate]
     pub kind: ImageType,
     #[yaserde(rename = "ResourceId", prefix = "ern")]
     pub resource_ids: Vec<ResourceProprietaryId>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
+    #[validate]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "TechnicalDetails", prefix = "ern")]
+    #[validate]
     pub technical_detailss: Vec<TechnicalImageDetails>,
 }
 
@@ -1112,10 +1225,12 @@ pub struct Image {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ImageType {
     #[yaserde(text, validation = "AvsImageTypeValidator")]
+    #[validate(custom = AvsImageTypeValidator::json_validate)]
     pub content: String,
     #[yaserde(attribute, rename = "Namespace")]
     pub namespace: Option<String>,
@@ -1148,6 +1263,7 @@ pub struct ResourceProprietaryId {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct TechnicalImageDetails {
@@ -1156,6 +1272,7 @@ pub struct TechnicalImageDetails {
         prefix = "ern",
         validation = "TechnicalResourceDetailsReferenceValidator"
     )]
+    #[validate(custom = TechnicalResourceDetailsReferenceValidator::json_validate)]
     pub technical_resource_details_reference: String,
     #[yaserde(rename = "File", prefix = "ern")]
     pub file: Option<File>,
@@ -1172,12 +1289,15 @@ pub struct TechnicalImageDetails {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ReleaseList {
     #[yaserde(rename = "Release", prefix = "ern")]
+    #[validate]
     pub release: Option<Release>,
     #[yaserde(rename = "TrackRelease", prefix = "ern")]
+    #[validate]
     pub track_releases: Vec<TrackRelease>,
 }
 
@@ -1190,6 +1310,7 @@ pub struct ReleaseList {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Release {
@@ -1198,26 +1319,33 @@ pub struct Release {
         prefix = "ern",
         validation = "ReleaseReferenceValidator"
     )]
+    #[validate(custom = ReleaseReferenceValidator::json_validate)]
     pub release_reference: String,
     #[yaserde(rename = "ReleaseType", prefix = "ern")]
+    #[validate]
     pub release_types: Vec<ReleaseTypeForReleaseNotification>,
     #[yaserde(rename = "ReleaseId", prefix = "ern")]
     pub release_id: ReleaseId,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
+    #[validate]
     pub display_titles: Vec<DisplayTitle>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
+    #[validate]
     pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
+    #[validate]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "ReleaseLabelReference", prefix = "ern")]
+    #[validate]
     pub release_label_references: Vec<ReleaseLabelReferenceWithParty>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: Option<String>,
     #[yaserde(rename = "Genre", prefix = "ern")]
     pub genres: Vec<GenreWithTerritory>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
+    #[validate]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "ResourceGroup", prefix = "ern")]
     pub resource_group: ResourceGroup,
@@ -1232,10 +1360,12 @@ pub struct Release {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ReleaseTypeForReleaseNotification {
     #[yaserde(text, validation = "AvsReleaseTypeERN4Validator")]
+    #[validate(custom = AvsReleaseTypeERN4Validator::json_validate)]
     pub content: String,
 }
 
@@ -1268,16 +1398,19 @@ pub struct ReleaseId {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ReleaseLabelReferenceWithParty {
     #[yaserde(text, validation = "DdexLocalPartyAnchorReferenceValidator")]
+    #[validate(custom = DdexLocalPartyAnchorReferenceValidator::json_validate)]
     pub content: String,
     #[yaserde(
         attribute,
         rename = "ApplicableTerritoryCode",
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
+    #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate)]
     pub applicable_territory_code: Option<String>,
 }
 
@@ -1290,18 +1423,22 @@ pub struct ReleaseLabelReferenceWithParty {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceGroup {
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
+    #[validate]
     pub display_titles: Vec<DisplayTitle>,
     #[yaserde(rename = "SequenceNumber", prefix = "ern")]
     pub sequence_number: Option<i32>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
+    #[validate]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "ResourceGroupContentItem", prefix = "ern")]
+    #[validate]
     pub resource_group_content_items: Vec<ResourceGroupContentItem>,
     #[yaserde(rename = "NoDisplaySequence", prefix = "ern")]
     pub no_display_sequence: Option<bool>,
@@ -1316,6 +1453,7 @@ pub struct ResourceGroup {
     yaserde_derive::YaDeserialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceGroupContentItem {
@@ -1326,6 +1464,7 @@ pub struct ResourceGroupContentItem {
         prefix = "ern",
         validation = "ReleaseResourceReferenceValidator"
     )]
+    #[validate(custom = ReleaseResourceReferenceValidator::json_validate)]
     pub release_resource_reference: String,
 }
 
@@ -1354,6 +1493,7 @@ pub struct GenreWithTerritory {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct TrackRelease {
@@ -1362,6 +1502,7 @@ pub struct TrackRelease {
         prefix = "ern",
         validation = "ReleaseReferenceValidator"
     )]
+    #[validate(custom = ReleaseReferenceValidator::json_validate)]
     pub release_reference: String,
     #[yaserde(rename = "ReleaseId", prefix = "ern")]
     pub release_id: ReleaseId,
@@ -1370,8 +1511,10 @@ pub struct TrackRelease {
         prefix = "ern",
         validation = "ReleaseResourceReferenceValidator"
     )]
+    #[validate(custom = ReleaseResourceReferenceValidator::json_validate)]
     pub release_resource_reference: String,
     #[yaserde(rename = "ReleaseLabelReference", prefix = "ern")]
+    #[validate]
     pub release_label_references: Vec<ReleaseLabelReferenceWithParty>,
     #[yaserde(rename = "Genre", prefix = "ern")]
     pub genres: Vec<GenreWithTerritory>,

@@ -2,6 +2,7 @@ mod schema;
 mod validation;
 
 pub use schema::*;
+use serde_valid::json::FromJsonStr;
 use std::io::{BufRead, BufReader};
 
 use regex::Regex;
@@ -11,7 +12,14 @@ pub enum DdexMessage {
     NewRelease(NewReleaseMessage),
 }
 
-pub fn ddex_parse_str(str: String) -> Result<DdexMessage, String> {
+pub fn ddex_parse_json_str(str: String) -> Result<DdexMessage, String> {
+    match NewReleaseMessage::from_json_str(&str) {
+        Ok(res) => Ok(DdexMessage::NewRelease(res)),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub fn ddex_parse_xml_str(str: String) -> Result<DdexMessage, String> {
     let re = Regex::new(r"NewReleaseMessage|PurgeReleaseMessage").expect("Error in regex");
     let message_type = re.find(&str).expect("Message type not found");
 
@@ -26,7 +34,7 @@ pub fn ddex_parse_str(str: String) -> Result<DdexMessage, String> {
     }
 }
 
-pub fn ddex_parse_file(path: &str) -> Result<DdexMessage, String> {
+pub fn ddex_parse_xml_file(path: &str) -> Result<DdexMessage, String> {
     let mut file = std::fs::File::open(path).expect("Failed to open the file");
     let mut reader = BufReader::new(file);
 
