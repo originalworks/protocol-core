@@ -1,0 +1,36 @@
+services:
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "5001:5001"
+
+  graph-node:
+    image: graphprotocol/graph-node:v0.33.0
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8020:8020"
+      - "8030:8030"
+      - "8040:8040"
+    depends_on:
+      - ipfs
+      - postgres-graph
+    environment:
+      node_id: index_node_0
+      ipfs: "ipfs:5001"
+      GRAPH_NODE_CONFIG: /etc/graph-node/graph-node-config.toml
+      RUST_LOG: info
+      GRAPH_LOG: debug
+      RUST_LOG_STYLE: always
+      GRAPH_ALLOW_NON_DETERMINISTIC_IPFS: 1
+    volumes:
+      - .:/etc/graph-node:ro
+
+  postgres-graph:
+    image: postgres
+    command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: let-me-in
+      POSTGRES_DB: graph-node
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
