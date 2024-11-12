@@ -1,0 +1,15 @@
+type DdexMessage @entity {
+  id: ID!
+  isrc: String!
+  releaseId: String!
+}
+
+type Release @entity {
+  id: ID!
+  isrcs: [Isrc!]!
+}
+
+type Isrc @entity {
+  id: ID!
+  lastUpdate: BigInt!
+}

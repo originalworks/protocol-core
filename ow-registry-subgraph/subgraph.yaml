@@ -1,0 +1,25 @@
+specVersion: 0.0.5
+description: "example of a subgraph"
+repository: https://github.com/graphprotocol/graph-tooling.git
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DdexSequencer
+    network: kurtosis
+    source:
+      address: "0xB965D10739e19a9158e7f713720B0145D996E370"
+      abi: DdexSequencer
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - DdexMessage
+      abis:
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      eventHandlers:
+        - event: MessageDigested((string,string))
+          handler: handleMessageDigested

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ern:PurgeReleaseMessage xmlns:ern="http://ddex.net/xml/ern/43"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                   xsi:schemaLocation="http://ddex.net/xml/ern/43 http://service.ddex.net/xml/ern/43/release-notification.xsd" 
+                   LanguageAndScriptCode="en" AvsVersionId="4.3">
+
+    <!-- MessageHeader contains:
+            MessageID: A unique identifier for the message.
+            MessageCreatedDateTime: The date and time when the message was created.
+            MessageSender: Information about the sender of the message.
+            MessageRecipient: Information about the recipient of the message. 
+    -->
+    <MessageHeader>
+        <MessageId>MSG12345-01</MessageId>
+        <MessageSender>
+            <PartyId>PADPIDA2014120301</PartyId>
+            <PartyName>
+                <FullName>Example Sender</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2024072201A</PartyId>
+            <PartyName>
+                <FullName>Original Works</FullName>
+            </PartyName>
+        </MessageRecipient>
+        <MessageCreatedDateTime>2024-09-24T14:57:25+01:00</MessageCreatedDateTime>
+    </MessageHeader>
+
+  <PurgedRelease>
+
+    <ReleaseId>
+      <GRid>G123456789012345</GRid>
+    </ReleaseId>
+  </PurgedRelease>
+</ern:PurgeReleaseMessage>
