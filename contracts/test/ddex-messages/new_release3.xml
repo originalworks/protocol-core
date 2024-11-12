@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NewReleaseMessage xmlns="http://ddex.net/xml/ern/43"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                   xsi:schemaLocation="http://ddex.net/xml/ern/43 http://service.ddex.net/xml/ern/43/release-notification.xsd" 
+                   AvsVersionId="4.3" 
+                   LanguageAndScriptCode="en">
+
+
+    <MessageHeader>
+        <MessageId>MSG12345-01</MessageId>
+        <MessageCreatedDateTime>2024-06-27T10:00:00Z</MessageCreatedDateTime>
+        <MessageSender>
+            <PartyId>PADPIDA2014120301</PartyId>
+            <PartyName>
+                <FullName>Example Sender</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2014120302</PartyId>
+            <PartyName>
+                <FullName>Example Recipient</FullName>
+            </PartyName>
+        </MessageRecipient>
+    </MessageHeader>
+
+
+    <ReleaseList>
+        <Release>
+
+            <ReleaseId>
+                <ProprietaryId>REL12345</ProprietaryId> <!-- Optional -->
+                <GlobalReleaseId>GRid::G123456789012345678-asdf</GlobalReleaseId> <!-- Compulsory -->
+                <ICPN>1234567890123</ICPN> <!-- Compulsory -->
+                <CatalogNumber>CAT12345</CatalogNumber> <!-- Optional -->
+            </ReleaseId>
+
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title>
+                    <TitleText>Example Release</TitleText>
+                </Title>
+                <Artist>
+                    <PartyName>
+                        <FullName>Example Artist</FullName>
+                    </PartyName>
+                </Artist>
+                <LabelName>Example Label</LabelName>
+                <Genre>
+                    <GenreText>Pop</GenreText>
+                </Genre>
+                <ParentalWarningType>NotExplicit</ParentalWarningType>
+                <TechnicalDetails>
+
+                    <SoundRecording>
+                        <SoundRecordingId> <!-- Compulsory -->
+                            <ISRC>US1234567890</ISRC>
+                        </SoundRecordingId>
+
+
+                        <ResourceRightsController> <!-- Compulsory -->
+                            <PartyId>PADPIDA2014120301</PartyId>
+                            <PartyName>
+                                <FullName>Example Rights Holder</FullName>
+                            </PartyName>
+                        </ResourceRightsController>
+                        
+                        <RightsCoverage> <!-- Compulsory -->
+                            <RightShare>
+                                <RightShareProprietaryId>ISRC-12345</RightShareProprietaryId>
+
+                                <RightController>
+                                    <RightControllerName>MusicLabel</RightControllerName>
+                                    <PartyID>PR789012</PartyID>
+                                    <PartyName>MusicPublisher</PartyName>
+                                </RightController>
+                                <RightType>Reproduction</RightType>
+                                <RightType>MakeAvailableRight</RightType>
+                            </RightShare>
+                        </RightsCoverage>
+
+                        <Title> <!-- Optional -->
+                            <TitleText>Example Sound Recording</TitleText>
+                        </Title>
+                        <DisplayArtist> <!-- Optional -->
+                            <PartyName>
+                                <FullName>Example Artist</FullName>
+                            </PartyName>
+                        </DisplayArtist>
+                        <Duration>PT3M30S</Duration> <!-- Optional -->
+                        <MarketingInformation><!-- Optional -->
+                            <ReleaseDate>2024-07-01</ReleaseDate>
+                        </MarketingInformation>
+                        <ResourceDetailsByTerritory> <!-- Optional -->
+                            <TerritoryCode>Worldwide</TerritoryCode>
+                            <MusicalWorkId>
+                                <ISWC>T-123.456.789.Z</ISWC>
+                            </MusicalWorkId>
+                        </ResourceDetailsByTerritory>
+                    </SoundRecording>
+                </TechnicalDetails>
+            </ReleaseDetailsByTerritory>
+        </Release>
+    </ReleaseList>
+
+
+</NewReleaseMessage>
