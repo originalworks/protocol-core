@@ -1,0 +1,15 @@
+services:
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "5001:5001"
+
+  test_runner:
+    depends_on:
+      - ipfs
+    volumes:
+      - ..:/protocol
+    image: rust:latest
+    working_dir: /protocol/ow_data_provider_cli
+    user: "${UID:-1000}:${GID:-1000}"
+    command: cargo test
