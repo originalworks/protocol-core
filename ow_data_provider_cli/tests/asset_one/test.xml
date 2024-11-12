@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ern:NewReleaseMessage xmlns:ern="http://ddex.net/xml/ern/43"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                   xsi:schemaLocation="http://ddex.net/xml/ern/43 http://service.ddex.net/xml/ern/43/release-notification.xsd" 
+                   LanguageAndScriptCode="en" AvsVersionId="4.3">
+
+    
+    <!--NOTES.
+        Report deals are not allowed in a NewReleaseMessage. You need use the UpdateRelease to report the deals
+        This file should only contain PUBLIC information.
+    -->
+
+    <!--1. MessageHeader contains
+    MessageID: A unique identifier for the message.
+    MessageCreatedDateTime: The date and time when the message was created.
+    MessageSender: Information about the sender of the message.
+    MessageRecipient: Information about the recipient of the message.
+    -->
+    <MessageHeader>
+        <MessageId>MSG12345-01</MessageId>
+        <MessageSender>
+            <PartyId>PADPIDA2014120301</PartyId>
+            <PartyName>
+                <FullName>Example Sender</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2024072201A</PartyId>
+            <PartyName>
+                <FullName>Original Works</FullName>
+            </PartyName>
+        </MessageRecipient>
+        <MessageCreatedDateTime>2024-09-24T14:57:25+01:00</MessageCreatedDateTime>
+    </MessageHeader>
+
+
+    <!-- ReleaseAdmin communicates the names of record company or
+    distributor personnel that that record company or distributor requests be
+    granted access to the DSP’s systems to administer a release;
+    -->
+    <ReleaseAdmin>
+        <!-- ReleaseAdminId identifies a group of record company personnel to be granted
+         access to the MessageRecipient’s systems to administer the Release. Note that the communication of user access credentials is out of scope for the NewReleaseMessage.
+        -->
+        <ReleaseAdminId>PADPIDA2014120301</ReleaseAdminId> 
+        <PersonnelDescription>Example Sender</PersonnelDescription> <!-- INDEXED-->
+        <SystemDescription></SystemDescription>
+    </ReleaseAdmin>
+
+    <!-- PartyList communicates metadata about the parties that contributed to
+    the creation, publication and/or distribution of the releases and resources
+    described in the NewReleaseMessage. For example, writers, recording
+    artists, session musicians, engineers or record companies;-->
+    <PartyList>
+        <Party> <!-- Parties can either be in a PartyID (DDEX) or PartyName-->
+            <PartyReference>PADPIDA2014120301</PartyReference>
+            <PartyId>
+                <ISNI>0000000080549162</ISNI> <!--ISO 27729 -->
+                <DPID>PADPIDA2014120301</DPID>
+            </PartyId>
+
+        <Affiliation> <!--INDEXED-->
+                <PartyAffiliateReference>PADPIDA2014120301</PartyAffiliateReference> <!--OR <CompanyName>My Company</CompanyName>-->
+                <Type>MusicLicensingCompany</Type>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <ValidityPeriod>
+                    <StartDate>2023</StartDate>
+                    <EndDate>2025</EndDate>
+                </ValidityPeriod>
+                <RightsType>ReproductionRight</RightsType>
+                <RightsType>MakeAvailableRight</RightsType>
+                <PercentageOfRightsAssignment>100</PercentageOfRightsAssignment>
+        </Affiliation>
+
+        </Party>
+        <Party>
+            <PartyReference>PExampleReference1</PartyReference>
+            <PartyName>
+                <FullName>Example Rights Holder</FullName>
+                <FullNameIndexed>Example Rights Holder</FullNameIndexed>
+            </PartyName>
+        </Party>
+        <Party>
+            <PartyReference>PExampleReference2</PartyReference>
+            <PartyName>
+                <FullName>Artist Namer</FullName>
+                <FullNameIndexed>Example Artist Namer</FullNameIndexed>
+            </PartyName>
+        </Party>
+    </PartyList>
+
+    <!-- ResourceList communicates metadata about Album Releases and Track
+    Releases that a record company or distributor wishes a DSP to make
+    available to consumers -->
+    <ResourceList>
+
+
+        <!-- Sound Recording Resource -->
+         <SoundRecording>
+            <ResourceReference>A1</ResourceReference>
+            <Type>MusicalWorkSoundRecording</Type>
+            <SoundRecordingEdition>
+                <Type>ImmersiveEdition</Type>
+                <ResourceId>
+                    <ISRC>US1234567890</ISRC> <!-- INDEXED-->
+                    <CatalogNumber Namespace="DDD"></CatalogNumber>
+                    <ProprietaryId Namespace="DDD"></ProprietaryId>
+                </ResourceId>
+                <PLine>
+                    <Year>2024</Year>
+                    <PLineText>2024 My company, LLC</PLineText>
+                </PLine>
+                <RecordingMode>Stereo</RecordingMode>
+                <TechnicalDetails>
+                    <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+                    <DeliveryFile>
+                        <Type>AudioFile</Type>
+                        <File>
+                            <URI>bafybeigdyrztfdtymg4vwyoklvgv27bmwypc33m2gw4npyulohj2bkq6za</URI>
+                         </File>
+                         <Fingerprint>
+                            <Algorithm Namespace="ISCC" UserDefinedValue="ISCC:KEC37BNSAEG5UGZOQGP4RB4J4SOOPSLAIL74KIXPQWGN3PZIILZ2YPI">UserDefined</Algorithm>
+                            <Version></Version>
+                            <Parameter></Parameter>
+                        </Fingerprint>
+
+                        <Fingerprint>
+                            <Algorithm Namespace="ACRCloud" UserDefinedValue="ACRCloud:Passed">UserDefined</Algorithm>
+                            <Version></Version>
+                            <Parameter></Parameter>
+                        </Fingerprint>
+                    </DeliveryFile>
+                </TechnicalDetails>
+            </SoundRecordingEdition>
+            <RecordingFormat>Acoustic</RecordingFormat>
+
+            <WorkId IsReplaced="false">
+                <ISWC>T-123.456.789.Z</ISWC>
+            </WorkId>
+            <DisplayTitleText></DisplayTitleText>
+            <DisplayTitle>
+                <TitleText>Example Sound Recording</TitleText>
+                <SubTitle>Example Subtitle</SubTitle>
+            </DisplayTitle>
+
+            <!-- Only for v.4.3.1
+            
+            <FormalTitle>
+                <TitleText>Example Sound Recording</TitleText>
+                <SubTitle>Example Subtitle</SubTitle>
+            </FormalTitle>
+
+            <GroupingTitle>
+                <TitleText>Example Sound Recording</TitleText>
+                <SubTitle>Example Subtitle</SubTitle>
+            </GroupingTitle> 
+           -->
+
+            <VersionType>AlbumVersion</VersionType>
+            <DisplayArtistName></DisplayArtistName>
+            <DisplayArtist>
+                <ArtistPartyReference>PExampleReference2</ArtistPartyReference>
+                <DisplayArtistRole>Artist</DisplayArtistRole>
+                <!--Only for v.4.3.1
+                <SpecialDisplayArtist>Traditional</SpecialDisplayArtist>
+                <ArtisticRole>
+                    <Value>Author</Value>
+                </ArtisticRole>
+                 -->
+                <TitleDisplayInformation>
+                    <IsDisplayedInTitle>true</IsDisplayedInTitle>
+                </TitleDisplayInformation>
+            </DisplayArtist>
+            <Contributor SequenceNumber="1">
+                <ContributorPartyReference>PExampleReference2</ContributorPartyReference>
+                
+                <Role>Author</Role>
+                 <!--Only for v.4.3.1
+                <Role>
+                    <Value>Author</Value>
+                </Role>
+                -->
+                
+             </Contributor>
+            <Character>
+                <CharacterPartyReference>PExampleReference2</CharacterPartyReference>
+                <!--Only for v.4.3.1
+                <Performer>
+                    <SpecialContributor>Traditional</SpecialContributor>
+                    <Role>
+                        <Value>Author</Value>
+                    </Role>
+                </Performer>
+                -->
+            </Character>
+            <ResourceRightsController>
+                <RightsControllerPartyReference>PExampleReference1</RightsControllerPartyReference>
+                <RightsControlType>RoyaltyAdministrator</RightsControlType>
+            </ResourceRightsController>
+            <Duration>PT2M28S</Duration>
+            <CreationDate IsApproximate="true">1993-12-01</CreationDate>
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <IsInstrumental>false</IsInstrumental>
+            <LanguageOfPerformance>ja</LanguageOfPerformance>
+        </SoundRecording>
+
+        <!-- Image Resource for the Cover Image -->
+        <Image>
+            <ResourceReference>A2</ResourceReference> <!--Reference used below in ReleaseList-->
+            <Type>FrontCoverImage</Type>
+            <ResourceId>
+                <ProprietaryId Namespace="PADPIDA2013042401U">REVELATOR_FILE23323</ProprietaryId>
+            </ResourceId>
+            <ParentalWarningType>NotExplicit</ParentalWarningType>
+            <TechnicalDetails>
+                <TechnicalResourceDetailsReference>T22</TechnicalResourceDetailsReference>
+                <File>
+                    <URI>bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku</URI> <!--CIDv1 of the file on IPFS-->
+                </File>
+                <Fingerprint>
+                    <Algorithm Namespace="ISCC" UserDefinedValue="ISCC:KEC37BNSAEG5UGZOQGP4RB4J4SOOPSLAIL74KIXPQWGN3PZIILZ2YPI">UserDefined</Algorithm>
+                </Fingerprint>
+            </TechnicalDetails>
+        </Image>
+        
+    </ResourceList>
+
+    <!-- 2. ReleaseList contains
+    ReleaseType: Indicate the type of release (e.g., Album, Single, etc.).
+    ReleaseID: A unique identifier for the release (e.g., a Global Release Identifier - GRid).
+    ReleaseTitle: The title of the release.
+    ReleaseLabel: The label or organization responsible for the release.
+    -->
+    <ReleaseList>
+        <Release>
+            <ReleaseReference>R0</ReleaseReference>
+            <ReleaseType>Album</ReleaseType>
+            <!--ReleaseId fields:
+            ProprietaryId:  A unique identifier assigned by the sender or an internal system. Used internally within the organization that is sending the message.
+            GRid: A globally unique identifier for identifying a release across different organizations and systems worldwide.
+            ICPN (International Standard Recording Code): Can be a EAN (13 or 8 digits) or an UPC (12 digits).
+            CatalogNumber: A catalog number assigned by the record label or distributor.
+            -->
+            <ReleaseId>
+                <GRid>G123456789012345678</GRid>
+                <ICPN>1234567890123</ICPN>
+            </ReleaseId>
+            <DisplayTitleText>Title</DisplayTitleText>
+            <DisplayTitle ApplicableTerritoryCode="Worldwide" IsDefault="true">
+                <TitleText>Great Title</TitleText>
+            </DisplayTitle>
+            <DisplayArtistName ApplicableTerritoryCode="Worldwide" LanguageAndScriptCode="ja-Latn" IsDefault="true">Saeko Shu</DisplayArtistName>
+            <DisplayArtistName LanguageAndScriptCode="ja-Jpan" ApplicableTerritoryCode="Worldwide">しゅうさえこ</DisplayArtistName>
+            <DisplayArtist SequenceNumber="1">
+                <ArtistPartyReference>PExampleReference2</ArtistPartyReference>
+                <DisplayArtistRole>MainArtist</DisplayArtistRole>
+            </DisplayArtist>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PExampleReference1</ReleaseLabelReference>
+            <Duration>PT36M30S</Duration>
+            <Genre>
+                <GenreText></GenreText>
+            </Genre>
+            <!-- For v.4.3.1.
+            <DisplayGenre ApplicableTerritoryCode="Worldwide">
+               <GenreText>Pop</GenreText>
+            </DisplayGenre>
+            -->
+            <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+            <ResourceGroup>
+                <DisplayTitleText></DisplayTitleText>
+                <DisplayTitle>
+                    <TitleText></TitleText>
+                    <SubTitle></SubTitle>
+                </DisplayTitle>
+                 <!-- Only for v.4.3.1
+                <FormalTitle>
+                    <TitleText></TitleText>
+                    <SubTitle></SubTitle>
+                </FormalTitle>
+                <GroupingTitle>
+                    <TitleText></TitleText>
+                    <SubTitle></SubTitle>
+                </GroupingTitle>
+                -->
+                <SequenceNumber>1</SequenceNumber>
+                <NoDisplaySequence>true</NoDisplaySequence>
+                <DisplayArtist>
+                    <ArtistPartyReference>PExampleReference2</ArtistPartyReference>
+                    <DisplayArtistRole>Artist</DisplayArtistRole>
+                     <!-- Only for v.4.3.1
+                    <SpecialDisplayArtist>Traditional</SpecialDisplayArtist>
+                    <ArtisticRole>
+                        <Value>Author</Value>
+                    </ArtisticRole>
+                     -->
+                    <TitleDisplayInformation>
+                        <IsDisplayedInTitle>true</IsDisplayedInTitle>
+                    </TitleDisplayInformation>
+                </DisplayArtist>
+                <ResourceGroupContentItem>
+                   <SequenceNumber>1</SequenceNumber>
+                   <ReleaseResourceReference>A1</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+                <ResourceGroupContentItem>
+                   <SequenceNumber>2</SequenceNumber>
+                   <ReleaseResourceReference>A2</ReleaseResourceReference>
+                </ResourceGroupContentItem>
+            </ResourceGroup>
+        </Release>
+        <TrackRelease>
+            <ReleaseReference>R1</ReleaseReference>
+            <ReleaseId>
+               <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404900_R1</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A1</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PExampleReference2</ReleaseLabelReference>
+            <Genre>
+                <GenreText></GenreText>
+            </Genre>
+            <!-- For v.4.3.1.
+            <DisplayGenre ApplicableTerritoryCode="Worldwide">
+               <GenreText>Pop</GenreText>
+            </DisplayGenre>
+            -->    
+         </TrackRelease>
+         <TrackRelease>
+            <ReleaseReference>R2</ReleaseReference>
+            <ReleaseId>
+               <ProprietaryId Namespace="PADPIDA2013042401U">00094631432057_JPTO09404910_R2</ProprietaryId>
+            </ReleaseId>
+            <ReleaseResourceReference>A2</ReleaseResourceReference>
+            <ReleaseLabelReference ApplicableTerritoryCode="Worldwide">PExampleReference2</ReleaseLabelReference>
+            <Genre>
+                <GenreText></GenreText>
+            </Genre>
+            <!-- For v.4.3.1.
+            <DisplayGenre ApplicableTerritoryCode="Worldwide">
+               <GenreText>Pop</GenreText>
+            </DisplayGenre>
+            -->    
+        </TrackRelease>
+    </ReleaseList>
+</ern:NewReleaseMessage>

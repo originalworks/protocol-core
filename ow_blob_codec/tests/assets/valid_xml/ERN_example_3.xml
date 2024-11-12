@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ The following example updates the TitleText of a Release
+-->
+
+<UpdateReleaseMessage xmlns="http://ddex.net/xml/ern/43"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                      xsi:schemaLocation="http://ddex.net/xml/ern/43 http://service.ddex.net/xml/ern/43/update-notification.xsd" 
+                      AvsVersionId="4.3" 
+                      LanguageAndScriptCode="en"> <!-- Compulsory -->
+
+    <!-- MessageHeader contains:
+    - MessageID: A unique identifier for the message.
+    - MessageCreatedDateTime: The date and time when the message was created.
+    - MessageSender: Information about the sender of the message.
+    - MessageRecipient: Information about the recipient of the message.
+    -->
+    <MessageHeader> <!-- Compulsory -->
+        <MessageId>MSG12345-03</MessageId>
+        <MessageCreatedDateTime>2024-07-01T10:00:00Z</MessageCreatedDateTime>
+        <MessageSender>
+            <PartyId>PADPIDA2014120301</PartyId>
+            <PartyName>
+                <FullName>Example Sender</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2024072201A</PartyId>
+            <PartyName>
+                <FullName>Original Works</FullName>
+            </PartyName>
+        </MessageRecipient>
+    </MessageHeader>
+
+    <!-- UpdateReleaseList contains:
+    - ReleaseID: A unique identifier for the release (e.g., a Global Release Identifier - GRid).
+    - ReleaseDetailsByTerritory: Contains updated details for the release.
+    -->
+    <UpdateReleaseList>
+        <UpdateRelease>
+            <ReleaseId>
+                <ProprietaryId>REL12345</ProprietaryId>
+                <GlobalReleaseId>GRid::G123456789012345678</GlobalReleaseId> <!-- Compulsory -->
+                <ICPN>1234567890123</ICPN> <!-- Compulsory -->
+                <CatalogNumber>CAT12345</CatalogNumber>
+            </ReleaseId>
+            <ReleaseDetailsByTerritory>
+                <Title>
+                    <TitleText>Example Release (Updated Title)</TitleText>
+                </Title>
+            </ReleaseDetailsByTerritory>
+        </UpdateRelease>
+    </UpdateReleaseList>
+
+</UpdateReleaseMessage>

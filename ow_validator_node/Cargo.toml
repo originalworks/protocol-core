@@ -1,0 +1,15 @@
+[package]
+name = "ow_validator_node"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+alloy = { version = "0.3.0", features = ["full"] }
+dotenvy = "0.15.7"
+futures-util = "0.3.30"
+ow_blob_codec = "0.1.1"
+quick-xml = "0.36.2"
+reqwest = "0.12.7"
+serde = { version = "1.0.210", features = ["derive"] }
+sha2 = "0.10.8"
+tokio = { version = "1.39.3", features = ["full"] }
