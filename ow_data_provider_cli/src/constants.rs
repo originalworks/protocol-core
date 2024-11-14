@@ -8,6 +8,6 @@ pub const IPFS_API_ADD_FILE: &str = "/api/v0/add";
 pub const OUTPUT_FILES_DIR: &str = "./output_files";
 
 #[cfg(all(test, not(rust_analyzer)))]
-pub const IPFS_API_BASE_URL: &str = "http://localhost:5001";
+pub const IPFS_API_BASE_URL: &str = "http://ipfs:5001";
 #[cfg(all(test, not(rust_analyzer)))]
 pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
