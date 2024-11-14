@@ -1,3 +1,3 @@
 .env
 /target/
-/tests/temp/
+/tests/temp_file.txt

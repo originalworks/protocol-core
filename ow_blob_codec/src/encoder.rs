@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn encoded_file_is_smaller() {
-        let path = Path::new("./tests/assets/valid_xml/ERN_example_1.xml");
+        let path = Path::new("./tests/assets/msg_one.json");
         let mut file = File::open(path).unwrap();
         let mut file_buffer = Vec::new();
         file.read_to_end(&mut file_buffer).unwrap();
