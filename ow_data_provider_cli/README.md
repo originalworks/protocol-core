@@ -76,7 +76,7 @@ This last command may take some time to complete. Once it's done, it will return
 }
 ```
 
-Copy `ddexSequencer` address without the `0x` prefix and paste the value in the file `ow_data_provider_cli/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`. (THIS SEEMS TO HAPPEN AUTOMATICALLY, SO NO LONGER NEEDED?).
+Confirm `ddexSequencer` address without the `0x` prefix is in the file `ow_data_provider_cli/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`.
 
 
 ### 7. Run the tests
