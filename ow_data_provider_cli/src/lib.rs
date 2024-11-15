@@ -3,6 +3,7 @@ mod constants;
 mod ddex_sequencer;
 mod errors;
 mod ipfs;
+mod output_generator;
 
 use alloy::network::EthereumWallet;
 use alloy::providers::ProviderBuilder;
@@ -55,7 +56,8 @@ impl Config {
 }
 
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    ipfs::create_output_files(&config.folder_path).await?;
+    output_generator::create_output_files(&config.folder_path).await?;
+
     let private_key_signer: PrivateKeySigner = config
         .private_key
         .parse()
@@ -65,10 +67,10 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let provider = ProviderBuilder::new()
         .with_recommended_fillers()
         .wallet(wallet)
-        .on_http(config.rpc_url.parse().unwrap());
+        .on_http(config.rpc_url.parse()?);
 
     let ddex_sequencer_context = DdexSequencerContext::build(&provider).await?;
-    let blob_transaction_data = BlobTransactionData::build().unwrap();
+    let blob_transaction_data = BlobTransactionData::build()?;
     println!("sending tx...");
     ddex_sequencer_context
         .send_blob(blob_transaction_data)

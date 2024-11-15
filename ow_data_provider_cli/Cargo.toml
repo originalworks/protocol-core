@@ -8,12 +8,15 @@ reqwest = { version = "0.12.8", features = ["stream", "multipart", "json"] }
 alloy = { version = "0.3.6", features = ["full"] }
 c-kzg = "1.0.3"
 dotenvy = "0.15.7"
-ow_blob_codec = "0.1.1"
+ow_blob_codec = { path = "../ow_blob_codec" }
 tokio = { version = "1.40.0", features = ["full"] }
 tokio-util = "0.7.12"
 serde = "1.0.210"
 infer = "0.16.0"
 quick-xml = "0.36.2"
+ddex_schema = { path = "../parser/ddex_schema" }
+serde_valid = "0.25.0"
+
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(rust_analyzer)'] }

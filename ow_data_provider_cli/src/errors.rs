@@ -8,6 +8,7 @@ pub enum OwDataProviderCliError {
     InvalidBlobProof(),
     SourcePathIsNotDir(String),
     EmptySourcePathFolder(String),
+    InvalidAssetFolderName(String),
 }
 
 impl fmt::Display for OwDataProviderCliError {
@@ -27,6 +28,9 @@ impl fmt::Display for OwDataProviderCliError {
             }
             Self::EmptySourcePathFolder(path) => {
                 write!(f, "Folder under provided folder_path is empty: {}", path)
+            }
+            Self::InvalidAssetFolderName(folder_name) => {
+                write!(f, "Wrong folder name: {}", folder_name)
             }
         }
     }
