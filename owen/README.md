@@ -1,12 +1,12 @@
-# WIP - Work in progress
+# OWEN - Original Works Electronic notifications
 
-This is still very much pre-alfa early stage sketch-draft prototype!
+This is still a prototype on v0.1
 
 Current status is reported on issues [v0.1](https://github.com/originalworks/protocol/issues/73) and [v0.2](https://github.com/originalworks/protocol/issues/74)
 
-You can currenlty use the CLI to send `.xml` files as a BLOB using [EIP4844](https://www.eip4844.com/) transaction.
+You can currenlty use OWEN to send `.xml` files as a BLOB using [EIP4844](https://www.eip4844.com/) transaction.
 
-# HOW TO USE CLI WITH LOCAL TESTNET
+# HOW TO USE OWEN WITH LOCAL TESTNET
 
 ### 1. Install and run kurtosis testnet:
 
@@ -37,7 +37,7 @@ docker compose -f ./docker/run-local.yml up ipfs -d
 
 1. Copy env file the sample and change the `RPC_URL` and optionally the `PRIVATE_KEY` values:
    ```bash
-   cp ./ow_data_provider_cli/.env.sample ./ow_data_provider_cli/.env
+   cp ./owen/.env.sample ./owen/.env
    ```
 2. Edit the new `.env` file and that change the value of the `RPC_URL` to the RPC value (prefixed with http) that you obtained previously.
 
@@ -76,20 +76,20 @@ This last command may take some time to complete. Once it's done, it will return
 }
 ```
 
-Confirm `ddexSequencer` address without the `0x` prefix is in the file `ow_data_provider_cli/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`.
+Confirm `ddexSequencer` address without the `0x` prefix is in the file `owen/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`.
 
 
 ### 7. Run the tests
 
 ```bash
-$ cd ow_data_provider_cli && cargo run ./tests
+$ cd owen && cargo run ./tests
 ```
 
 As an output you should receive the list of processed messges from the `./tests` directory with the images files that was pined and the receipt of the transaction. Similar to this
 
 ```
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
-     Running `target/debug/ow_data_provider_cli ./tests`
+     Running `target/debug/owen ./tests`
 PROCESSED DDEX MESSAGE:
 Source files: image: ./tests/asset_one/image-asset.png; XML: ./tests/asset_one/test.xml
 Image file ./tests/asset_one/image-asset.png was pined to IPFS under CID: QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS
@@ -108,5 +108,5 @@ TransactionReceipt { inner: Eip4844(ReceiptWithBloom { receipt: Receipt { status
 ### 8 Run Cargo command with a location with xml files
 
 ```bash
-cargo run --manifest-path ./ow_data_provider_cli/Cargo.toml ./dir-with-xml-files
+cargo run --manifest-path ./owen/Cargo.toml ./dir-with-xml-files
 ```
