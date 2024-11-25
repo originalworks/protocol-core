@@ -1,6 +1,6 @@
-use core::PublicOutputs;
 use ddex_schema::{ddex_parse_json_str, DdexMessage};
 use risc0_zkvm::guest::env;
+use shared::PublicOutputs;
 
 fn main() {
     let ddex_message_str: String = env::read();

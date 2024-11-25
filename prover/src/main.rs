@@ -1,12 +1,12 @@
-use core::PublicOutputs;
 use methods::{DDEX_PARSER_GUEST_ELF, DDEX_PARSER_GUEST_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
+use shared::PublicOutputs;
 use std::time::Instant;
 
 fn main() {
     env_logger::init();
     let mut timer = Instant::now();
-    let data = include_str!("../../res/0Audio_lite.json");
+    let data = include_str!("../res/0Audio_lite.json");
     // let mut writer = Vec::new();
 
     let env = ExecutorEnv::builder()

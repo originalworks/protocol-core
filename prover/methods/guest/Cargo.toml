@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm = { version = "1.1.2", default-features = false, features = ['std'] }
-core = { path = "../../core" }
+shared = { path = "../../shared" }
 ddex_schema = { path = "../../../parser/ddex_schema"}
 
