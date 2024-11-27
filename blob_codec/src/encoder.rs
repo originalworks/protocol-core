@@ -1,10 +1,8 @@
-use c_kzg::BYTES_PER_FIELD_ELEMENT;
+use crate::constants::RAW_CHUNK_SIZE;
 use miniz_oxide::deflate::compress_to_vec;
 use std::error::Error;
 use std::path::Path;
 use std::{fs::File, io::Read};
-
-const RAW_CHUNK_SIZE: usize = BYTES_PER_FIELD_ELEMENT - 1;
 
 pub fn file_to_vec(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
     let mut file = File::open(path)?;

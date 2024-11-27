@@ -1,6 +1,5 @@
+use blob_codec::BlobCodec;
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
-use ow_blob_codec::decoder;
-use ow_blob_codec::{blob_from_dir, blob_from_file};
 use std::error::Error;
 use std::fs;
 use std::io::{BufWriter, Write};
@@ -28,15 +27,15 @@ fn single_file_roundtrip() {
     let mut file_buffer = Vec::new();
     file.read_to_end(&mut file_buffer).unwrap();
 
-    let blob = blob_from_file(VALID_FILE_PATH).unwrap();
-    let recovered = decoder::blob_to_vecs(blob).unwrap();
+    let blob = BlobCodec::from_file(VALID_FILE_PATH).unwrap();
+    let recovered = blob.decode().unwrap();
 
     assert_eq!(file_buffer, recovered[0]);
 }
 
 #[test]
 fn dir_roundtrip() {
-    let blob = blob_from_dir(VALID_DIR).unwrap();
+    let blob = BlobCodec::from_dir(VALID_DIR).unwrap();
 
     let files = fs::read_dir(VALID_DIR).unwrap();
     let mut raw_files = Vec::new();
@@ -49,17 +48,17 @@ fn dir_roundtrip() {
         raw_files.push(file_buffer);
     }
 
-    let recovered = decoder::blob_to_vecs(blob).unwrap();
+    let recovered = blob.decode().unwrap();
 
     assert_eq!(raw_files, recovered);
 }
 
 #[test]
 fn pass_kzg_verification_dir() {
-    let blob = blob_from_dir(VALID_DIR).unwrap();
+    let blob = BlobCodec::from_dir(VALID_DIR).unwrap();
     let kzg_settings = ethereum_kzg_settings();
 
-    let kzg_blob = Blob::new(blob);
+    let kzg_blob = Blob::new(blob.to_bytes());
     let kzg_commitment = KzgCommitment::blob_to_kzg_commitment(&kzg_blob, kzg_settings).unwrap();
     let kzg_proof =
         KzgProof::compute_blob_kzg_proof(&kzg_blob, &kzg_commitment.to_bytes(), &kzg_settings)
@@ -78,10 +77,10 @@ fn pass_kzg_verification_dir() {
 
 #[test]
 fn pass_kzg_verification_file() {
-    let blob = blob_from_file(VALID_FILE_PATH).unwrap();
+    let blob = BlobCodec::from_file(VALID_FILE_PATH).unwrap();
     let kzg_settings = ethereum_kzg_settings();
 
-    let kzg_blob = Blob::new(blob);
+    let kzg_blob = Blob::new(blob.to_bytes());
     let kzg_commitment = KzgCommitment::blob_to_kzg_commitment(&kzg_blob, kzg_settings).unwrap();
     let kzg_proof =
         KzgProof::compute_blob_kzg_proof(&kzg_blob, &kzg_commitment.to_bytes(), &kzg_settings)
@@ -102,5 +101,5 @@ fn pass_kzg_verification_file() {
 #[should_panic]
 fn panic_for_blob_overflow() {
     generate_large_text_file(100000).unwrap();
-    blob_from_file(TEMP_FILE_PATH).unwrap();
+    BlobCodec::from_file(TEMP_FILE_PATH).unwrap();
 }
