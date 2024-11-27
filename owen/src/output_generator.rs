@@ -1,5 +1,5 @@
 use crate::constants::OUTPUT_FILES_DIR;
-use crate::errors::OwDataProviderCliError;
+use crate::errors::OwenCliError;
 use crate::ipfs::pin_file;
 use ddex_schema::{
     ddex_parse_xml_file, DdexMessage, File, Image, ImageType, TechnicalImageDetails,
@@ -97,7 +97,7 @@ async fn process_asset_folder(
                     .file_name()
                     .and_then(|name| name.to_str())
                     .ok_or_else(|| {
-                        Box::new(OwDataProviderCliError::InvalidAssetFolderName(
+                        Box::new(OwenCliError::InvalidAssetFolderName(
                             asset_folder_path.to_string_lossy().to_string(),
                         ))
                     })?
@@ -133,12 +133,12 @@ pub async fn create_output_files(
             }
         }
     } else {
-        return Err(Box::new(OwDataProviderCliError::SourcePathIsNotDir(
+        return Err(Box::new(OwenCliError::SourcePathIsNotDir(
             root_folder_dir.to_string_lossy().to_string(),
         )));
     }
     if empty_folder {
-        return Err(Box::new(OwDataProviderCliError::EmptySourcePathFolder(
+        return Err(Box::new(OwenCliError::EmptySourcePathFolder(
             folder_path.to_string(),
         )));
     }
