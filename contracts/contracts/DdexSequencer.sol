@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Whitelist/WhitelistConsumer.sol";
-import "./IStakeVault.sol";
+import "./interfaces/IStakeVault.sol";
+import "./interfaces/IVerifier.sol";
 
 pragma solidity ^0.8.24;
 
-contract DdexSequencer is WhitelistConsumer {
+contract DdexSequencer is WhitelistConsumer, Ownable {
     event NewBlobSubmitted(bytes commitment);
     event MessageDigested(DdexMessageData data);
 
@@ -15,8 +17,7 @@ contract DdexSequencer is WhitelistConsumer {
     }
 
     struct DdexMessageData {
-        string isrc;
-        string releaseId;
+        uint256 x;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -26,16 +27,22 @@ contract DdexSequencer is WhitelistConsumer {
     bytes32 public blobQueueTail;
 
     IStakeVault stakeVault;
+    IVerifier verifier;
+
     mapping(bytes32 => Blob) public blobs;
 
     constructor(
         address dataProvidersWhitelist,
         address validatorsWhitelist,
         address stakeVaultAddress
-    ) {
+    ) Ownable(msg.sender) {
         _setWhitelistAddress(dataProvidersWhitelist, DATA_PROVIDERS_WHITELIST);
         _setWhitelistAddress(validatorsWhitelist, VALIDATORS_WHITELIST);
         stakeVault = IStakeVault(stakeVaultAddress);
+    }
+
+    function setVerifier(IVerifier _verifier) public onlyOwner {
+        verifier = _verifier;
     }
 
     function submitNewBlob(
@@ -64,18 +71,15 @@ contract DdexSequencer is WhitelistConsumer {
     }
 
     function submitProofOfProcessing(
-        bool proof,
-        DdexMessageData[] memory messagesData
+        uint256 x, // TODO implement DdexMessageData[] type here with proper fields
+        bytes calldata seal
     ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "Queue is empty");
-        bool isValid = proof; // TODO: implement actual logic of checking the proof for the blobQueueHead
 
-        require(isValid, "Invalid proof");
+        verifier.verify(x, seal);
 
         _moveQueue();
-        for (uint i = 0; i < messagesData.length; i++) {
-            emit MessageDigested(messagesData[i]);
-        }
+        emit MessageDigested(DdexMessageData(x));
     }
 
     function submitProofForFraudulentBlob(

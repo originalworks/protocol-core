@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
+import "@openzeppelin/hardhat-upgrades";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 
@@ -18,7 +19,7 @@ const config: HardhatUserConfig = {
       ],
     },
     kurtosis_testnet: {
-      url: process.env.RPC_URL,
+      url: `${process.env.RPC_URL}`,
       accounts: [
         "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31",
       ],

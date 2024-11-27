@@ -2,8 +2,8 @@ import { deployDdexSequencer } from "../actions/contract-deployment/DdexSequence
 import { deployOwnToken } from "../actions/contract-deployment/OwnToken/OwnToken.deploy";
 import { deployStakeVault } from "../actions/contract-deployment/StakeVault/StakeVault.deploy";
 import { deployWhitelist } from "../actions/contract-deployment/Whitelist/Whitelist.deploy";
-import { ethers } from "hardhat";
 import { getKurtosisEthersWallets } from "../fixture/fixture.deploy";
+import { deployVerifier } from "../actions/contract-deployment/Verifier/Verifier.deploy";
 
 const SLASH_RATE = 1000;
 
@@ -29,6 +29,10 @@ async function main() {
     validatorsWhitelist: await validatorsWhitelist.getAddress(),
     stakeVaultAddress: await stakeVault.getAddress(),
   });
+
+  const verifier = await deployVerifier(await ddexSequencer.getAddress());
+
+  await ddexSequencer.setVerifier(verifier);
 
   console.log({
     token: await ownToken.getAddress(),
