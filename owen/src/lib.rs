@@ -10,7 +10,7 @@ use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use blob::BlobTransactionData;
 use ddex_sequencer::DdexSequencerContext;
-use errors::OwDataProviderCliError;
+use errors::OwenCliError;
 use std::env;
 use std::error::Error;
 
@@ -24,11 +24,7 @@ impl Config {
     fn get_env_var(key: &str) -> Result<String, Box<dyn Error>> {
         match env::var(key) {
             Ok(value) => Ok(value),
-            Err(_) => {
-                return Err(Box::new(OwDataProviderCliError::MissingEnvVar(
-                    key.to_string(),
-                )))
-            }
+            Err(_) => return Err(Box::new(OwenCliError::MissingEnvVar(key.to_string()))),
         }
     }
 
@@ -38,7 +34,7 @@ impl Config {
         let folder_path = match args.next() {
             Some(arg) => arg,
             None => {
-                return Err(Box::new(OwDataProviderCliError::MissingCliArg(
+                return Err(Box::new(OwenCliError::MissingCliArg(
                     "folder path".to_string(),
                 )))
             }

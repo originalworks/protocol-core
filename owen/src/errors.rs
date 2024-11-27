@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Debug)]
-pub enum OwDataProviderCliError {
+pub enum OwenCliError {
     MissingEnvVar(String),
     MissingCliArg(String),
     InvalidBlobProof(),
@@ -11,7 +11,7 @@ pub enum OwDataProviderCliError {
     InvalidAssetFolderName(String),
 }
 
-impl fmt::Display for OwDataProviderCliError {
+impl fmt::Display for OwenCliError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::MissingEnvVar(var_name) => {
@@ -36,4 +36,4 @@ impl fmt::Display for OwDataProviderCliError {
     }
 }
 
-impl Error for OwDataProviderCliError {}
+impl Error for OwenCliError {}

@@ -1,4 +1,4 @@
-use ow_data_provider_cli::Config;
+use owen_cli::Config;
 use std::env;
 use std::error::Error;
 
@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             std::process::exit(1);
         }
     };
-    ow_data_provider_cli::run(config).await?;
+    owen_cli::run(config).await?;
 
     Ok(())
 }
