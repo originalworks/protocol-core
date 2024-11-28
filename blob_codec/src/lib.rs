@@ -77,7 +77,7 @@ impl BlobCodec {
         })
     }
 
-    pub fn digest(self) -> [u8; 32] {
+    pub fn digest(&self) -> [u8; 32] {
         if !self.initialized {
             panic!("Not initialized");
         }
