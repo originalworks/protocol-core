@@ -1,5 +1,6 @@
 use crate::blob::BlobTransactionData;
 use crate::constants;
+use alloy::primitives::FixedBytes;
 use alloy::sol_types::private::Bytes;
 use alloy::{
     network::{Ethereum, EthereumWallet},
@@ -72,7 +73,10 @@ impl DdexSequencerContext<'_> {
     ) -> Result<(), Box<dyn Error>> {
         let receipt = self
             .contract
-            .submitNewBlob(Bytes::from(transaction_data.kzg_commitment.to_vec()))
+            .submitNewBlob(
+                Bytes::from(transaction_data.kzg_commitment.to_vec()),
+                FixedBytes::<32>::from(transaction_data.blob_sha2),
+            )
             .sidecar(transaction_data.blob_sidecar)
             // TODO make gas settings optional CLI/setting file parameters
             .max_fee_per_blob_gas(10000000)

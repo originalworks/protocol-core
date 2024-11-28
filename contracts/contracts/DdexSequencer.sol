@@ -46,26 +46,26 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     }
 
     function submitNewBlob(
-        bytes memory commitment
+        bytes memory commitment,
+        bytes32 blobSha2
     ) public isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
         bytes32 newBlobhash;
         assembly {
             newBlobhash := blobhash(0)
         }
         require(newBlobhash != bytes32(0), "Blob not found in tx");
-        require(
-            blobs[newBlobhash].submitted == false,
-            "Blob already submitted"
-        );
-        blobs[newBlobhash].submitted = true;
-        blobs[newBlobhash].proposer = msg.sender;
+
+        bytes32 blobId = sha256(abi.encodePacked(newBlobhash, blobSha2));
+        require(blobs[blobId].submitted == false, "Blob already submitted");
+        blobs[blobId].submitted = true;
+        blobs[blobId].proposer = msg.sender;
 
         if (blobQueueHead == bytes32(0)) {
-            blobQueueHead = newBlobhash;
-            blobQueueTail = newBlobhash;
+            blobQueueHead = blobId;
+            blobQueueTail = blobId;
         } else {
-            blobs[blobQueueTail].nextBlob = newBlobhash;
-            blobQueueTail = newBlobhash;
+            blobs[blobQueueTail].nextBlob = blobId;
+            blobQueueTail = blobId;
         }
         emit NewBlobSubmitted(commitment);
     }

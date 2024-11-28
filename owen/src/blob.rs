@@ -6,11 +6,14 @@ use std::error::Error;
 pub struct BlobTransactionData {
     pub kzg_commitment: KzgCommitment,
     pub blob_sidecar: BlobTransactionSidecar,
+    pub blob_sha2: [u8; 32],
 }
 
 impl BlobTransactionData {
     pub fn build() -> Result<Self, Box<dyn Error>> {
-        let blob: [u8; 131072] = blob_codec::BlobCodec::from_dir(OUTPUT_FILES_DIR)?.to_bytes();
+        let blob_codec = blob_codec::BlobCodec::from_dir(OUTPUT_FILES_DIR)?;
+        let blob_sha2: [u8; 32] = blob_codec.digest();
+        let blob: [u8; 131072] = blob_codec.to_bytes();
 
         let kzg_blob = Blob::new(blob);
 
@@ -36,6 +39,7 @@ impl BlobTransactionData {
             Ok(BlobTransactionData {
                 kzg_commitment,
                 blob_sidecar,
+                blob_sha2,
             })
         } else {
             return Err(Box::new(OwenCliError::InvalidBlobProof()));
