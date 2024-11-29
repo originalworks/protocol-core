@@ -2000,6 +2000,7 @@ dependencies = [
 ]
 
 [[package]]
+name = "ow_data_provider_cli"
 name = "owen_cli"
 version = "0.1.0"
 dependencies = [
@@ -2009,6 +2010,7 @@ dependencies = [
  "ddex_schema",
  "dotenvy",
  "infer",
+ "quick-xml",
  "reqwest",
  "serde",
  "serde_valid",

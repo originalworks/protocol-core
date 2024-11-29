@@ -1,51 +1,58 @@
+use blob_codec::BlobCodec;
+use core::str;
 use methods::{DDEX_PARSER_GUEST_ELF, DDEX_PARSER_GUEST_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
 use shared::PublicOutputs;
 use std::time::Instant;
 
+pub struct StopWatch {
+    timer: Instant,
+}
+
+impl StopWatch {
+    pub fn start() -> Self {
+        StopWatch {
+            timer: Instant::now(),
+        }
+    }
+    pub fn stop(self, topic: &str) -> () {
+        let secs = self.timer.elapsed().as_secs();
+
+        println!(
+            "It took {}h{}m{}s to {}",
+            (secs / 60) / 60,
+            (secs / 60) % 60,
+            secs % 60,
+            topic
+        );
+    }
+}
 fn main() {
     env_logger::init();
-    let mut timer = Instant::now();
-    let data = include_str!("../res/0Audio_lite.json");
-    // let mut writer = Vec::new();
-
+    let mut timer = StopWatch::start();
+    // let blob = BlobCodec::from_file("res/0Audio_lite.json").unwrap();
+    let blob = BlobCodec::from_dir("res").unwrap();
     let env = ExecutorEnv::builder()
         .segment_limit_po2(19)
-        .write(&data)
-        .unwrap()
-        // .stdout(&mut writer) // 'Private' data sharing between guest and host, data is not stored in the receipt
+        .write_slice(&blob.to_bytes().to_vec())
         .build()
         .unwrap();
 
-    // Obtain the default prover.
     let prover = default_prover();
 
-    // Produce a receipt by proving the specified ELF binary.
     let receipt = prover.prove(env, DDEX_PARSER_GUEST_ELF).unwrap().receipt;
-    let mut secs = timer.elapsed().as_secs();
 
-    // This reads data from receipt
     let public_outputs: PublicOutputs = receipt.journal.decode().unwrap();
-    // OR
-    // This reads private data from stdout
-    // let private_outputs: PrivateOutputs = from_slice(&writer).unwrap();
 
     println!(
-        "Values decoded from receipt:: Verified: {}, MessageId: {}",
+        "Values decoded from receipt:: Verified: {}, Digest: {}",
         public_outputs.is_valid,
-        public_outputs
-            .message_id
-            .unwrap_or_else(|| "None".to_string())
+        String::from_utf8_lossy(&public_outputs.digest),
     );
 
-    println!(
-        "It took {}h{}m{}s to produce the proof.",
-        (secs / 60) / 60,
-        (secs / 60) % 60,
-        secs % 60,
-    );
+    timer.stop("produce the proof");
 
-    timer = Instant::now();
+    timer = StopWatch::start();
 
     match receipt.verify(DDEX_PARSER_GUEST_ID) {
         Ok(_) => {
@@ -54,12 +61,5 @@ fn main() {
         Err(_) => println!("Receipt failed to be verified"),
     }
 
-    secs = timer.elapsed().as_secs();
-
-    println!(
-        "It took {}h{}m{}s to verify the proof.",
-        (secs / 60) / 60,
-        (secs / 60) % 60,
-        secs % 60,
-    );
+    timer.stop("verify the proof.");
 }
