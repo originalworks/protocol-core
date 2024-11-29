@@ -1,5 +1,5 @@
 [package]
-name = "ow_data_provider_cli"
+name = "owen_cli"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,7 +13,6 @@ tokio = { version = "1.40.0", features = ["full"] }
 tokio-util = "0.7.12"
 serde = "1.0.210"
 infer = "0.16.0"
-quick-xml = "0.36.2"
 ddex_schema = { path = "../parser/ddex_schema" }
 serde_valid = "0.25.0"
 
