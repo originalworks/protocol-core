@@ -11,11 +11,11 @@ pub struct BlobTransactionData {
 
 impl BlobTransactionData {
     pub fn build() -> Result<Self, Box<dyn Error>> {
-        let blob_codec = blob_codec::BlobCodec::from_dir(OUTPUT_FILES_DIR)?;
+        let blob_codec = BlobCodec::from_dir(OUTPUT_FILES_DIR)?;
         let blob_sha2: [u8; 32] = blob_codec.digest();
         let blob: [u8; 131072] = blob_codec.to_bytes();
 
-        let kzg_blob = Blob::new(blob.to_bytes());
+        let kzg_blob = Blob::new(blob);
 
         let kzg_settings = ethereum_kzg_settings();
 
