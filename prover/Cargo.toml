@@ -11,6 +11,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
 ddex_schema = {path = '../parser/ddex_schema'}
 env_logger = "0.11.5"
+blob_codec = {path = '../blob_codec'}
 
 [features]
 cuda = ["risc0-zkvm/cuda"]

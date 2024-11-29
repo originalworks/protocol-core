@@ -43,7 +43,8 @@ impl BlobCodec {
             let mut empty_folder = true;
             for file_entry in files {
                 let path = file_entry?.path();
-                if path.is_file() {
+
+                if path.is_file() && path.extension().unwrap() == "json" {
                     append_to_blob(&mut kzg_blob, &path, &mut blob_cursor)?;
                     empty_folder = false;
                 }
@@ -77,11 +78,18 @@ impl BlobCodec {
         })
     }
 
-    pub fn digest(self) -> [u8; 32] {
+    pub fn from_bytes(bytes: [u8; BYTES_PER_BLOB]) -> Self {
+        Self {
+            blob_bytes: bytes,
+            initialized: true,
+        }
+    }
+
+    pub fn digest(&self) -> [u8; 32] {
         if !self.initialized {
             panic!("Not initialized");
         }
-        Sha256::digest(self.blob_bytes.as_slice()).into()
+        Sha256::digest(&self.blob_bytes.as_slice()).into()
     }
 
     pub fn decode(self) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {

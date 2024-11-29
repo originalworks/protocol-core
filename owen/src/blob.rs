@@ -1,8 +1,8 @@
 use crate::{constants::OUTPUT_FILES_DIR, errors::OwDataProviderCliError};
 use alloy::consensus::BlobTransactionSidecar;
+use blob_codec::BlobCodec;
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
 use std::error::Error;
-
 pub struct BlobTransactionData {
     pub kzg_commitment: KzgCommitment,
     pub blob_sidecar: BlobTransactionSidecar,
@@ -10,9 +10,9 @@ pub struct BlobTransactionData {
 
 impl BlobTransactionData {
     pub fn build() -> Result<Self, Box<dyn Error>> {
-        let blob: [u8; 131072] = ow_blob_codec::blob_from_dir(OUTPUT_FILES_DIR)?;
+        let blob = BlobCodec::from_dir(OUTPUT_FILES_DIR)?;
 
-        let kzg_blob = Blob::new(blob);
+        let kzg_blob = Blob::new(blob.to_bytes());
 
         let kzg_settings = ethereum_kzg_settings();
 
