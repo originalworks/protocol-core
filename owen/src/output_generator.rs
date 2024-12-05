@@ -178,47 +178,63 @@ fn print_output(output: &Vec<MessageDirProcessingContext>) -> Result<(), Box<dyn
     Ok(())
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
 
-//     fn find_cid_in_file(
-//         processing_context: &MessageDirProcessingContext,
-//     ) -> Result<bool, Box<dyn Error>> {
-//         let file = fs::read_to_string(&processing_context.output_json_path)?;
-//         let found = file.contains("PADPIDA2009101501Y");
+    use super::*;
 
-//         Ok(found)
-//     }
+    fn find_cid_in_file(
+        processing_context: &MessageDirProcessingContext,
+    ) -> Result<bool, Box<dyn Error>> {
+        let file = fs::read_to_string(&processing_context.output_json_path)?;
+        let found = file.contains("PADPIDA2009101501Y");
 
-//     #[tokio::test]
-//     async fn create_output_files_with_cids() -> Result<(), Box<dyn Error>> {
-//         let test_folder = "./tests";
-//         let processing_context_vec = create_output_files(&test_folder.to_string()).await?;
+        Ok(found)
+    }
 
-//         let processed_count = processing_context_vec.len();
+    #[tokio::test]
+    async fn create_output_files_with_cids() -> Result<(), Box<dyn Error>> {
+        let config = Config {
+            rpc_url: String::new(),
+            private_key: String::new(),
+            folder_path: String::from_str("./tests").unwrap(),
+            default_ipfs_interface: IpfsInterface::KUBO,
+            ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
+            pinata_jwt: String::new(),
+        };
+        let processing_context_vec = create_output_files(&config).await?;
 
-//         assert_eq!(
-//             processing_context_vec.len(),
-//             2,
-//             "Wrong output size. Expected 2, got: {processed_count}"
-//         );
+        let processed_count = processing_context_vec.len();
 
-//         for processing_context in processing_context_vec {
-//             assert!(find_cid_in_file(&processing_context)?);
-//         }
+        assert_eq!(
+            processing_context_vec.len(),
+            2,
+            "Wrong output size. Expected 2, got: {processed_count}"
+        );
 
-//         Ok(())
-//     }
+        for processing_context in processing_context_vec {
+            assert!(find_cid_in_file(&processing_context)?);
+        }
 
-//     #[should_panic]
-//     #[tokio::test]
-//     async fn error_when_empty_directory() {
-//         let test_folder = "./tests/empty_dir";
-//         fs::create_dir_all(test_folder).unwrap();
+        Ok(())
+    }
 
-//         create_output_files(&test_folder.to_string()).await.unwrap();
-//         fs::remove_dir_all(test_folder).unwrap();
-//         ()
-//     }
-// }
+    #[should_panic]
+    #[tokio::test]
+    async fn error_when_empty_directory() {
+        let config = Config {
+            rpc_url: String::new(),
+            private_key: String::new(),
+            folder_path: String::from_str("./tests/empty_dir").unwrap(),
+            default_ipfs_interface: IpfsInterface::KUBO,
+            ipfs_kubo_url: String::new(),
+            pinata_jwt: String::new(),
+        };
+        fs::create_dir_all(&config.folder_path).unwrap();
+
+        create_output_files(&config).await.unwrap();
+        fs::remove_dir_all(&config.folder_path).unwrap();
+        ()
+    }
+}

@@ -61,41 +61,41 @@ pub async fn pin_file_pinata(
     Ok(result.IpfsHash)
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use std::fs;
+#[cfg(test)]
+mod tests {
+    use std::fs;
 
-//     use super::*;
-//     use crate::constants::IPFS_API_CAT_FILE;
+    use super::*;
+    use crate::constants::IPFS_API_CAT_FILE;
 
-//     async fn fetch_ipfs_file(cid: &String) -> Result<tokio_util::bytes::Bytes, Box<dyn Error>> {
-//         let client = reqwest::Client::new();
-//         let response = client
-//             .post(format!(
-//                 "{}{}?arg={}",
-//                 IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid
-//             ))
-//             .send()
-//             .await?;
+    async fn fetch_ipfs_file(cid: &String) -> Result<tokio_util::bytes::Bytes, Box<dyn Error>> {
+        let client = reqwest::Client::new();
+        let response = client
+            .post(format!(
+                "{}{}?arg={}",
+                IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid
+            ))
+            .send()
+            .await?;
 
-//         if response.status() != 200 {
-//             panic!("Image CID not found {cid}");
-//         }
-//         let bytes = response.bytes().await?;
+        if response.status() != 200 {
+            panic!("Image CID not found {cid}");
+        }
+        let bytes = response.bytes().await?;
 
-//         Ok(bytes)
-//     }
+        Ok(bytes)
+    }
 
-//     #[tokio::test]
-//     async fn pin_and_read() -> Result<(), Box<dyn Error>> {
-//         let path = &"./tests/msg_one.json".to_string();
-//         let expected_file = fs::read(path)?;
+    #[tokio::test]
+    async fn pin_and_read() -> Result<(), Box<dyn Error>> {
+        let path = &"./tests/msg_one.json".to_string();
+        let expected_file = fs::read(path)?;
 
-//         let cid = pin_file_ipfs_client(path).await?;
+        let cid = pin_file_ipfs_kubo(path).await?;
 
-//         let fetched_file = fetch_ipfs_file(&cid).await?;
-//         assert_eq!(expected_file, fetched_file.to_vec(), "should be equal");
+        let fetched_file = fetch_ipfs_file(&cid).await?;
+        assert_eq!(expected_file, fetched_file.to_vec(), "should be equal");
 
-//         Ok(())
-//     }
-// }
+        Ok(())
+    }
+}
