@@ -1,4 +1,4 @@
-# OWEN - Original Works Electronic notifications
+# OWEN - Original Works Electronic Notifications
 
 This is still a prototype on v0.1
 
@@ -19,6 +19,7 @@ $ kurtosis port print local-eth-testnet el-1-geth-lighthouse rpc
 
 127.0.0.1:32769
 ```
+
 Prefix it with `http://` and save it for later steps
 
 ### 2. Clone this repository and enter its directory
@@ -59,25 +60,30 @@ cp ./contracts/.env.sample ./contracts/.env
    npx hardhat compile
    npx hardhat run scripts/execute/deployLocal.ts --network kurtosis_testnet
    ```
-This last command may take some time to complete. Once it's done, it will return output with the addresses of validators, data providers and smart contracts. Similar to this:
+   This last command may take some time to complete. Once it's done, it will return output with the addresses of validators, data providers and smart contracts. Similar to this:
 
 ```
-{
-  token: '0x8F0342A7060e76dfc7F6e9dEbfAD9b9eC919952c',
-  deployer: '0x8943545177806ED17B9F23F0a21ee5948eCaa776',
-  validator: '0xE25583099BA105D9ec0A67f5Ae86D90e50036425',
-  validator2: '0x614561D2d143621E126e87831AEF287678B442b8',
-  dataProvider: '0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241',
-  dataProvider2: '0x802dCbE1B1A97554B4F50DB5119E37E8e7336417',
+deployment data: {
   ddexSequencer: '0x00c042C4D5D913277CE16611a2ce6e9003554aD5',
-  ownToken: '0x8F0342A7060e76dfc7F6e9dEbfAD9b9eC919952c',
-  dataProvidersWhitelist: '0xb4B46bdAA835F8E4b4d8e208B6559cD267851051',
-  validatorsWhitelist: '0x422A3492e218383753D8006C7Bfa97815B44373F'
+  accounts: {
+    deployer: '0x8943545177806ED17B9F23F0a21ee5948eCaa776',
+    validators: [
+      '0xE25583099BA105D9ec0A67f5Ae86D90e50036425',
+      '0x614561D2d143621E126e87831AEF287678B442b8'
+    ],
+    dataProviders: [
+      '0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241',
+      '0x802dCbE1B1A97554B4F50DB5119E37E8e7336417'
+    ]
+  },
+  whitelists: {
+    dataProvidersWhitelist: '0xb4B46bdAA835F8E4b4d8e208B6559cD267851051',
+    validatorsWhitelist: '0x422A3492e218383753D8006C7Bfa97815B44373F'
+  }
 }
 ```
 
 Confirm `ddexSequencer` address without the `0x` prefix is in the file `owen/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`.
-
 
 ### 7. Run the tests
 
