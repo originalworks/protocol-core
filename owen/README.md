@@ -42,7 +42,7 @@ cp ./owen/.env.example ./owen/.env
 - If you've chosen Pinata as your IPFS client, edit these values:
   - `PINATA_JWT`: Your Pinata JWT token.
   - `DEFAULT_IPFS_INTERFACE`: Change the value from `KUBO` to `PINATA`.
-- If you are running a run local Kubo IPFS client with Docker, no changes are needed. However, if you run your own full IPFS Kubo client, update this value:
+- If you are running a local Kubo IPFS client with Docker, no changes are needed. However, if you run your own full IPFS Kubo client, update this value:
   - `IPFS_KUBO_URL`: Your Kubo IPFS client API URL.
 
 ### 4. Prepare your messages folder:
