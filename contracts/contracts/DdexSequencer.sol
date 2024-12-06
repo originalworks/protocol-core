@@ -29,6 +29,9 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     IStakeVault stakeVault;
     IVerifier verifier;
 
+    // temporary solution for open alpha tests
+    bool whitelistsDisabled;
+
     mapping(bytes32 => Blob) public blobs;
 
     constructor(
@@ -45,10 +48,27 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         verifier = _verifier;
     }
 
+    // temporary solution for open alpha tests
+    function disableWhitelist() public onlyOwner {
+        whitelistsDisabled = true;
+    }
+
+    modifier _isWhitelistedOn(bytes1 whitelistId) {
+        require(
+            whitelistsDisabled ||
+                IWhitelist(whitelists[whitelistId]).isWhitelisted(msg.sender),
+            "Sender is not whitelisted"
+        );
+
+        _;
+    }
+
+    //
+
     function submitNewBlob(
         bytes memory commitment,
         bytes32 blobSha2
-    ) public isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
+    ) public _isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
         bytes32 newBlobhash;
         assembly {
             newBlobhash := blobhash(0)
