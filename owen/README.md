@@ -108,7 +108,7 @@ docker compose -f ./docker/run-local.yml down
 
 1. Install `kurtosis` by following the instruction from [HERE](https://docs.kurtosis.com/install)
 2. Run the testnet with `kurtosis --enclave local-eth-testnet run github.com/ethpandaops/ethereum-package`
-3. Run the following command to view the RPC of the testnet network you just created.
+3. Run the following command to get the RPC of the testnet network you just created.
 
 ```bash
 $ kurtosis port print local-eth-testnet el-1-geth-lighthouse rpc
@@ -130,25 +130,27 @@ git clone https://github.com/originalworks/protocol-core && cd protocol-core
 docker compose -f ./docker/run-local.yml up ipfs -d
 ```
 
-### 4. Create .env files from .env.example
+### 4. Create `.env` files from `.env.example`
 
 ```bash
 cp ./owen/.env.example ./owen/.env && cp ./contracts/.env.example ./contracts/.env
 ```
 
-### 5. Edit /contracts/.env and /owen/.env files:
+### 5. Edit `/contracts/.env` and `/owen/.env` files:
 
-- Change the `RPC_URL` value in both files to RPC url of your test network
+- Change the `RPC_URL` value in both files with your local testnet RPC URL.
 
 ### 6. Compile and deploy contracts
 
-1. Inside the `/contracts` folder run
-   ```bash
-   npm i
-   npx hardhat compile
-   npx hardhat run scripts/execute/deployLocal.ts --network kurtosis_testnet
-   ```
-   This last command may take some time to complete. Once it's done, it will return output with the addresses of validators, data providers and smart contracts. Similar to this:
+1. Inside the `/contracts` folder run:
+
+```bash
+npm i
+npx hardhat compile
+npx hardhat run scripts/execute/deployLocal.ts --network kurtosis_testnet
+```
+
+The last command may take some time to complete. Once it's done, it will return output with the addresses of validators, data providers and smart contracts. Similar to this:
 
 ```
 deployment data: {
@@ -171,7 +173,7 @@ deployment data: {
 }
 ```
 
-Copy `ddexSequencer` address without the `0x` prefix for the `DDEX_SEQUENCER_ADDRESS` value in the file `owen/src/constants.rs`.
+2. Copy `ddexSequencer` address without the `0x` and update the `DDEX_SEQUENCER_ADDRESS` value in the file `owen/src/constants.rs`.
 
 ### 7. Send messages from /tests folder
 
@@ -183,12 +185,8 @@ $ cd owen && cargo run ./tests
 
 ```bash
 kurtosis enclave stop local-eth-testnet
-```
 
-```bash
 kurtosis clean
-```
 
-```bash
 docker compose -f ./docker/run-local.yml down
 ```
