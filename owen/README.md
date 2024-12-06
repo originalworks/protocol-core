@@ -6,6 +6,102 @@ Current status is reported on issues [v0.1](https://github.com/originalworks/pro
 
 You can currenlty use OWEN to send `.xml` files as a BLOB using [EIP4844](https://www.eip4844.com/) transaction.
 
+# HOW TO USE OWEN WITH LIVE TESTNET (Holesky)
+
+#### To run OWEN on Holesky, you'll need four things:
+
+1. **RPC endpoint URL**: This should point to the Holesky blockchain network. You can get one for free from most RPC providers like Alchemy, Chainstack, QuickNode, etc.
+2. **IPFS client**: in the current implementation, we support two solutions:
+
+   - **Pinata's JWT Token**: You can get one for free here: [Pinata](https://pinata.cloud/) / [API keys](https://docs.pinata.cloud/account-management/api-keys)
+   - **IPFS Kubo client endpoint URL with exposed [API V0](https://docs.ipfs.tech/reference/kubo/rpc/)**: For testing purposes, you can run it locally with the following Bash command from the project root folder: `docker compose -f ./docker/run-local.yml up ipfs`. For production environments, you should run a full version on your server or in the cloud.
+
+3. **Private key of your wallet** with funds on Holesky testnet
+4. **Folder with your DDEX messages in xml format**: Each message should be in a separate subfolder and include an image file. You can use our test files from the `owen/tests/msg_one` and `owen/tests/msg_two` folders, but remember to change some values because the Protocol prevents sending identical BLOBs twice.
+
+## Steps to Get Started
+
+### 1. Clone this repository:
+
+```bash
+git clone https://github.com/originalworks/protocol-core && cd protocol-core
+```
+
+### 2. Create `.env` file:
+
+Use the `.env.example` file to create your `.env` file:
+
+```bash
+cp ./owen/.env.example ./owen/.env
+```
+
+### 3. Edit the following values in the `/owen/.env` file:
+
+- `PRIVATE_KEY`: Your private key.
+- `RPC_URL`: Your RPC endpoint URL pointing to Holesky.
+- If you've chosen Pinata as your IPFS client, edit these values:
+  - `PINATA_JWT`: Your Pinata JWT token.
+  - `DEFAULT_IPFS_INTERFACE`: Change the value from `KUBO` to `PINATA`.
+- If you are running a run local Kubo IPFS client with Docker, no changes are needed. However, if you run your own full IPFS Kubo client, update this value:
+  - `IPFS_KUBO_URL`: Your Kubo IPFS client API URL.
+
+### 4. Prepare your messages folder:
+
+Inside the `/owen` directory, create a folder with your messages structured as follows:
+
+```
+- my_messages
+  - message_one
+    - your_ddex_msg.xml
+    - your_image.jpg
+  - message_two
+    - your_ddex_msg_two.xml
+    - your_image_two.png
+```
+
+- Directory and file names don't matter.
+- Images must be taged as MIME type `image/*`.
+- DDEX messages have to be in `.xml` format.
+
+### 5. Run OWEN:
+
+```bash
+cd owen && cargo run ./my_messages
+```
+
+As an output you should receive the list of processed messges from the `./my_messages` directory with the images files that were pined and the receipt of the transaction.
+Example output:
+
+```
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running `target/debug/owen ./tests`
+PROCESSED DDEX MESSAGE:
+Source files: image: ./tests/asset_one/image-asset.png; XML: ./tests/asset_one/test.xml
+Image file ./tests/asset_one/image-asset.png was pined to IPFS under CID: QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS
+CID: QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS was included in the output file: ./output_files/1.xml
+----------
+PROCESSED DDEX MESSAGE:
+Source files: image: ./tests/asset_two/random-image.avif; XML: ./tests/asset_two/name.xml
+Image file ./tests/asset_two/random-image.avif was pined to IPFS under CID: QmXvR6x7tF6RcgPD51zmS2Y1pjNVquWynreC63iRpTTRsd
+CID: QmXvR6x7tF6RcgPD51zmS2Y1pjNVquWynreC63iRpTTRsd was included in the output file: ./output_files/4.xml
+----------
+sending tx...
+TransactionReceipt { inner: Eip4844(ReceiptWithBloom { receipt: Receipt { status: Eip658(true), cumulative_gas_used: 101145, logs: [Log { inner: Log { address: 0x00c042c4d5d913277ce16611a2ce6e9003554ad5, data: LogData { topics: [0x6a6fc970009454e3172a2ec189981caa44b6d81bfc3a7ba62cf8367df4aecf75], data: 0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030a4e5158df6997b07c5781ed92225804d23da8ce76fefca0a0d5624cbb4e0779cad21e842c254216297b571bcd8b9534100000000000000000000000000000000 } }, block_hash: Some(0xe2b754bb58d6f27c95b9a42ddf10be75d60255a3e459bd5de9d6c2e9bc22c487), block_number: Some(462), block_timestamp: None, transaction_hash: Some(0xc73b1a70f9d446ab04433b9bcc3ba95849ea9f35e35cd3ece9cc7d8ab2ddcc33), transaction_index: Some(0), log_index: Some(0), removed: false }] }, logs_bloom: 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000800000000000000000000000000000000000002000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000 }), transaction_hash: 0xc73b1a70f9d446ab04433b9bcc3ba95849ea9f35e35cd3ece9cc7d8ab2ddcc33, transaction_index: Some(0), block_hash: Some(0xe2b754bb58d6f27c95b9a42ddf10be75d60255a3e459bd5de9d6c2e9bc22c487), block_number: Some(462), gas_used: 101145, effective_gas_price: 100000000, blob_gas_used: Some(131072), blob_gas_price: Some(1), from: 0x802dcbe1b1a97554b4f50db5119e37e8e7336417, to: Some(0x00c042c4d5d913277ce16611a2ce6e9003554ad5), contract_address: None, state_root: None, authorization_list: None }
+
+```
+
+### 6. Cleanup after testing:
+
+```bash
+docker compose -f ./docker/run-local.yml down
+```
+
+<br>
+
+<br>
+
+<br>
+
 # HOW TO USE OWEN WITH LOCAL TESTNET
 
 ### 1. Install and run kurtosis testnet:
@@ -34,23 +130,15 @@ git clone https://github.com/originalworks/protocol-core && cd protocol-core
 docker compose -f ./docker/run-local.yml up ipfs -d
 ```
 
-### 4. Create .env file 1
-
-1. Copy env file the sample and change the `RPC_URL` and optionally the `PRIVATE_KEY` values:
-   ```bash
-   cp ./owen/.env.sample ./owen/.env
-   ```
-2. Edit the new `.env` file and that change the value of the `RPC_URL` to the RPC value (prefixed with http) that you obtained previously.
-
-### 5. Create .env file 2
-
-1. Copy env file the sample and change the `RPC_URL` and optionally the `PRIVATE_KEY` values:
+### 4. Create .env files from .env.example
 
 ```bash
-cp ./contracts/.env.sample ./contracts/.env
+cp ./owen/.env.example ./owen/.env && cp ./contracts/.env.example ./contracts/.env
 ```
 
-2. Edit the new `.env` file and that change the value of the `RPC_URL` to the RPC value (prefixed with http) that you obtained previously.
+### 5. Edit /contracts/.env and /owen/.env files:
+
+- Change the `RPC_URL` value in both files to RPC url of your test network
 
 ### 6. Compile and deploy contracts
 
@@ -83,36 +171,24 @@ deployment data: {
 }
 ```
 
-Confirm `ddexSequencer` address without the `0x` prefix is in the file `owen/src/constants.rs` for the `DDEX_SEQUENCER_ADDRESS`.
+Copy `ddexSequencer` address without the `0x` prefix for the `DDEX_SEQUENCER_ADDRESS` value in the file `owen/src/constants.rs`.
 
-### 7. Run the tests
+### 7. Send messages from /tests folder
 
 ```bash
 $ cd owen && cargo run ./tests
 ```
 
-As an output you should receive the list of processed messges from the `./tests` directory with the images files that was pined and the receipt of the transaction. Similar to this
-
-```
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
-     Running `target/debug/owen ./tests`
-PROCESSED DDEX MESSAGE:
-Source files: image: ./tests/asset_one/image-asset.png; XML: ./tests/asset_one/test.xml
-Image file ./tests/asset_one/image-asset.png was pined to IPFS under CID: QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS
-CID: QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS was included in the output file: ./output_files/1.xml
-----------
-PROCESSED DDEX MESSAGE:
-Source files: image: ./tests/asset_two/random-image.avif; XML: ./tests/asset_two/name.xml
-Image file ./tests/asset_two/random-image.avif was pined to IPFS under CID: QmXvR6x7tF6RcgPD51zmS2Y1pjNVquWynreC63iRpTTRsd
-CID: QmXvR6x7tF6RcgPD51zmS2Y1pjNVquWynreC63iRpTTRsd was included in the output file: ./output_files/4.xml
-----------
-sending tx...
-TransactionReceipt { inner: Eip4844(ReceiptWithBloom { receipt: Receipt { status: Eip658(true), cumulative_gas_used: 101145, logs: [Log { inner: Log { address: 0x00c042c4d5d913277ce16611a2ce6e9003554ad5, data: LogData { topics: [0x6a6fc970009454e3172a2ec189981caa44b6d81bfc3a7ba62cf8367df4aecf75], data: 0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000030a4e5158df6997b07c5781ed92225804d23da8ce76fefca0a0d5624cbb4e0779cad21e842c254216297b571bcd8b9534100000000000000000000000000000000 } }, block_hash: Some(0xe2b754bb58d6f27c95b9a42ddf10be75d60255a3e459bd5de9d6c2e9bc22c487), block_number: Some(462), block_timestamp: None, transaction_hash: Some(0xc73b1a70f9d446ab04433b9bcc3ba95849ea9f35e35cd3ece9cc7d8ab2ddcc33), transaction_index: Some(0), log_index: Some(0), removed: false }] }, logs_bloom: 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000800000000000000000000000000000000000002000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000 }), transaction_hash: 0xc73b1a70f9d446ab04433b9bcc3ba95849ea9f35e35cd3ece9cc7d8ab2ddcc33, transaction_index: Some(0), block_hash: Some(0xe2b754bb58d6f27c95b9a42ddf10be75d60255a3e459bd5de9d6c2e9bc22c487), block_number: Some(462), gas_used: 101145, effective_gas_price: 100000000, blob_gas_used: Some(131072), blob_gas_price: Some(1), from: 0x802dcbe1b1a97554b4f50db5119e37e8e7336417, to: Some(0x00c042c4d5d913277ce16611a2ce6e9003554ad5), contract_address: None, state_root: None, authorization_list: None }
-
-```
-
-### 8 Run Cargo command with a location with xml files
+### 8. Cleanup after testing:
 
 ```bash
-cargo run --manifest-path ./owen/Cargo.toml ./dir-with-xml-files
+kurtosis enclave stop local-eth-testnet
+```
+
+```bash
+kurtosis clean
+```
+
+```bash
+docker compose -f ./docker/run-local.yml down
 ```

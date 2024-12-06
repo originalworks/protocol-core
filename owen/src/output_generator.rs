@@ -188,7 +188,7 @@ mod tests {
         processing_context: &MessageDirProcessingContext,
     ) -> Result<bool, Box<dyn Error>> {
         let file = fs::read_to_string(&processing_context.output_json_path)?;
-        let found = file.contains("PADPIDA2009101501Y");
+        let found = file.contains(&processing_context.image_cid);
 
         Ok(found)
     }
