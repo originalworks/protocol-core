@@ -1,0 +1,12 @@
+[package]
+name = "polynomial_evaluation"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+blob_codec = { path = "../blob_codec" }
+bls12_381 = "0.8.0"
+c-kzg = "1.0.3"
+num-bigint = "0.4.6"
+num-integer = "0.1.46"
+num-traits = "0.2.19"
