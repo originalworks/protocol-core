@@ -2,7 +2,7 @@ mod schema;
 mod validation;
 
 pub use schema::*;
-use serde_valid::json::FromJsonStr;
+use serde_valid::json::{FromJsonReader, FromJsonStr};
 use std::io::{BufRead, BufReader};
 
 use regex::Regex;
@@ -15,6 +15,13 @@ pub enum DdexMessage {
 pub fn ddex_parse_json_str(str: String) -> Result<DdexMessage, String> {
     match NewReleaseMessage::from_json_str(&str) {
         Ok(res) => Ok(DdexMessage::NewRelease(res)),
+        Err(e) => Err(e.to_string()),
+    }
+}
+// Temporary return NewReleaseMessage directly for simplicity
+pub fn ddex_parse_json_reader<R: std::io::Read>(reader: R) -> Result<NewReleaseMessage, String> {
+    match NewReleaseMessage::from_json_reader(reader) {
+        Ok(res) => Ok(res),
         Err(e) => Err(e.to_string()),
     }
 }

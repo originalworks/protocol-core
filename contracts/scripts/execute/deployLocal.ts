@@ -4,6 +4,7 @@ import { deployStakeVault } from "../actions/contract-deployment/StakeVault/Stak
 import { deployWhitelist } from "../actions/contract-deployment/Whitelist/Whitelist.deploy";
 import { getKurtosisEthersWallets } from "../fixture/fixture.deploy";
 import { deployVerifier } from "../actions/contract-deployment/Verifier/Verifier.deploy";
+import { deployFakeGroth16Verifier } from "../actions/contract-deployment/FakeGroth16Verifier/FakeGroth16Verifier.deploy";
 
 const SLASH_RATE = 1000;
 
@@ -11,6 +12,7 @@ async function main() {
   const [signer, validator, validator2, dataProvider, dataProvider2] =
     getKurtosisEthersWallets();
 
+  console.log("Deploying whitelists...");
   const dataProvidersWhitelist = await deployWhitelist(signer, [
     dataProvider.address,
     dataProvider2.address,
@@ -19,6 +21,8 @@ async function main() {
     validator.address,
     validator2.address,
   ]);
+
+  console.log("Deploying DDEX sequencer...");
   const ownToken = await deployOwnToken();
   const stakeVault = await deployStakeVault({
     stakeTokenAddress: await ownToken.getAddress(),
@@ -30,21 +34,27 @@ async function main() {
     stakeVaultAddress: await stakeVault.getAddress(),
   });
 
-  const verifier = await deployVerifier(await ddexSequencer.getAddress());
+  console.log("Deploying Verifier...");
+  const fakeGroth16Verifier = await deployFakeGroth16Verifier();
+
+  const verifier = await deployVerifier(
+    await ddexSequencer.getAddress(),
+    await fakeGroth16Verifier.getAddress()
+  );
 
   await ddexSequencer.setVerifier(verifier);
 
-  console.log({
-    token: await ownToken.getAddress(),
-    deployer: await signer.getAddress(),
-    validator: validator.address,
-    validator2: validator2.address,
-    dataProvider: dataProvider.address,
-    dataProvider2: dataProvider2.address,
+  console.log("deployment data:", {
     ddexSequencer: await ddexSequencer.getAddress(),
-    ownToken: await ownToken.getAddress(),
-    dataProvidersWhitelist: await dataProvidersWhitelist.getAddress(),
-    validatorsWhitelist: await validatorsWhitelist.getAddress(),
+    accounts: {
+      deployer: await signer.getAddress(),
+      validators: [validator.address, validator2.address],
+      dataProviders: [dataProvider.address, dataProvider2.address],
+    },
+    whitelists: {
+      dataProvidersWhitelist: await dataProvidersWhitelist.getAddress(),
+      validatorsWhitelist: await validatorsWhitelist.getAddress(),
+    },
   });
 }
 

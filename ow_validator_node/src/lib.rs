@@ -4,6 +4,7 @@ mod constants;
 mod ddex_sequencer;
 mod errors;
 mod ipfs;
+use blob_codec::BlobCodec;
 
 use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::{Bytes, FixedBytes};
@@ -102,7 +103,7 @@ async fn validate_blobs(
     )
     .await?;
 
-    let decoded = ow_blob_codec::decoder::blob_to_vecs(blob).unwrap();
+    let decoded = BlobCodec::from_bytes(blob).decode().unwrap();
 
     let ddex_messages_data = circuit_mock::extract_message_data(&decoded)?;
 

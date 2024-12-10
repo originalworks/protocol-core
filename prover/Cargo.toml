@@ -8,8 +8,10 @@ prover = { path = "../prover"}
 risc0-zkvm = { version = "1.1.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
-ddex_schema = {path = '../parser/ddex_schema'}
+ddex_schema = { path = '../parser/ddex_schema' }
 env_logger = "0.11.5"
+blob_codec = { path = '../blob_codec' }
+risc0-ethereum-contracts = { git = "https://github.com/risc0/risc0-ethereum", tag = "v1.1.4" }
 
 [features]
 cuda = ["risc0-zkvm/cuda"]

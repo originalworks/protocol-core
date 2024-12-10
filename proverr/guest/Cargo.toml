@@ -9,4 +9,5 @@ edition = "2021"
 risc0-zkvm = { version = "1.1.2", default-features = false, features = ['std'] }
 prover_interface = { path = "../interface" }
 ddex_schema = { path = "../../parser/ddex_schema"}
+blob_codec = { path = "../../blob_codec"}
 

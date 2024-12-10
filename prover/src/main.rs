@@ -1,50 +1,73 @@
+use blob_codec::BlobCodec;
+use core::str;
 use prover::{PublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
-use risc0_zkvm::{default_prover, ExecutorEnv};
-use std::time::Instant;
+use risc0_ethereum_contracts::encode_seal;
+use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 
+use std::time::Instant;
+pub struct StopWatch {
+    timer: Instant,
+}
+
+impl StopWatch {
+    pub fn start() -> Self {
+        StopWatch {
+            timer: Instant::now(),
+        }
+    }
+    pub fn stop(self, topic: &str) -> () {
+        let secs = self.timer.elapsed().as_secs();
+
+        println!(
+            "It took {}h{}m{}s to {}",
+            (secs / 60) / 60,
+            (secs / 60) % 60,
+            secs % 60,
+            topic
+        );
+    }
+}
 fn main() {
     env_logger::init();
-    let mut timer = Instant::now();
-    let data = include_str!("../res/0Audio_lite.json");
-    // let mut writer = Vec::new();
-
+    let mut timer = StopWatch::start();
+    // let blob = BlobCodec::from_file("res/0Audio_lite.json").unwrap();
+    let blob = BlobCodec::from_dir("res").unwrap();
     let env = ExecutorEnv::builder()
         .segment_limit_po2(19)
-        .write(&data)
-        .unwrap()
-        // .stdout(&mut writer) // 'Private' data sharing between guest and host, data is not stored in the receipt
+        .write_slice(&blob.to_bytes().to_vec())
         .build()
         .unwrap();
 
-    // Obtain the default prover.
     let prover = default_prover();
 
-    // Produce a receipt by proving the specified ELF binary.
-    let receipt = prover.prove(env, DDEX_GUEST_ELF).unwrap().receipt;
-    let mut secs = timer.elapsed().as_secs();
+    let receipt = prover
+        .prove_with_ctx(
+            env,
+            &VerifierContext::default(),
+            DDEX_PARSER_GUEST_ELF,
+            &ProverOpts::groth16(),
+        )
+        .unwrap()
+        .receipt;
 
-    // This reads data from receipt
+    let seal = encode_seal(&receipt).unwrap();
+
+    let journal = receipt.journal.bytes.clone();
+
     let public_outputs: PublicOutputs = receipt.journal.decode().unwrap();
-    // OR
-    // This reads private data from stdout
-    // let private_outputs: PrivateOutputs = from_slice(&writer).unwrap();
 
     println!(
-        "Values decoded from receipt:: Verified: {}, MessageId: {}",
-        public_outputs.is_valid,
-        public_outputs
-            .message_id
-            .unwrap_or_else(|| "None".to_string())
+        "Values decoded from receipt:: Verified: {}",
+        public_outputs.is_valid
     );
 
-    println!(
-        "It took {}h{}m{}s to produce the proof.",
-        (secs / 60) / 60,
-        (secs / 60) % 60,
-        secs % 60,
-    );
+    println!("public outputs: {public_outputs:?}");
+    println!("journal: {journal:?}");
+    println!("seal: {seal:?}");
 
-    timer = Instant::now();
+    timer.stop("produce the proof");
+
+    timer = StopWatch::start();
 
     match receipt.verify(DDEX_GUEST_ID) {
         Ok(_) => {
@@ -53,12 +76,5 @@ fn main() {
         Err(_) => println!("Receipt failed to be verified"),
     }
 
-    secs = timer.elapsed().as_secs();
-
-    println!(
-        "It took {}h{}m{}s to verify the proof.",
-        (secs / 60) / 60,
-        (secs / 60) % 60,
-        secs % 60,
-    );
+    timer.stop("verify the proof.");
 }

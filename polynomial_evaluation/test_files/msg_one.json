@@ -1,8 +1,8 @@
 {
   "message_header": {
-    "message_id": "Test1.1",
+    "message_id": "Test1.1432234423",
     "message_sender": {
-      "party_id": "PADPIDA2009101501Y",
+      "party_id": "PADPIDA2013042401U",
       "party_name": {
         "full_name": "UniversalMusicGroup"
       }
@@ -206,6 +206,25 @@
             "technical_resource_details_reference": "T22",
             "file": {
               "uri": "0094631432057.jpg"
+            },
+            "fingerprints": []
+          }
+        ]
+      },
+      {
+        "resource_reference": "IPFS image file CID",
+        "kind": {
+          "content": "image/png",
+          "namespace": null,
+          "user_defined_value": null
+        },
+        "resource_ids": [],
+        "parental_warning_types": [],
+        "technical_detailss": [
+          {
+            "technical_resource_details_reference": "IPFS image file CID",
+            "file": {
+              "uri": "QmZ9zbXsBffafmAJSKtRXh6EZfChc1rgNR6JEJc92ZmWkS"
             },
             "fingerprints": []
           }

@@ -1,12 +1,17 @@
 import { ethers, upgrades } from "hardhat";
 import { Verifier } from "../../../../typechain-types";
 
-export async function deployVerifier(ddexSequencerAddress: string) {
-  const riscZeroGroth16VerifierAddress = process.env.RISC_ZERO_GROTH16_VERIFIER;
+export async function deployVerifier(
+  ddexSequencerAddress: string,
+  _riscZeroGroth16VerifierAddress?: string
+) {
+  const riscZeroGroth16VerifierAddress =
+    _riscZeroGroth16VerifierAddress || process.env.RISC_ZERO_GROTH16_VERIFIER;
+
   const imageId = process.env.RISC_ZERO_GUEST_IMAGE_ID;
   if (!riscZeroGroth16VerifierAddress || !imageId) {
     throw new Error(
-      `Missing env variables: ${{
+      `Missing variables: ${{
         riscZeroGroth16VerifierAddress,
         imageId,
       }}`
