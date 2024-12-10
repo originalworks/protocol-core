@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-prover = { path = "../prover"}
+prover = { path = "../proverr"}
 risc0-zkvm = { version = "1.1.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"

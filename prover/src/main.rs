@@ -44,7 +44,7 @@ fn main() {
         .prove_with_ctx(
             env,
             &VerifierContext::default(),
-            DDEX_PARSER_GUEST_ELF,
+            DDEX_GUEST_ELF,
             &ProverOpts::groth16(),
         )
         .unwrap()
