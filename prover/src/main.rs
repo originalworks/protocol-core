@@ -1,6 +1,5 @@
-use methods::{DDEX_PARSER_GUEST_ELF, DDEX_PARSER_GUEST_ID};
+use prover::{PublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
-use shared::PublicOutputs;
 use std::time::Instant;
 
 fn main() {
@@ -21,7 +20,7 @@ fn main() {
     let prover = default_prover();
 
     // Produce a receipt by proving the specified ELF binary.
-    let receipt = prover.prove(env, DDEX_PARSER_GUEST_ELF).unwrap().receipt;
+    let receipt = prover.prove(env, DDEX_GUEST_ELF).unwrap().receipt;
     let mut secs = timer.elapsed().as_secs();
 
     // This reads data from receipt
@@ -47,7 +46,7 @@ fn main() {
 
     timer = Instant::now();
 
-    match receipt.verify(DDEX_PARSER_GUEST_ID) {
+    match receipt.verify(DDEX_GUEST_ID) {
         Ok(_) => {
             println!("Receipt has been verified to be computed with DDEX_PARSER_GUEST code image")
         }
