@@ -1,6 +1,5 @@
 use blob_codec::BlobCodec;
 use ddex_schema::ddex_parse_json_reader;
-use ddex_schema::{ddex_parse_json_reader, ddex_parse_json_str, DdexMessage};
 use prover_interface::{Message, PublicOutputs};
 use risc0_zkvm::guest::env;
 use std::io::{Cursor, Read};
