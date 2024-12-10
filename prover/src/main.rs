@@ -1,10 +1,10 @@
 use blob_codec::BlobCodec;
 use core::str;
 use methods::{DDEX_PARSER_GUEST_ELF, DDEX_PARSER_GUEST_ID};
-use risc0_zkvm::{default_prover, ExecutorEnv};
+use risc0_ethereum_contracts::encode_seal;
+use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 use shared::PublicOutputs;
 use std::time::Instant;
-
 pub struct StopWatch {
     timer: Instant,
 }
@@ -40,15 +40,30 @@ fn main() {
 
     let prover = default_prover();
 
-    let receipt = prover.prove(env, DDEX_PARSER_GUEST_ELF).unwrap().receipt;
+    let receipt = prover
+        .prove_with_ctx(
+            env,
+            &VerifierContext::default(),
+            DDEX_PARSER_GUEST_ELF,
+            &ProverOpts::groth16(),
+        )
+        .unwrap()
+        .receipt;
+
+    let seal = encode_seal(&receipt).unwrap();
+
+    let journal = receipt.journal.bytes.clone();
 
     let public_outputs: PublicOutputs = receipt.journal.decode().unwrap();
 
     println!(
-        "Values decoded from receipt:: Verified: {}, Digest: {}",
-        public_outputs.is_valid,
-        String::from_utf8_lossy(&public_outputs.digest),
+        "Values decoded from receipt:: Verified: {}",
+        public_outputs.is_valid
     );
+
+    println!("public outputs: {public_outputs:?}");
+    println!("journal: {journal:?}");
+    println!("seal: {seal:?}");
 
     timer.stop("produce the proof");
 
