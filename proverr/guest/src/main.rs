@@ -1,7 +1,7 @@
 use blob_codec::BlobCodec;
 use ddex_schema::ddex_parse_json_reader;
+use prover_interface::{Message, PublicOutputs};
 use risc0_zkvm::guest::env;
-use shared::{Message, PublicOutputs};
 use std::io::{Cursor, Read};
 
 fn main() {

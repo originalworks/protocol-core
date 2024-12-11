@@ -1,9 +1,9 @@
 use blob_codec::BlobCodec;
 use core::str;
-use methods::{DDEX_PARSER_GUEST_ELF, DDEX_PARSER_GUEST_ID};
+use prover::{PublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
 use risc0_ethereum_contracts::encode_seal;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
-use shared::PublicOutputs;
+
 use std::time::Instant;
 pub struct StopWatch {
     timer: Instant,
@@ -44,7 +44,7 @@ fn main() {
         .prove_with_ctx(
             env,
             &VerifierContext::default(),
-            DDEX_PARSER_GUEST_ELF,
+            DDEX_GUEST_ELF,
             &ProverOpts::groth16(),
         )
         .unwrap()
@@ -69,7 +69,7 @@ fn main() {
 
     timer = StopWatch::start();
 
-    match receipt.verify(DDEX_PARSER_GUEST_ID) {
+    match receipt.verify(DDEX_GUEST_ID) {
         Ok(_) => {
             println!("Receipt has been verified to be computed with DDEX_PARSER_GUEST code image")
         }
