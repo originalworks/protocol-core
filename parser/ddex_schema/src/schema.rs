@@ -476,7 +476,7 @@ pub struct SoundRecordingEdition {
     pub recording_mode: Option<String>,
     #[yaserde(rename = "TechnicalDetails", prefix = "ern")]
     #[validate]
-    pub technical_detailss: Vec<TechnicalSoundRecordingDetails>,
+    pub technical_details: Vec<TechnicalSoundRecordingDetails>,
 }
 
 #[derive(
@@ -1213,7 +1213,7 @@ pub struct Image {
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "TechnicalDetails", prefix = "ern")]
     #[validate]
-    pub technical_detailss: Vec<TechnicalImageDetails>,
+    pub technical_details: Vec<TechnicalImageDetails>,
 }
 
 #[derive(

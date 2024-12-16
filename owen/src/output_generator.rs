@@ -2,9 +2,7 @@ use crate::constants::OUTPUT_FILES_DIR;
 use crate::errors::OwenCliError;
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
-use ddex_schema::{
-    ddex_parse_xml_file, DdexMessage, File, Image, ImageType, TechnicalImageDetails,
-};
+use ddex_schema::{ddex_parse_xml_file, DdexMessage};
 use serde_valid::json::ToJsonString;
 use std::fs;
 use std::path::PathBuf;
@@ -12,43 +10,53 @@ use std::{error::Error, path::Path};
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
+    message_dir_path: String,
     input_xml_path: String,
     input_image_path: String,
     image_cid: String,
-    image_kind: String,
     output_json_path: String,
     empty: bool,
 }
 
-async fn attach_cid_and_save(input: &MessageDirProcessingContext) -> Result<(), Box<dyn Error>> {
-    let mut ddex_message = ddex_parse_xml_file(&input.input_xml_path).unwrap();
+async fn attach_cid_and_save(
+    message_dir_processing_context: &mut MessageDirProcessingContext,
+    ddex_message: DdexMessage,
+    config: &Config,
+) -> Result<(), Box<dyn Error>> {
     match ddex_message {
-        DdexMessage::NewRelease(ref mut value) => {
-            let image: Image = Image {
-                resource_reference: "IPFS image file CID".to_string(),
-                kind: ImageType {
-                    content: input.image_kind.clone(),
-                    namespace: None,
-                    user_defined_value: None,
-                },
-                resource_ids: vec![],
-                parental_warning_types: vec![],
-                technical_detailss: vec![TechnicalImageDetails {
-                    technical_resource_details_reference: "IPFS image file CID".to_string(),
-                    file: Some(File {
-                        uri: input.image_cid.clone(),
-                    }),
-                    fingerprints: vec![],
-                }],
-            };
-            value.resource_list.images.push(image);
+        DdexMessage::NewRelease(mut new_release_message) => {
+            for image_resource in &mut new_release_message.resource_list.images {
+                if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
+                    if let Some(file) = &mut technical_details.file {
+                        let input_image_file = format!(
+                            "{}/{}",
+                            message_dir_processing_context.message_dir_path, file.uri
+                        );
+                        message_dir_processing_context.input_image_path = input_image_file;
+                        let file_uri =
+                            pin_file(&message_dir_processing_context.input_image_path, &config)
+                                .await?;
 
-            let json_output = value.to_json_string_pretty().unwrap();
-            fs::write(&input.output_json_path, json_output).unwrap();
+                        message_dir_processing_context.image_cid = file_uri.clone();
+                        file.uri = file_uri;
+                    }
+                }
+            }
+
+            let json_output = new_release_message.to_json_string_pretty()?;
+            fs::write(
+                &message_dir_processing_context.output_json_path,
+                json_output,
+            )?;
         }
     }
 
     Ok(())
+}
+
+fn is_xml_file_empty(file_path: &Path) -> Result<bool, Box<dyn Error>> {
+    let content = fs::read_to_string(file_path)?;
+    Ok(content.trim().is_empty())
 }
 
 async fn pin_file(path: &String, config: &Config) -> Result<String, Box<dyn Error>> {
@@ -59,64 +67,57 @@ async fn pin_file(path: &String, config: &Config) -> Result<String, Box<dyn Erro
     }
 }
 
-async fn process_asset_folder(
-    asset_folder_path: PathBuf,
+async fn process_message_folder(
+    message_folder_path: PathBuf,
     config: &Config,
 ) -> Result<MessageDirProcessingContext, Box<dyn Error>> {
-    let mut file_processing_context = MessageDirProcessingContext {
+    let mut message_dir_processing_context = MessageDirProcessingContext {
         input_xml_path: String::new(),
         input_image_path: String::new(),
         output_json_path: String::new(),
         image_cid: String::new(),
-        image_kind: String::new(),
+        message_dir_path: String::new(),
         empty: true,
     };
-    if asset_folder_path.is_dir() {
-        let asset_files = fs::read_dir(&asset_folder_path)?;
+    if message_folder_path.is_dir() {
+        let message_files = fs::read_dir(&message_folder_path)?;
 
-        for asset_file in asset_files {
-            let asset_path = asset_file?.path();
-            if asset_path.is_dir() == false {
-                let kind = match infer::get_from_path(&asset_path)? {
+        for message_file in message_files {
+            let message_file_path = message_file?.path();
+            if message_file_path.is_dir() == false {
+                let kind = match infer::get_from_path(&message_file_path)? {
                     Some(v) => v,
                     None => continue,
                 };
+                if kind.extension() == "xml" && is_xml_file_empty(&message_file_path)? == false {
+                    message_dir_processing_context.message_dir_path =
+                        message_folder_path.to_string_lossy().to_string();
+                    message_dir_processing_context.input_xml_path =
+                        message_file_path.to_string_lossy().to_string();
 
-                if kind.mime_type().starts_with("image/") {
-                    file_processing_context.input_image_path =
-                        asset_path.to_string_lossy().to_string();
-                    file_processing_context.image_cid =
-                        pin_file(&file_processing_context.input_image_path, config).await?;
-                    file_processing_context.image_kind = kind.mime_type().to_string();
-                }
-                if kind.extension() == "xml" {
-                    file_processing_context.input_xml_path =
-                        asset_path.to_string_lossy().to_string();
+                    message_dir_processing_context.output_json_path = format!(
+                        "{}/{}.json",
+                        OUTPUT_FILES_DIR,
+                        &message_folder_path
+                            .file_name()
+                            .and_then(|name| name.to_str())
+                            .ok_or_else(|| {
+                                Box::new(OwenCliError::InvalidAssetFolderName(
+                                    message_folder_path.to_string_lossy().to_string(),
+                                ))
+                            })?
+                    );
+
+                    message_dir_processing_context.empty = false;
+                    let ddex_message: DdexMessage =
+                        ddex_parse_xml_file(&message_dir_processing_context.input_xml_path)?;
+                    attach_cid_and_save(&mut message_dir_processing_context, ddex_message, &config)
+                        .await?;
                 }
             }
         }
-
-        if !file_processing_context.image_cid.is_empty()
-            && !file_processing_context.input_xml_path.is_empty()
-            && !file_processing_context.input_image_path.is_empty()
-        {
-            file_processing_context.output_json_path = format!(
-                "{}/{}.json",
-                OUTPUT_FILES_DIR,
-                &asset_folder_path
-                    .file_name()
-                    .and_then(|name| name.to_str())
-                    .ok_or_else(|| {
-                        Box::new(OwenCliError::InvalidAssetFolderName(
-                            asset_folder_path.to_string_lossy().to_string(),
-                        ))
-                    })?
-            );
-            file_processing_context.empty = false;
-            attach_cid_and_save(&file_processing_context).await?;
-        }
     }
-    Ok(file_processing_context)
+    Ok(message_dir_processing_context)
 }
 
 pub async fn create_output_files(
@@ -128,27 +129,27 @@ pub async fn create_output_files(
         fs::remove_dir_all(output_files_path)?;
     }
     fs::create_dir_all(output_files_path)?;
-    let root_folder_dir = Path::new(&config.folder_path);
-    let mut empty_folder = true;
+    let input_folder_path = Path::new(&config.folder_path);
+    let mut empty_root_folder = true;
 
-    if root_folder_dir.is_dir() {
-        let asset_folders = fs::read_dir(root_folder_dir)?;
+    if input_folder_path.is_dir() {
+        let message_folders = fs::read_dir(input_folder_path)?;
 
-        for asset_folder in asset_folders {
-            let asset_folder_path = asset_folder?.path();
-            let asset_dir_processing_context =
-                process_asset_folder(asset_folder_path, &config).await?;
-            if !asset_dir_processing_context.empty {
-                result.push(asset_dir_processing_context);
-                empty_folder = false;
+        for message_folder in message_folders {
+            let message_folder_path = message_folder?.path();
+            let message_dir_processing_context =
+                process_message_folder(message_folder_path, &config).await?;
+            if !message_dir_processing_context.empty {
+                result.push(message_dir_processing_context);
+                empty_root_folder = false;
             }
         }
     } else {
         return Err(Box::new(OwenCliError::SourcePathIsNotDir(
-            root_folder_dir.to_string_lossy().to_string(),
+            input_folder_path.to_string_lossy().to_string(),
         )));
     }
-    if empty_folder {
+    if empty_root_folder {
         return Err(Box::new(OwenCliError::EmptySourcePathFolder(
             config.folder_path.to_string(),
         )));
@@ -209,7 +210,7 @@ mod tests {
 
         assert_eq!(
             processing_context_vec.len(),
-            2,
+            4,
             "Wrong output size. Expected 2, got: {processed_count}"
         );
 
