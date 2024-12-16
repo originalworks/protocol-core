@@ -73,22 +73,22 @@ impl Config {
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     output_generator::create_output_files(&config).await?;
 
-    // let private_key_signer: PrivateKeySigner = config
-    //     .private_key
-    //     .parse()
-    //     .expect("Failed to parse PRIVATE_KEY:");
-    // let wallet = EthereumWallet::from(private_key_signer);
+    let private_key_signer: PrivateKeySigner = config
+        .private_key
+        .parse()
+        .expect("Failed to parse PRIVATE_KEY:");
+    let wallet = EthereumWallet::from(private_key_signer);
 
-    // let provider = ProviderBuilder::new()
-    //     .with_recommended_fillers()
-    //     .wallet(wallet)
-    //     .on_http(config.rpc_url.parse()?);
+    let provider = ProviderBuilder::new()
+        .with_recommended_fillers()
+        .wallet(wallet)
+        .on_http(config.rpc_url.parse()?);
 
-    // let ddex_sequencer_context = DdexSequencerContext::build(&provider).await?;
-    // let blob_transaction_data = BlobTransactionData::build()?;
-    // println!("sending tx...");
-    // ddex_sequencer_context
-    //     .send_blob(blob_transaction_data)
-    //     .await?;
+    let ddex_sequencer_context = DdexSequencerContext::build(&provider).await?;
+    let blob_transaction_data = BlobTransactionData::build()?;
+    println!("sending tx...");
+    ddex_sequencer_context
+        .send_blob(blob_transaction_data)
+        .await?;
     Ok(())
 }
