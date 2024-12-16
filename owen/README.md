@@ -50,17 +50,19 @@ cp ./owen/.env.example ./owen/.env
 Inside the `/owen` directory, create a folder with your messages structured as follows:
 
 ```
-- my_messages
-  - message_one
-    - your_ddex_msg.xml
-    - your_image.jpg
-  - message_two
-    - your_ddex_msg_two.xml
-    - your_image_two.png
+-> my_messages
+    -> message_one
+        -> message_resources
+            image_file.png
+        your_ddex_msg.xml
+    -> message_two
+        -> message_resources
+            image_file.jpg
+        your_ddex_msg.xml
 ```
 
+- Owen will look for a string with a file path in the `ResourceList.Image.TechnicalDetails.File.URI` tag in each message. If it finds it, it pins the file to IPFS. Then it replaces the `ResourceList.Image.TechnicalDetails.File.URI` tag value with the CID of the pinned file.
 - Directory and file names don't matter.
-- Images must be taged as MIME type `image/*`.
 - DDEX messages have to be in `.xml` format.
 
 ### 5. Run OWEN:
