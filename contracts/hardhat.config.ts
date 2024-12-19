@@ -4,6 +4,7 @@ dotenv.config();
 import "@openzeppelin/hardhat-upgrades";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-foundry";
 
 const config: HardhatUserConfig = {
   solidity: {
