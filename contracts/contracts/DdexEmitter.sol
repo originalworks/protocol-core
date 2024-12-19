@@ -4,13 +4,13 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "./interfaces/IRiscZeroVerifier.sol";
-import "./interfaces/IVerifier.sol";
+import "../lib/risc0-ethereum/contracts/src/IRiscZeroVerifier.sol";
+import "./interfaces/IDdexEmitter.sol";
 
-contract Verifier is
+contract DdexEmitter is
     Initializable,
     OwnableUpgradeable,
-    IVerifier,
+    IDdexEmitter,
     UUPSUpgradeable
 {
     IRiscZeroVerifier riscZeroGroth16Verifier;
@@ -37,7 +37,7 @@ contract Verifier is
         __Ownable_init(msg.sender);
     }
 
-    function verify(uint256 x, bytes calldata seal) public {
+    function verifyAndEmit(uint256 x, bytes calldata seal) public {
         require(
             msg.sender == ddexSequencerAddress,
             "msg.sender is not DdexSequencer"
