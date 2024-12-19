@@ -4,7 +4,7 @@ import { deployStakeVault } from "../actions/contract-deployment/StakeVault/Stak
 import { deployWhitelist } from "../actions/contract-deployment/Whitelist/Whitelist.deploy";
 import { ethers } from "hardhat";
 import fs from "fs";
-import { deployVerifier } from "../actions/contract-deployment/Verifier/Verifier.deploy";
+import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/DdexEmitter.deploy";
 
 const SLASH_RATE = 1000;
 
@@ -29,9 +29,9 @@ async function main() {
   await ddexSequencer.disableWhitelist();
 
   console.log("Deploying Verifier...");
-  const verifier = await deployVerifier(await ddexSequencer.getAddress());
+  const ddexEmitter = await deployDdexEmitter(await ddexSequencer.getAddress());
 
-  await ddexSequencer.setVerifier(verifier);
+  await ddexSequencer.setVerifier(ddexEmitter);
 
   const deploymentData = {
     signer: await signer.getAddress(),

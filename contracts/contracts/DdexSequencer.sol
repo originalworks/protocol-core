@@ -2,7 +2,7 @@
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Whitelist/WhitelistConsumer.sol";
 import "./interfaces/IStakeVault.sol";
-import "./interfaces/IVerifier.sol";
+import "./interfaces/IDdexEmitter.sol";
 
 pragma solidity ^0.8.24;
 
@@ -27,7 +27,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     bytes32 public blobQueueTail;
 
     IStakeVault stakeVault;
-    IVerifier verifier;
+    IDdexEmitter ddexEmitter;
 
     // temporary solution for open alpha tests
     bool whitelistsDisabled;
@@ -44,8 +44,8 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         stakeVault = IStakeVault(stakeVaultAddress);
     }
 
-    function setVerifier(IVerifier _verifier) public onlyOwner {
-        verifier = _verifier;
+    function setDdexEmitter(IDdexEmitter _ddexEmitter) public onlyOwner {
+        ddexEmitter = _ddexEmitter;
     }
 
     // temporary solution for open alpha tests
@@ -81,11 +81,11 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         blobs[blobId].proposer = msg.sender;
 
         if (blobQueueHead == bytes32(0)) {
-            blobQueueHead = blobId;
-            blobQueueTail = blobId;
+            blobQueueHead = newBlobhash;
+            blobQueueTail = newBlobhash;
         } else {
-            blobs[blobQueueTail].nextBlob = blobId;
-            blobQueueTail = blobId;
+            blobs[blobQueueTail].nextBlob = newBlobhash;
+            blobQueueTail = newBlobhash;
         }
         emit NewBlobSubmitted(commitment);
     }
@@ -96,7 +96,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "Queue is empty");
 
-        verifier.verify(x, seal);
+        ddexEmitter.verifyAndEmit(x, seal);
 
         _moveQueue();
         emit MessageDigested(DdexMessageData(x));

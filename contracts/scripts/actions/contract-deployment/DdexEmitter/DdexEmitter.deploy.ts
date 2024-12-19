@@ -1,7 +1,7 @@
 import { ethers, upgrades } from "hardhat";
-import { Verifier } from "../../../../typechain-types";
+import { DdexEmitter } from "../../../../typechain-types";
 
-export async function deployVerifier(
+export async function deployDdexEmitter(
   ddexSequencerAddress: string,
   _riscZeroGroth16VerifierAddress?: string
 ) {
@@ -18,13 +18,13 @@ export async function deployVerifier(
     );
   }
 
-  const Verifier = await ethers.getContractFactory("Verifier");
+  const DdexEmitter = await ethers.getContractFactory("DdexEmitter");
 
-  const verifier = await upgrades.deployProxy(
-    Verifier,
+  const ddexEmitter = await upgrades.deployProxy(
+    DdexEmitter,
     [riscZeroGroth16VerifierAddress, ddexSequencerAddress, imageId],
     { kind: "uups" }
   );
-  await verifier.waitForDeployment();
-  return verifier as unknown as Verifier;
+  await ddexEmitter.waitForDeployment();
+  return ddexEmitter as unknown as DdexEmitter;
 }

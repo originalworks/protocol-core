@@ -3,8 +3,8 @@ import { deployOwnToken } from "../actions/contract-deployment/OwnToken/OwnToken
 import { deployStakeVault } from "../actions/contract-deployment/StakeVault/StakeVault.deploy";
 import { deployWhitelist } from "../actions/contract-deployment/Whitelist/Whitelist.deploy";
 import { getKurtosisEthersWallets } from "../fixture/fixture.deploy";
-import { deployVerifier } from "../actions/contract-deployment/Verifier/Verifier.deploy";
-import { deployFakeGroth16Verifier } from "../actions/contract-deployment/FakeGroth16Verifier/FakeGroth16Verifier.deploy";
+import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/DdexEmitter.deploy";
+import { deployRiscZeroGroth16Verifier } from "../actions/contract-deployment/RiscZeroGroth16Verifier/RiscZeroGroth16Verifier.deploy";
 
 const SLASH_RATE = 1000;
 
@@ -34,15 +34,15 @@ async function main() {
     stakeVaultAddress: await stakeVault.getAddress(),
   });
 
-  console.log("Deploying Verifier...");
-  const fakeGroth16Verifier = await deployFakeGroth16Verifier();
+  console.log("Deploying DdexEmitter...");
+  const riscZeroGroth16Verifier = await deployRiscZeroGroth16Verifier();
 
-  const verifier = await deployVerifier(
+  const ddexEmitter = await deployDdexEmitter(
     await ddexSequencer.getAddress(),
-    await fakeGroth16Verifier.getAddress()
+    await riscZeroGroth16Verifier.getAddress()
   );
 
-  await ddexSequencer.setVerifier(verifier);
+  await ddexSequencer.setDdexEmitter(ddexEmitter);
 
   console.log("deployment data:", {
     ddexSequencer: await ddexSequencer.getAddress(),
