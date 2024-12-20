@@ -1,0 +1,10 @@
+NOTICE
+
+This repository is primarily licensed under [AGPLv3] as detailed in `LICENSE`.
+
+EXCEPTIONS:
+- `blob_codec/` is licensed under Copyright of Original Works Foundation.
+- `validator_node/` is licensed under Copyright of Original Works Foundation.
+
+By using this software, you agree to the terms of these licenses.
+
