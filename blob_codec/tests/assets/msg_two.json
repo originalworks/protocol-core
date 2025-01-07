@@ -83,7 +83,7 @@
               }
             ],
             "recording_mode": null,
-            "technical_detailss": [
+            "technical_details": [
               {
                 "technical_resource_details_reference": "T1",
                 "delivery_files": [
@@ -201,7 +201,7 @@
             "content": "NotExplicit"
           }
         ],
-        "technical_detailss": [
+        "technical_details": [
           {
             "technical_resource_details_reference": "T22",
             "file": {
@@ -220,7 +220,7 @@
         },
         "resource_ids": [],
         "parental_warning_types": [],
-        "technical_detailss": [
+        "technical_details": [
           {
             "technical_resource_details_reference": "IPFS image file CID",
             "file": {
