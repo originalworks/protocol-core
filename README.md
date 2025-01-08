@@ -10,7 +10,7 @@
 ## RUN Validation
 
 1. Clone repo
-2. `cd parser`
+2. `cd host`
 3. To run with CPU: `cargo run --release`
 4. To run with GPU: `cargo run --release -F cuda`
 
