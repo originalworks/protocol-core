@@ -18,7 +18,7 @@
 
 Running on GPU requires a GPU with a lot of memory. We have tested it working on Nvidia cards with 8GB of RAM, but the more you have the better
 
-On line 23 of `/prover/host/src/main.rs` you have the value `.segment_limit_po2(19)`, which should work for cards with 8GB of RAM. For higher end cards (24GB) you can comment to entire line to improve performance. you can slighty modify this value to the maximum value that you system supports.
+On line 36 of `/host/src/main.rs` you have the value `.segment_limit_po2(19)`, which should work for cards with 8GB of RAM. For higher end cards (24GB) you can comment to entire line to improve performance. you can slighty modify this value to the maximum value that you system supports.
 
 To run on GPU you might need to set these values first:
 
