@@ -5,4 +5,5 @@ members = [
   "yaserde_derive",
   "ddex_schema",
   "runner",
+  "subgraph_schema"
 ]

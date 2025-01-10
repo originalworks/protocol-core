@@ -351,6 +351,7 @@ pub struct DetailedPartyId {
 pub struct ResourceList {
     #[yaserde(rename = "SoundRecording", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     #[validate(custom = ProtocolValidator::sound_recordings)]
     pub sound_recordings: Vec<SoundRecording>,
     #[yaserde(rename = "Image", prefix = "ern")]
@@ -1329,7 +1330,7 @@ pub struct TechnicalImageDetails {
 pub struct ReleaseList {
     #[yaserde(rename = "Release", prefix = "ern")]
     #[validate]
-    pub release: Option<Release>,
+    pub release: Release,
     #[yaserde(rename = "TrackRelease", prefix = "ern")]
     #[validate]
     pub track_releases: Vec<TrackRelease>,
@@ -1360,6 +1361,7 @@ pub struct Release {
     #[validate(min_items = 1)]
     pub release_types: Vec<ReleaseTypeForReleaseNotification>,
     #[yaserde(rename = "ReleaseId", prefix = "ern")]
+    #[validate(custom = ProtocolValidator::release_id)]
     pub release_id: ReleaseId,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
     #[validate(min_items = 1)]
