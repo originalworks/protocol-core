@@ -3,7 +3,7 @@ pub mod expand_enum;
 pub mod expand_struct;
 
 use crate::common::YaSerdeAttribute;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn expand_derive_deserialize(ast: &syn::DeriveInput) -> Result<TokenStream, String> {

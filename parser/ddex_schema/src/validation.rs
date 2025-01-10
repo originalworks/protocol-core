@@ -1,7 +1,11 @@
+use std::collections::{HashMap, HashSet};
+
 use regex::Regex;
 use serde_valid::validation::error::{Format, Message};
 use serde_valid::validation::Error;
 use serde_valid::PatternError;
+
+use crate::{PartyList, ResourceList, RightsType, SoundRecording, UseType};
 
 pub trait Validator {
     const PATTERN: &'static str = "";
@@ -256,4 +260,213 @@ impl Validator for ReleaseResourceReferenceValidator {
 pub struct ArtistPartyReferenceValidator;
 impl Validator for ArtistPartyReferenceValidator {
     const PATTERN: &'static str = r"^P[\d\-_a-zA-Z]+$";
+}
+
+pub struct ChoiceValidator {}
+
+impl ChoiceValidator {
+    pub fn affiliation(
+        company_name: &Option<String>,
+        party_affiliate_reference: &Option<String>,
+    ) -> Result<(), Error> {
+        match (company_name.is_some(), party_affiliate_reference.is_some()) {
+            (true, true) => Err(Error::Custom(
+                "CompanyName and PartyAffiliateReference are exclusive".to_string(),
+            )),
+            (false, false) => Err(Error::Custom(
+                "CompanyName or PartyAffiliateReference is required".to_string(),
+            )),
+            _ => Ok(()),
+        }
+    }
+
+    pub fn resource_rights_controller(
+        right_share_percentage: &Option<String>,
+        right_share_unknown: &Option<bool>,
+    ) -> Result<(), Error> {
+        match (right_share_percentage, right_share_unknown) {
+            (Some(_), Some(_)) => Err(Error::Custom(
+                "RightSharePercentage and RightShareUnknown are exclusive".to_string(),
+            )),
+            (None, None) => Err(Error::Custom(
+                "RightSharePercentage or RightShareUnknown is required".to_string(),
+            )),
+            (Some(percentage), None) => {
+                let parsed = percentage.parse::<f64>();
+
+                if let Ok(parsed_ok) = parsed {
+                    if parsed_ok > 100 as f64 && parsed_ok < 0 as f64 {
+                        return Err(Error::Custom(
+                            "RightSharePercentage needs to be between 0 and 100".to_string(),
+                        ));
+                    }
+                } else {
+                    return Err(Error::Custom(
+                        "Unable to parse RightSharePercentage".to_string(),
+                    ));
+                }
+
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    pub fn party<G, T>(parties_ids: &Vec<G>, parties_names: &Vec<T>) -> Result<(), Error> {
+        if parties_names.len() == 0 && parties_ids.len() == 0 {
+            return Err(Error::Custom(
+                "PartyName and/or PartyId is required".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
+pub struct ProtocolValidator {}
+
+impl ProtocolValidator {
+    pub fn affiliation_type(kind: &String) -> Result<(), Error> {
+        let allowed_kind = "MusicLicensingCompany";
+
+        if kind != allowed_kind {
+            return Err(Error::Custom(format!(
+                "Protocol Check 4 failed: PartyList:Party:Affiliation:Type has to be {}",
+                allowed_kind
+            )));
+        }
+
+        Ok(())
+    }
+
+    pub fn right_types(rights: &Vec<RightsType>) -> Result<(), Error> {
+        let allowed_type = "MakeAvailableRight";
+
+        if rights.iter().any(|e| e.content == allowed_type) {
+            return Ok(());
+        } else {
+            return Err(Error::Custom(format!(
+                "Protocol Check 5 failed: PartyList:Party:Affiliation:RightType has to include {}",
+                allowed_type
+            )));
+        };
+    }
+
+    pub fn sound_recordings(sound_recordings: &Vec<SoundRecording>) -> Result<(), Error> {
+        let mut isrcs_set = HashSet::new();
+        let mut duplicate_isrc = false;
+        let mut duplicate_type = false;
+
+        sound_recordings.iter().for_each(|recording| {
+            let mut types_set = HashSet::new();
+
+            recording
+                .sound_recording_editions
+                .iter()
+                .for_each(|edition| {
+                    if !isrcs_set.insert(&edition.resource_ids[0].isrc) {
+                        duplicate_isrc = true;
+                    }
+
+                    if let Some(kind) = &edition.kind {
+                        if !types_set.insert(kind) {
+                            duplicate_type = true;
+                        }
+                    }
+                });
+        });
+
+        if duplicate_isrc {
+            return Err(Error::Custom(format!(
+                "Protocol Check 6 failed: ISRCs need to be unique"
+            )));
+        }
+
+        if duplicate_type {
+            return Err(Error::Custom(format!(
+                "Protocol Check 6 failed: SoundRecordingEdition::SoundRecordingTypes within SoundRecording must be unique"
+            )));
+        }
+
+        Ok(())
+    }
+
+    pub fn music_licensing_companies(
+        resource_list: &ResourceList,
+        party_list: &PartyList,
+    ) -> Result<(), Error> {
+        let required_affiliation_type = "MusicLicensingCompany".to_string();
+
+        let controllers_refs_set: HashSet<&String> = resource_list
+            .sound_recordings
+            .iter()
+            .map(|sr| {
+                sr.resource_rights_controllers
+                    .iter()
+                    .map(|rrc| &rrc.rights_controller_party_reference)
+                    .collect::<Vec<&String>>()
+            })
+            .flatten()
+            .collect();
+
+        let parties_map: HashMap<&String, Vec<&String>> = party_list
+            .partys
+            .iter()
+            .map(|p| {
+                (
+                    &p.party_reference,
+                    p.affiliations.iter().map(|a| &a.kind).collect(),
+                )
+            })
+            .collect();
+
+        for controller_ref in controllers_refs_set {
+            if let Some(affiliation_types) = parties_map.get(controller_ref) {
+                if !affiliation_types.contains(&&required_affiliation_type) {
+                    return Err(Error::Custom(format!(
+                        "Protocol Check 7 failed: Party with Id {} needs to have {} affiliation type", controller_ref, required_affiliation_type
+                    )));
+                }
+            } else {
+                return Err(Error::Custom(format!(
+                    "Protocol Check 7 failed: Party with Id {} needs to have {} affiliation type",
+                    controller_ref, required_affiliation_type
+                )));
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn rights_control_types(types: &Vec<String>) -> Result<(), Error> {
+        let expected_type = "RoyaltyAdministrator".to_string();
+
+        if !types.contains(&expected_type) {
+            return Err(Error::Custom(format!(
+                "Protocol Check 8 failed: RightsControlTypes need to contain {} type",
+                expected_type
+            )));
+        }
+
+        Ok(())
+    }
+
+    pub fn use_types(types: &Vec<UseType>) -> Result<(), Error> {
+        let accepted_values = [
+            "Stream",
+            "PermanentDownload",
+            "ConditionalDownload",
+            "TetheredDownload",
+        ];
+        if !types
+            .iter()
+            .any(|t| accepted_values.contains(&t.content.as_str()))
+        {
+            return Err(Error::Custom(format!(
+                "Protocol Check 10 failed: TerritoryOfRightsDelegation needs to contain at least one of Stream/PermanentDownload/ConditionalDownload/TetheredDownload"
+            )));
+        }
+
+        Ok(())
+    }
 }

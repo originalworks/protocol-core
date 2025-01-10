@@ -12,6 +12,7 @@ use crate::validation::*;
     serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
+#[validate(custom = |s| ProtocolValidator::music_licensing_companies(&s.resource_list, &s.party_list))]
 pub struct NewReleaseMessage {
     #[yaserde(rename = "MessageHeader", prefix = "ern")]
     #[validate]
@@ -46,6 +47,7 @@ pub struct MessageHeader {
     pub message_sender: MessagingPartyWithoutCode,
     #[yaserde(rename = "MessageRecipient", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub message_recipients: Vec<MessagingPartyWithoutCode>,
     #[yaserde(rename = "MessageCreatedDateTime", prefix = "ern")]
     pub message_created_date_time: String,
@@ -122,6 +124,7 @@ pub struct ReleaseAdmin {
 pub struct PartyList {
     #[yaserde(rename = "Party", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub partys: Vec<Party>,
 }
 
@@ -137,6 +140,7 @@ pub struct PartyList {
     serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
+#[validate(custom = |s| ChoiceValidator::party(&s.parties_names, &s.parties_ids))]
 pub struct Party {
     #[yaserde(
         rename = "PartyReference",
@@ -166,6 +170,7 @@ pub struct Party {
     serde::Deserialize,
     serde_valid::Validate,
 )]
+#[validate(custom = |s| ChoiceValidator::affiliation(&s.company_name, &s.party_affiliate_reference))]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct Affiliation {
     #[yaserde(
@@ -174,11 +179,13 @@ pub struct Affiliation {
         validation = "AvsAffiliationTypeValidator"
     )]
     #[validate(custom = AvsAffiliationTypeValidator::json_validate)]
+    #[validate(custom = ProtocolValidator::affiliation_type)]
     pub kind: String,
     #[yaserde(rename = "ValidityPeriod", prefix = "ern")]
     pub validity_period: Option<ValidityPeriod>,
     #[yaserde(rename = "RightsType", prefix = "ern")]
     #[validate]
+    #[validate(custom = ProtocolValidator::right_types)]
     pub rights_types: Vec<RightsType>,
     #[yaserde(rename = "PercentageOfRightsAssignment", prefix = "ern")]
     pub percentage_of_rights_assignment: Option<String>,
@@ -197,6 +204,7 @@ pub struct Affiliation {
         validation = "AvsCurrentTerritoryCodeValidator"
     )]
     #[validate(custom = AvsCurrentTerritoryCodeValidator::json_validate_vec)]
+    #[validate(min_items = 1)]
     pub territory_codes: Vec<String>,
 }
 
@@ -343,6 +351,7 @@ pub struct DetailedPartyId {
 pub struct ResourceList {
     #[yaserde(rename = "SoundRecording", prefix = "ern")]
     #[validate]
+    #[validate(custom = ProtocolValidator::sound_recordings)]
     pub sound_recordings: Vec<SoundRecording>,
     #[yaserde(rename = "Image", prefix = "ern")]
     #[validate]
@@ -374,6 +383,8 @@ pub struct SoundRecording {
     pub kind: SoundRecordingType,
     #[yaserde(rename = "SoundRecordingEdition", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
+    #[validate(max_items = 2)]
     pub sound_recording_editions: Vec<SoundRecordingEdition>,
     #[yaserde(rename = "RecordingFormat", prefix = "ern")]
     #[validate]
@@ -381,18 +392,22 @@ pub struct SoundRecording {
     #[yaserde(rename = "WorkId", prefix = "ern")]
     pub work_ids: Vec<MusicalWorkId>,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_titles: Vec<DisplayTitle>,
     #[yaserde(rename = "VersionType", prefix = "ern")]
     #[validate]
     pub version_types: Vec<VersionType>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "Contributor", prefix = "ern")]
     #[validate]
@@ -410,6 +425,7 @@ pub struct SoundRecording {
     pub creation_date: Option<EventDateWithoutFlags>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "IsInstrumental", prefix = "ern")]
     pub is_instrumental: Option<bool>,
@@ -461,6 +477,9 @@ pub struct SoundRecordingEdition {
     #[validate(custom = AvsEditionTypeValidator::json_validate)]
     pub kind: Option<String>,
     #[yaserde(rename = "ResourceId", prefix = "ern")]
+    #[validate]
+    #[validate(min_items = 1)]
+    #[validate(max_items = 1)]
     pub resource_ids: Vec<SoundRecordingId>,
     #[yaserde(rename = "EditionContributor", prefix = "ern")]
     #[validate]
@@ -488,11 +507,13 @@ pub struct SoundRecordingEdition {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct SoundRecordingId {
     #[yaserde(rename = "ISRC", prefix = "ern")]
-    pub isrc: Option<String>,
+    #[validate(pattern = r"^[A-Za-z]{2}\w{3}\d{7}$")]
+    pub isrc: String,
     #[yaserde(rename = "CatalogNumber", prefix = "ern")]
     pub catalog_number: Option<CatalogNumber>,
     #[yaserde(rename = "ProprietaryId", prefix = "ern")]
@@ -566,7 +587,7 @@ pub struct EditionContributor {
     pub is_credited: Option<IsCredited>,
     #[yaserde(rename = "DisplayCredits", prefix = "ern")]
     #[validate]
-    pub display_creditss: Vec<DisplayCredits>,
+    pub display_credits: Vec<DisplayCredits>,
     #[yaserde(attribute, rename = "SequenceNumber")]
     pub sequence_number: Option<i32>,
 }
@@ -1050,6 +1071,7 @@ pub struct Character {
     serde::Deserialize,
     serde_valid::Validate,
 )]
+#[validate(custom = |s| ChoiceValidator::resource_rights_controller(&s.right_share_percentage, &s.right_share_unknown))]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceRightsController {
     #[yaserde(
@@ -1065,9 +1087,15 @@ pub struct ResourceRightsController {
         validation = "AvsRightsControllerRoleValidator"
     )]
     #[validate(custom = AvsRightsControllerRoleValidator::json_validate_vec)]
+    #[validate(custom = ProtocolValidator::rights_control_types)]
+    #[validate(min_items = 1)]
     pub rights_control_types: Vec<String>,
+    #[yaserde(rename = "RightSharePercentage", prefix = "ern")]
+    pub right_share_percentage: Option<String>,
+    #[yaserde(rename = "RightShareUnknown", prefix = "ern")]
+    pub right_share_unknown: Option<bool>,
     #[yaserde(rename = "DelegatedUsageRights", prefix = "ern")]
-    pub delegated_usage_rightss: Vec<DelegatedUsageRights>,
+    pub delegated_usage_rights: Vec<DelegatedUsageRights>,
 }
 
 #[derive(
@@ -1103,9 +1131,12 @@ pub struct UseType {
 pub struct DelegatedUsageRights {
     #[yaserde(rename = "UseType", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
+    #[validate(custom = ProtocolValidator::use_types)]
     pub use_types: Vec<UseType>,
     #[yaserde(rename = "TerritoryOfRightsDelegation", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub territory_of_rights_delegations: Vec<AllTerritoryCode>,
 }
 
@@ -1207,6 +1238,7 @@ pub struct Image {
     #[validate]
     pub kind: ImageType,
     #[yaserde(rename = "ResourceId", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub resource_ids: Vec<ResourceProprietaryId>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     #[validate]
@@ -1247,10 +1279,12 @@ pub struct ImageType {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ResourceProprietaryId {
     #[yaserde(rename = "ProprietaryId", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub proprietary_ids: Vec<ProprietaryId>,
 }
 
@@ -1323,29 +1357,37 @@ pub struct Release {
     pub release_reference: String,
     #[yaserde(rename = "ReleaseType", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub release_types: Vec<ReleaseTypeForReleaseNotification>,
     #[yaserde(rename = "ReleaseId", prefix = "ern")]
     pub release_id: ReleaseId,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub display_title_texts: Vec<DisplayTitleText>,
     #[yaserde(rename = "DisplayTitle", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_titles: Vec<DisplayTitle>,
     #[yaserde(rename = "DisplayArtistName", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_artist_names: Vec<DisplayArtistNameWithDefault>,
     #[yaserde(rename = "DisplayArtist", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub display_artists: Vec<DisplayArtist>,
     #[yaserde(rename = "ReleaseLabelReference", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub release_label_references: Vec<ReleaseLabelReferenceWithParty>,
     #[yaserde(rename = "Duration", prefix = "ern")]
     pub duration: Option<String>,
     #[yaserde(rename = "Genre", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub genres: Vec<GenreWithTerritory>,
     #[yaserde(rename = "ParentalWarningType", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub parental_warning_types: Vec<ParentalWarningTypeWithTerritory>,
     #[yaserde(rename = "ResourceGroup", prefix = "ern")]
     pub resource_group: ResourceGroup,
@@ -1515,7 +1557,9 @@ pub struct TrackRelease {
     pub release_resource_reference: String,
     #[yaserde(rename = "ReleaseLabelReference", prefix = "ern")]
     #[validate]
+    #[validate(min_items = 1)]
     pub release_label_references: Vec<ReleaseLabelReferenceWithParty>,
     #[yaserde(rename = "Genre", prefix = "ern")]
+    #[validate(min_items = 1)]
     pub genres: Vec<GenreWithTerritory>,
 }
