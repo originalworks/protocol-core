@@ -17,10 +17,6 @@ contract DdexEmitter is
     address ddexSequencerAddress;
     bytes32 imageId;
 
-    bool public allesKlar;
-
-    event DigestedBlobDetails(uint256 x);
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -37,15 +33,19 @@ contract DdexEmitter is
         __Ownable_init(msg.sender);
     }
 
-    function verifyAndEmit(uint256 x, bytes calldata seal) public {
+    function verifyAndEmit(bytes memory journal, bytes calldata seal) public {
         require(
             msg.sender == ddexSequencerAddress,
             "msg.sender is not DdexSequencer"
         );
-        bytes memory journal = abi.encode(x);
+
+        ProverPublicOutputs memory proverPublicOutputs = abi.decode(
+            journal,
+            (ProverPublicOutputs)
+        );
         riscZeroGroth16Verifier.verify(seal, imageId, sha256(journal));
 
-        emit DigestedBlobDetails(x);
+        emit BlobProcessed(proverPublicOutputs);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

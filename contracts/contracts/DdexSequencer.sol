@@ -3,21 +3,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Whitelist/WhitelistConsumer.sol";
 import "./interfaces/IStakeVault.sol";
 import "./interfaces/IDdexEmitter.sol";
+import "./interfaces/IProverPublicOutputs.sol";
 
 pragma solidity ^0.8.24;
 
 contract DdexSequencer is WhitelistConsumer, Ownable {
     event NewBlobSubmitted(bytes commitment);
-    event MessageDigested(DdexMessageData data);
 
     struct Blob {
         bytes32 nextBlob;
         bool submitted;
         address proposer;
-    }
-
-    struct DdexMessageData {
-        uint256 x;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -91,15 +87,14 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     }
 
     function submitProofOfProcessing(
-        uint256 x, // TODO implement DdexMessageData[] type here with proper fields
+        bytes memory journal,
         bytes calldata seal
     ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "Queue is empty");
 
-        ddexEmitter.verifyAndEmit(x, seal);
+        ddexEmitter.verifyAndEmit(journal, seal);
 
         _moveQueue();
-        emit MessageDigested(DdexMessageData(x));
     }
 
     function submitProofForFraudulentBlob(

@@ -1,6 +1,7 @@
+use alloy_sol_types::SolValue;
 use blob_codec::BlobCodec;
 use ddex_schema::ddex_parse_json_reader;
-use prover_interface::{Message, PublicOutputs};
+use prover_interface::{ProvedMessage, ProverPublicOutputs};
 use risc0_zkvm::guest::env;
 use std::io::{Cursor, Read};
 
@@ -41,12 +42,12 @@ fn main() {
     before_cycle = env::cycle_count();
 
     let mut reader: Cursor<&Vec<u8>>;
-    let mut results: Vec<Message> = vec![];
+    let mut results: Vec<ProvedMessage> = vec![];
 
     for message in messages {
         reader = Cursor::new(&message);
         let parsed = ddex_parse_json_reader(reader).unwrap();
-        results.push(Message {
+        results.push(ProvedMessage {
             message_id: parsed.message_header.message_id,
         });
     }
@@ -56,12 +57,12 @@ fn main() {
         "Parsing messages took roughly {} cycles",
         after_cycle - before_cycle
     );
-
-    env::commit(&PublicOutputs {
+    let prover_public_outputs = ProverPublicOutputs {
         messages: results,
         is_valid: true,
-        digest,
-    });
+        digest: digest.into(),
+    };
+    env::commit_slice(&prover_public_outputs.abi_encode());
 
     let total_after_cycle = env::cycle_count();
     println!("TOTAL {} cycles", total_after_cycle - total_before_cycle);
