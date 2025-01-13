@@ -1,9 +1,9 @@
+use alloy_sol_types::SolValue;
 use blob_codec::BlobCodec;
 use core::str;
-use prover::{PublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
+use prover::{ProverPublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
 use risc0_ethereum_contracts::encode_seal;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
-
 use std::time::Instant;
 pub struct StopWatch {
     timer: Instant,
@@ -54,7 +54,8 @@ fn main() {
 
     let journal = receipt.journal.bytes.clone();
 
-    let public_outputs: PublicOutputs = receipt.journal.decode().unwrap();
+    let public_outputs: ProverPublicOutputs =
+        ProverPublicOutputs::abi_decode(&journal, true).unwrap();
 
     println!(
         "Values decoded from receipt:: Verified: {}",
