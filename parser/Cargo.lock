@@ -395,6 +395,7 @@ dependencies = [
  "serde",
  "serde_valid",
  "simple_logger",
+ "subgraph_schema",
 ]
 
 [[package]]

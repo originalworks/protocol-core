@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 ddex_schema = { path = "../ddex_schema" }
+subgraph_schema = { path = "../subgraph_schema" }
 simple_logger = "5.0.0"
 serde = {version = "1.0.0", features = ["derive"]}
 serde_valid = "0.25.0"

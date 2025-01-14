@@ -1,6 +1,7 @@
 use ddex_schema::NewReleaseMessage;
 use serde_valid::json::FromJsonStr;
 use std::fs;
+use subgraph_schema::new_release_message_to_subgraph;
 fn main() {
     // Read and validate xml file against the schema & save it to a file in json format
     // let parsed_xml = ddex_parse_xml_file("resources/example_messages/0Audio_lite.xml").unwrap();
@@ -14,7 +15,8 @@ fn main() {
 
     // Read and validate json file against the schema
 
-    let json_string = fs::read_to_string("resources/example_messages/0Audio_lite.json").unwrap();
+    let json_string = fs::read_to_string("../resources/example_messages/0Audio_lite.json").unwrap();
     let parsed_json = NewReleaseMessage::from_json_str(&json_string).unwrap();
-    dbg!(parsed_json);
+    let sg_schema = new_release_message_to_subgraph(parsed_json);
+    dbg!(sg_schema);
 }

@@ -438,14 +438,14 @@ fn protocol_sound_recordings() {
 
     assert_eq!(ResourceList::from_json_str(src.as_str()).is_err(), false);
 
-    // Working: No sound recordings
+    // Error: No sound recordings
     src = json!({
         "sound_recordings": [],
         "images": []
     })
     .to_string();
 
-    assert_eq!(ResourceList::from_json_str(src.as_str()).is_err(), false);
+    assert_eq!(ResourceList::from_json_str(src.as_str()).is_err(), true);
 
     // Error: Duplicate Type within same SoundRecording
     sound_recording_1 = create_sound_recording(vec![
