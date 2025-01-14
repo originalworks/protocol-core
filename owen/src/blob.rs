@@ -3,6 +3,7 @@ use alloy::consensus::BlobTransactionSidecar;
 use blob_codec::BlobCodec;
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
 use std::error::Error;
+
 pub struct BlobTransactionData {
     pub kzg_commitment: KzgCommitment,
     pub blob_sidecar: BlobTransactionSidecar,
