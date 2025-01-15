@@ -20,6 +20,7 @@ Prerequisites:
 2. OpenSSL library. Can be install with  `libssl-dev` on Debian based systems or with `openssl-dev` on Fedora/RedHat. 
 3. [RISC Zero Toolchain](https://dev.risczero.com/api/zkvm/quickstart).
 4. To run with GPU you need the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
+5. [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
 
 ## Notes on GPU
 
