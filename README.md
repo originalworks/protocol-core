@@ -18,6 +18,7 @@
 Prerequisites:
 1. [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
 2. OpenSSL library. Can be install with  `libssl-dev` on Debian based systems or with `openssl-dev` on Fedora/RedHat. 
+3. [RISC Zero Toolchain](https://dev.risczero.com/api/zkvm/quickstart).
 
 ## Notes on GPU
 
