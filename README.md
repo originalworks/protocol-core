@@ -15,7 +15,9 @@
 3. To run with CPU: `cargo run --release`
 4. To run with GPU: `cargo run --release -F cuda`
 
-Note: [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
+Prerequisites:
+1. [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
+2. OpenSSL library. Can be install with  `libssl-dev` on Debian based systems or with `openssl-dev` on Fedora/RedHat. 
 
 ## Notes on GPU
 
