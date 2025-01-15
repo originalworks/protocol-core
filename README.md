@@ -15,6 +15,8 @@
 3. To run with CPU: `cargo run --release`
 4. To run with GPU: `cargo run --release -F cuda`
 
+Note: [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
+
 ## Notes on GPU
 
 To run this project on a GPU, you'll need a graphics card with sufficient memory.
