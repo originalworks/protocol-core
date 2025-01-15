@@ -33,7 +33,10 @@ contract DdexEmitter is
         __Ownable_init(msg.sender);
     }
 
-    function verifyAndEmit(bytes memory journal, bytes calldata seal) public {
+    function verifyAndEmit(
+        bytes memory journal,
+        bytes calldata seal
+    ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
             "msg.sender is not DdexSequencer"
@@ -46,6 +49,8 @@ contract DdexEmitter is
         riscZeroGroth16Verifier.verify(seal, imageId, sha256(journal));
 
         emit BlobProcessed(proverPublicOutputs);
+
+        return proverPublicOutputs.digest;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
