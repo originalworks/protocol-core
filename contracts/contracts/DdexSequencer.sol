@@ -86,7 +86,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         emit NewBlobSubmitted(commitment);
     }
 
-    function submitProofOfProcessing(
+    function submitProof(
         bytes memory journal,
         bytes calldata seal
     ) external isWhitelistedOn(VALIDATORS_WHITELIST) {

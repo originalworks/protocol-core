@@ -1,10 +1,9 @@
 mod beacon_chain;
-mod circuit_mock;
 mod constants;
 mod ddex_sequencer;
 mod errors;
 mod ipfs;
-use blob_codec::BlobCodec;
+mod prover_wrapper;
 
 use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::{Bytes, FixedBytes};
@@ -28,8 +27,14 @@ pub struct Config {
     pub provider: FillProvider<
         JoinFill<
             JoinFill<
-                JoinFill<JoinFill<alloy::providers::Identity, GasFiller>, NonceFiller>,
-                ChainIdFiller,
+                alloy::providers::Identity,
+                JoinFill<
+                    GasFiller,
+                    JoinFill<
+                        alloy::providers::fillers::BlobGasFiller,
+                        JoinFill<NonceFiller, ChainIdFiller>,
+                    >,
+                >,
             >,
             WalletFiller<EthereumWallet>,
         >,
@@ -103,29 +108,21 @@ async fn validate_blobs(
     )
     .await?;
 
-    let decoded = BlobCodec::from_bytes(blob).decode().unwrap();
+    // let ipfs_cids = ddex_messages_data
+    //     .iter()
+    //     .map(|emittable_values| emittable_values.image_ipfs_cid.clone())
+    //     .collect();
 
-    let ddex_messages_data = circuit_mock::extract_message_data(&decoded)?;
+    // ipfs::check_file_accessibility(ipfs_cids).await?;
 
-    let tx_input = ddex_messages_data
-        .iter()
-        .map(|emittable_values| emittable_values.emittable_data.clone())
-        .collect();
-
-    let ipfs_cids = ddex_messages_data
-        .iter()
-        .map(|emittable_values| emittable_values.image_ipfs_cid.clone())
-        .collect();
-
-    ipfs::check_file_accessibility(ipfs_cids).await?;
+    let prover_run_results = prover_wrapper::run(&blob.into())?;
 
     println!("sending tx...");
     let receipt = ddex_sequencer_context
-        .contract
-        .submitProofOfProcessing(true, tx_input)
-        .send()
-        .await?
-        .get_receipt()
+        .submit_proof(
+            prover_run_results.journal.into(),
+            prover_run_results.seal.into(),
+        )
         .await?;
 
     println!("Receipt tx hash: {}", receipt.transaction_hash);
