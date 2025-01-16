@@ -17,3 +17,7 @@ node_modules
 ignition/deployments/chain-31337
 
 .openzeppelin/unknown-3151908.json
+
+# Forge files
+/out
+/cache_forge
