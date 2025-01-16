@@ -1,14 +1,20 @@
+use dotenvy::dotenv;
+use risc0_build;
+use risc0_build::{embed_methods_with_options, DockerOptions, GuestOptions};
+use risc0_build_ethereum::generate_solidity_files;
 use std::{
+    collections::HashMap,
+    env,
     fs::{self, File},
     io::Write,
 };
 
-use dotenvy::dotenv;
-use risc0_build;
-
 // // Uncomment when playing with docker build
 // use risc0_build::{DockerOptions, GuestOptions};
 // use std::collections::HashMap;
+
+const SOLIDITY_IMAGE_ID_PATH: &str = "../contracts/contracts/ImageID.sol";
+const SOLIDITY_ELF_PATH: &str = "../contracts/contracts/Elf.sol";
 
 fn main() {
     dotenv().unwrap();
@@ -67,4 +73,22 @@ fn main() {
     lib_content.push(interface);
 
     lib_file.write(lib_content.join("\n").as_bytes()).unwrap();
+
+    let use_docker = env::var("RISC0_USE_DOCKER").ok().map(|_| DockerOptions {
+        root_dir: Some("../".into()),
+    });
+
+    let guests = embed_methods_with_options(HashMap::from([(
+        "ddex_guest",
+        GuestOptions {
+            features: Vec::new(),
+            use_docker,
+        },
+    )]));
+
+    let solidity_opts = risc0_build_ethereum::Options::default()
+        .with_image_id_sol_path(SOLIDITY_IMAGE_ID_PATH)
+        .with_elf_sol_path(SOLIDITY_ELF_PATH);
+
+    generate_solidity_files(guests.as_slice(), &solidity_opts).unwrap();
 }

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = "1.1.2"
+risc0-zkvm = "1.2.0"
 serde = "1.0"
-ddex_schema = { path = "../../parser/ddex_schema"}
+ddex_schema = { path = "../../parser/ddex_schema" }
 alloy-sol-types = "0.8.18"
 alloy-contract = "0.9.2"

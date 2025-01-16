@@ -46,6 +46,7 @@ async function main() {
 
   console.log("deployment data:", {
     ddexSequencer: await ddexSequencer.getAddress(),
+    ddexEmitter: await ddexEmitter.getAddress(),
     accounts: {
       deployer: await signer.getAddress(),
       validators: [validator.address, validator2.address],

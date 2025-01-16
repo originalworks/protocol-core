@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../lib/risc0-ethereum/contracts/src/IRiscZeroVerifier.sol";
 import "./interfaces/IDdexEmitter.sol";
+import {ImageID} from "./ImageID.sol";
 
 contract DdexEmitter is
     Initializable,
@@ -15,7 +16,7 @@ contract DdexEmitter is
 {
     IRiscZeroVerifier riscZeroGroth16Verifier;
     address ddexSequencerAddress;
-    bytes32 imageId;
+    bytes32 public constant imageId = ImageID.DDEX_GUEST_ID;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -24,12 +25,10 @@ contract DdexEmitter is
 
     function initialize(
         IRiscZeroVerifier _riscZeroGroth16Verifier,
-        address _ddexSequencerAddress,
-        bytes32 _imageId
+        address _ddexSequencerAddress
     ) public initializer {
         riscZeroGroth16Verifier = _riscZeroGroth16Verifier;
         ddexSequencerAddress = _ddexSequencerAddress;
-        imageId = _imageId;
         __Ownable_init(msg.sender);
     }
 
