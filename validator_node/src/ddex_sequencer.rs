@@ -5,6 +5,7 @@ use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
 use alloy::providers::{ProviderBuilder, WsConnect};
+use alloy::rpc::types::TransactionReceipt;
 use alloy::{
     eips::BlockNumberOrTag,
     providers::{Provider, RootProvider},
@@ -29,8 +30,14 @@ pub struct DdexSequencerContext<'a> {
         &'a FillProvider<
             JoinFill<
                 JoinFill<
-                    JoinFill<JoinFill<alloy::providers::Identity, GasFiller>, NonceFiller>,
-                    ChainIdFiller,
+                    alloy::providers::Identity,
+                    JoinFill<
+                        GasFiller,
+                        JoinFill<
+                            alloy::providers::fillers::BlobGasFiller,
+                            JoinFill<NonceFiller, ChainIdFiller>,
+                        >,
+                    >,
                 >,
                 WalletFiller<EthereumWallet>,
             >,
@@ -51,8 +58,14 @@ impl DdexSequencerContext<'_> {
         provider: &FillProvider<
             JoinFill<
                 JoinFill<
-                    JoinFill<JoinFill<alloy::providers::Identity, GasFiller>, NonceFiller>,
-                    ChainIdFiller,
+                    alloy::providers::Identity,
+                    JoinFill<
+                        GasFiller,
+                        JoinFill<
+                            alloy::providers::fillers::BlobGasFiller,
+                            JoinFill<NonceFiller, ChainIdFiller>,
+                        >,
+                    >,
                 >,
                 WalletFiller<EthereumWallet>,
             >,
@@ -64,6 +77,25 @@ impl DdexSequencerContext<'_> {
         let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
         let result = DdexSequencerContext { contract };
         Ok(result)
+    }
+
+    pub async fn submit_proof(
+        &self,
+        journal: Vec<u8>,
+        seal: Vec<u8>,
+    ) -> Result<TransactionReceipt, Box<dyn Error>> {
+        let receipt = self
+            .contract
+            .submitProof(journal.into(), seal.into())
+            .send()
+            .await?
+            .get_receipt()
+            .await
+            .unwrap();
+
+        println!("{receipt:?}");
+
+        Ok(receipt)
     }
 
     fn commitment_to_blobhash(commitment: &Bytes) -> Result<FixedBytes<32>, Box<dyn Error>> {

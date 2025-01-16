@@ -14,6 +14,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         bytes32 nextBlob;
         bool submitted;
         address proposer;
+        bytes32 blobId;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -72,9 +73,13 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         require(newBlobhash != bytes32(0), "Blob not found in tx");
 
         bytes32 blobId = sha256(abi.encodePacked(newBlobhash, blobSha2));
-        require(blobs[blobId].submitted == false, "Blob already submitted");
-        blobs[blobId].submitted = true;
-        blobs[blobId].proposer = msg.sender;
+        require(
+            blobs[newBlobhash].submitted == false,
+            "Blob already submitted"
+        );
+        blobs[newBlobhash].submitted = true;
+        blobs[newBlobhash].proposer = msg.sender;
+        blobs[newBlobhash].blobId = blobId;
 
         if (blobQueueHead == bytes32(0)) {
             blobQueueHead = newBlobhash;
@@ -86,7 +91,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         emit NewBlobSubmitted(commitment);
     }
 
-    function submitProofOfProcessing(
+    function submitProof(
         bytes memory journal,
         bytes calldata seal
     ) external isWhitelistedOn(VALIDATORS_WHITELIST) {

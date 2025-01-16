@@ -12,7 +12,10 @@ use crate::validation::*;
     serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
-#[validate(custom = |s| ProtocolValidator::music_licensing_companies(&s.resource_list, &s.party_list))]
+
+// Check 7 disabled until revelator starts sending messages that meet protocol requirements
+// #[validate(custom = |s| ProtocolValidator::music_licensing_companies(&s.resource_list, &s.party_list))]
+
 pub struct NewReleaseMessage {
     #[yaserde(rename = "MessageHeader", prefix = "ern")]
     #[validate]

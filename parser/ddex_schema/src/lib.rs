@@ -12,7 +12,7 @@ pub enum DdexMessage {
     NewRelease(NewReleaseMessage),
 }
 
-pub fn ddex_parse_json_str(str: String) -> Result<DdexMessage, String> {
+pub fn ddex_parse_json_str(str: &String) -> Result<DdexMessage, String> {
     match NewReleaseMessage::from_json_str(&str) {
         Ok(res) => Ok(DdexMessage::NewRelease(res)),
         Err(e) => Err(e.to_string()),

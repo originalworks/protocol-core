@@ -6,5 +6,8 @@ import "./IProverPublicOutputs.sol";
 interface IDdexEmitter {
     event BlobProcessed(ProverPublicOutputs proverPublicOutputs);
 
-    function verifyAndEmit(bytes memory journal, bytes calldata seal) external;
+    function verifyAndEmit(
+        bytes memory journal,
+        bytes calldata seal
+    ) external returns (bytes32 blobDigest);
 }
