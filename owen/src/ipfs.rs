@@ -2,7 +2,7 @@ use crate::constants::{IPFS_API_ADD_FILE, IPFS_API_BASE_URL};
 use reqwest::{multipart, Body};
 use serde::Deserialize;
 use serde_json::json;
-use std::error::Error;
+use std::{error::Error, path::Path};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 #[derive(Deserialize, Debug)]
@@ -45,7 +45,6 @@ pub async fn pin_file_pinata(
     file_path: &String,
     pinata_jwt: &String,
 ) -> Result<String, Box<dyn Error>> {
-    
     // Extract the filename from the file path
     let filename = Path::new(file_path)
         .file_name() // Extracts the final component of the path
