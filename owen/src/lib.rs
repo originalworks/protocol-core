@@ -27,6 +27,8 @@ pub struct Config {
     pub default_ipfs_interface: IpfsInterface,
     pub ipfs_kubo_url: String,
     pub pinata_jwt: String,
+    pub max_fee_per_gas: u128,
+    pub output_files_dir: String,
 }
 
 impl Config {
@@ -58,6 +60,8 @@ impl Config {
         if default_ipfs_interface_string == "PINATA".to_string() {
             default_ipfs_interface = IpfsInterface::PINATA;
         }
+        let max_fee_per_gas = Config::get_env_var("MAX_FEE_PER_GAS")?.parse::<u128>()?;
+        let output_files_dir = Config::get_env_var("OUTPUT_FILES_DIR")?;
 
         Ok(Config {
             rpc_url,
@@ -66,6 +70,8 @@ impl Config {
             default_ipfs_interface,
             pinata_jwt,
             ipfs_kubo_url,
+            max_fee_per_gas,
+            output_files_dir,
         })
     }
 }
@@ -85,10 +91,10 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
         .on_http(config.rpc_url.parse()?);
 
     let ddex_sequencer_context = DdexSequencerContext::build(&provider).await?;
-    let blob_transaction_data = BlobTransactionData::build()?;
+    let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
     println!("sending tx...");
     ddex_sequencer_context
-        .send_blob(blob_transaction_data)
+        .send_blob(blob_transaction_data, config.max_fee_per_gas)
         .await?;
     Ok(())
 }

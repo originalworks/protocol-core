@@ -70,6 +70,7 @@ impl DdexSequencerContext<'_> {
     pub async fn send_blob(
         &self,
         transaction_data: BlobTransactionData,
+        max_fee_per_gas: u128,
     ) -> Result<(), Box<dyn Error>> {
         let receipt = self
             .contract
@@ -80,7 +81,7 @@ impl DdexSequencerContext<'_> {
             .sidecar(transaction_data.blob_sidecar)
             // TODO make gas settings optional CLI/setting file parameters
             .max_fee_per_blob_gas(10000000)
-            .max_fee_per_gas(100000000)
+            .max_fee_per_gas(max_fee_per_gas)
             .max_priority_fee_per_gas(100000000)
             .send()
             .await

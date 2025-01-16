@@ -1,4 +1,3 @@
-use crate::constants::OUTPUT_FILES_DIR;
 use crate::errors::OwenCliError;
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
@@ -92,7 +91,7 @@ async fn process_message_folder(
 
                     message_dir_processing_context.output_json_path = format!(
                         "{}/{}.json",
-                        OUTPUT_FILES_DIR,
+                        &config.output_files_dir,
                         &message_folder_path
                             .file_name()
                             .and_then(|name| name.to_str())
@@ -131,7 +130,7 @@ pub async fn create_output_files(
     config: &Config,
 ) -> Result<Vec<MessageDirProcessingContext>, Box<dyn Error>> {
     let mut result: Vec<MessageDirProcessingContext> = Vec::new();
-    let output_files_path = Path::new(OUTPUT_FILES_DIR);
+    let output_files_path = Path::new(&config.output_files_dir);
     if output_files_path.is_dir() {
         fs::remove_dir_all(output_files_path)?;
     }
@@ -210,6 +209,8 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
             pinata_jwt: String::new(),
+            max_fee_per_gas: 1,
+            output_files_dir: "./output_files".to_string(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -238,6 +239,8 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::new(),
             pinata_jwt: String::new(),
+            max_fee_per_gas: 1,
+            output_files_dir: "./output_files".to_string(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 
