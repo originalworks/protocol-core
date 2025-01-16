@@ -16,7 +16,7 @@ contract DdexEmitter is
 {
     IRiscZeroVerifier riscZeroGroth16Verifier;
     address ddexSequencerAddress;
-    bytes32 public constant imageId = ImageID.DDEX_GUEST_ID;
+    bytes32 public imageId;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -27,9 +27,14 @@ contract DdexEmitter is
         IRiscZeroVerifier _riscZeroGroth16Verifier,
         address _ddexSequencerAddress
     ) public initializer {
+        imageId = ImageID.DDEX_GUEST_ID;
         riscZeroGroth16Verifier = _riscZeroGroth16Verifier;
         ddexSequencerAddress = _ddexSequencerAddress;
         __Ownable_init(msg.sender);
+    }
+
+    function setImageId(bytes32 newImage) public onlyOwner {
+        imageId = newImage;
     }
 
     function verifyAndEmit(
