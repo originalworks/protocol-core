@@ -45,13 +45,35 @@ pub async fn pin_file_pinata(
     file_path: &String,
     pinata_jwt: &String,
 ) -> Result<String, Box<dyn Error>> {
+    
+    // Extract the filename from the file path
+    let filename = Path::new(file_path)
+        .file_name() // Extracts the final component of the path
+        .and_then(|name| name.to_str()) // Converts OsStr to &str
+        .ok_or("Failed to extract filename from file_path")?;
+
     let multipart_form = file_to_multipart_form(file_path).await?;
     let client = reqwest::Client::new();
+
+    // Add metadata
+    let metadata = json!({
+        "pinataMetadata": {
+            "name": filename, // Use the extracted filename
+            "keyvalues": {
+                "status": "firstpin",
+                "customField2": "customValue2" // Future use for ERN?
+            }
+        },
+        "pinataOptions": {
+            "cidVersion": 1 // Set the CID version to 1 (default is 0)
+        }
+    });
 
     let response = client
         .post("https://api.pinata.cloud/pinning/pinFileToIPFS")
         .header("Authorization", format!("Bearer {}", pinata_jwt))
         .multipart(multipart_form)
+        .header("pinataMetadata", metadata.to_string()) // Include the metadata as a header
         .send()
         .await?;
 
