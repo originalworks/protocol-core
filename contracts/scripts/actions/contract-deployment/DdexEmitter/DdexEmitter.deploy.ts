@@ -8,21 +8,15 @@ export async function deployDdexEmitter(
   const riscZeroGroth16VerifierAddress =
     _riscZeroGroth16VerifierAddress || process.env.RISC_ZERO_GROTH16_VERIFIER;
 
-  const imageId = process.env.RISC_ZERO_GUEST_IMAGE_ID;
-  if (!riscZeroGroth16VerifierAddress || !imageId) {
-    throw new Error(
-      `Missing variables: ${{
-        riscZeroGroth16VerifierAddress,
-        imageId,
-      }}`
-    );
+  if (!riscZeroGroth16VerifierAddress) {
+    throw new Error(`Missing variable: riscZeroGroth16VerifierAddress`);
   }
 
   const DdexEmitter = await ethers.getContractFactory("DdexEmitter");
 
   const ddexEmitter = await upgrades.deployProxy(
     DdexEmitter,
-    [riscZeroGroth16VerifierAddress, ddexSequencerAddress, imageId],
+    [riscZeroGroth16VerifierAddress, ddexSequencerAddress],
     { kind: "uups" }
   );
   await ddexEmitter.waitForDeployment();

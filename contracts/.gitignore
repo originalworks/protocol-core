@@ -21,3 +21,5 @@ ignition/deployments/chain-31337
 # Forge files
 /out
 /cache_forge
+
+/contracts/Elf.sol
