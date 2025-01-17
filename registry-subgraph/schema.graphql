@@ -1,15 +1,6 @@
-type DdexMessage @entity {
+type ProvedMessage @entity {
   id: ID!
-  isrc: String!
-  releaseId: String!
-}
-
-type Release @entity {
-  id: ID!
-  isrcs: [Isrc!]!
-}
-
-type Isrc @entity {
-  id: ID!
-  lastUpdate: BigInt!
+  message_id: String!
+  timestamp: BigInt!
+  validator: Bytes!
 }

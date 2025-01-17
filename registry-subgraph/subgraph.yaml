@@ -5,21 +5,22 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: DdexSequencer
-    network: kurtosis
+    name: DdexEmitter
+    network: holesky
     source:
-      address: "0xB965D10739e19a9158e7f713720B0145D996E370"
-      abi: DdexSequencer
+      address: "0xE20B5eBa1159afCAD3f846a716A060858e9A4fB2"
+      abi: DdexEmitter
+      startBlock: 3164428
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mapping.ts
       entities:
-        - DdexMessage
+        - ProvedMessage
       abis:
-        - name: DdexSequencer
-          file: ./abis/DdexSequencer.json
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: MessageDigested((string,string))
-          handler: handleMessageDigested
+        - event: BlobProcessed((bool,bytes32,(string)[]))
+          handler: handleBlobProcessed

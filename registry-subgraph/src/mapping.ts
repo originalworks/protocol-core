@@ -1,35 +1,16 @@
-import { MessageDigested } from "./types/DdexSequencer/DdexSequencer";
-import { DdexMessage, Isrc, Release } from "./types/schema";
+import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
+import { ProvedMessage } from "./types/schema";
 
-export function handleMessageDigested(event: MessageDigested): void {
-  const ddexMessage = new DdexMessage(event.transaction.hash.toHex());
-  ddexMessage.isrc = event.params.data.isrc;
-  ddexMessage.releaseId = event.params.data.releaseId;
-  ddexMessage.save();
+export function handleBlobProcessed(event: BlobProcessed): void {
+  for (let i = 0; i < event.params.proverPublicOutputs.messages.length; i++) {
+    const message = event.params.proverPublicOutputs.messages[i];
 
-  let isrc = Isrc.load(event.params.data.isrc);
-  if (isrc === null) {
-    isrc = new Isrc(`${event.params.data.isrc}`);
-  }
-  isrc.lastUpdate = event.block.timestamp;
-  isrc.save();
-
-  let release = Release.load(event.params.data.releaseId);
-  if (release === null) {
-    release = new Release(`${event.params.data.releaseId}`);
-    release.isrcs = [];
-    release.save();
-  }
-  let alreadyIncluded = false;
-  for (let i = 0; i < release.isrcs.length; i++) {
-    if (release.isrcs[i] == isrc.id) {
-      alreadyIncluded = true;
-    }
-  }
-  if (!alreadyIncluded) {
-    let releaseIsrcs = release.isrcs;
-    releaseIsrcs.push(isrc.id);
-    release.isrcs = releaseIsrcs;
-    release.save();
+    const provedMessage = new ProvedMessage(
+      `${event.transaction.hash.toHex()}-${i}`
+    );
+    provedMessage.message_id = message.message_id;
+    provedMessage.timestamp = event.block.timestamp;
+    provedMessage.validator = event.transaction.from;
+    provedMessage.save();
   }
 }
