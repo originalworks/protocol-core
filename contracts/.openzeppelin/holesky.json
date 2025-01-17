@@ -5,6 +5,21 @@
       "address": "0x1C2658023B9CB17b11e1Ddde61AB1b89261fcF38",
       "txHash": "0xae58bde6a61239a3e439cfca9a3c5862be3d4fc82c052e7669d9ad04ccb79b1d",
       "kind": "uups"
+    },
+    {
+      "address": "0xF108Ce5ec14fF639D5A8ec1075145E6dA1D46dbB",
+      "txHash": "0x12fe3c883e46b6034c6b554a90e5296a296dafb55e1b3436f6ac47f812794583",
+      "kind": "uups"
+    },
+    {
+      "address": "0x390E28709b9Cbc603b2F6e85C1086A8Aa5f5Debf",
+      "txHash": "0x0d7c1740526794f38fda7e34bebd2c57294c8fc7aa1006a72b95bd4b91b67054",
+      "kind": "uups"
+    },
+    {
+      "address": "0x7A6B50c5cFC55236C5bF44A8e5E151b6cF7C64db",
+      "txHash": "0x52d73b3f5f6126237fa6e4dc231802b6e929366dcce33b55f7cefb2382b51a81",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -95,6 +110,121 @@
             "numberOfBytes": "32"
           },
           "t_contract(IRiscZeroVerifier)3343": {
+            "label": "contract IRiscZeroVerifier",
+            "numberOfBytes": "20"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "47a41f303df9c05af21745724ce405b760b108f56fbbe2fe28e808b011077c8e": {
+      "address": "0x74954bf44876F95b180E54E44a00514e43F0292D",
+      "txHash": "0x9bb257fe4e4d780e76683c486442d987085e89a244c38078a66481c34a2ee559",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "riscZeroGroth16Verifier",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IRiscZeroVerifier)1827",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:17"
+          },
+          {
+            "label": "ddexSequencerAddress",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:18"
+          },
+          {
+            "label": "imageId",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:19"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IRiscZeroVerifier)1827": {
             "label": "contract IRiscZeroVerifier",
             "numberOfBytes": "20"
           }

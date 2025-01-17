@@ -1,6 +1,8 @@
 import { Whitelist } from "../../../../typechain-types/contracts/Whitelist/Whitelist";
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
+import { verifyContract } from "../../verifyContract";
+import hre from "hardhat";
 
 export async function deployWhitelist(
   deployer: Signer,
@@ -15,5 +17,8 @@ export async function deployWhitelist(
     await whitelist.addToWhitelist(address);
   }
 
+  await verifyContract(await whitelist.getAddress(), hre, [
+    await deployer.getAddress(),
+  ]);
   return whitelist;
 }
