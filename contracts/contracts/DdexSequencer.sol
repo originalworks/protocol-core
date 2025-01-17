@@ -60,8 +60,6 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         _;
     }
 
-    //
-
     function submitNewBlob(
         bytes memory commitment,
         bytes32 blobSha2
@@ -94,7 +92,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     function submitProof(
         bytes memory journal,
         bytes calldata seal
-    ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
+    ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "Queue is empty");
 
         ddexEmitter.verifyAndEmit(journal, seal);
