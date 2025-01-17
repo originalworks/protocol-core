@@ -1,5 +1,8 @@
 import { ethers, upgrades } from "hardhat";
 import { DdexEmitter } from "../../../../typechain-types";
+import { verifyContract } from "../../verifyContract";
+import hre from "hardhat";
+import { getImplementationAddressFromProxy } from "@openzeppelin/upgrades-core";
 
 export async function deployDdexEmitter(
   ddexSequencerAddress: string,
@@ -17,8 +20,19 @@ export async function deployDdexEmitter(
   const ddexEmitter = await upgrades.deployProxy(
     DdexEmitter,
     [riscZeroGroth16VerifierAddress, ddexSequencerAddress],
-    { kind: "uups" }
+    {
+      kind: "uups",
+    }
   );
   await ddexEmitter.waitForDeployment();
+  const implementationAddress = await getImplementationAddressFromProxy(
+    ethers.provider,
+    await ddexEmitter.getAddress()
+  );
+  if (!implementationAddress) {
+    throw new Error("Implementation address not found");
+  }
+  await verifyContract(implementationAddress, hre);
+
   return ddexEmitter as unknown as DdexEmitter;
 }
