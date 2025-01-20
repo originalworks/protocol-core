@@ -1,8 +1,7 @@
-use crate::constants::OUTPUT_FILES_DIR;
 use crate::errors::OwenCliError;
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
-use ddex_schema::{ddex_parse_xml_file, DdexMessage};
+use ddex_schema::{ddex_parse_json_str, ddex_parse_xml_file, DdexMessage, NewReleaseMessage};
 use serde_valid::json::ToJsonString;
 use std::fs;
 use std::path::PathBuf;
@@ -18,12 +17,12 @@ pub struct MessageDirProcessingContext {
     empty: bool,
 }
 
-async fn attach_cid_and_save(
+async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     ddex_message: DdexMessage,
     config: &Config,
-) -> Result<(), Box<dyn Error>> {
-    match ddex_message {
+) -> Result<NewReleaseMessage, Box<dyn Error>> {
+    let new_release_message = match ddex_message {
         DdexMessage::NewRelease(mut new_release_message) => {
             for image_resource in &mut new_release_message.resource_list.images {
                 if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
@@ -42,16 +41,11 @@ async fn attach_cid_and_save(
                     }
                 }
             }
-
-            let json_output = new_release_message.to_json_string_pretty()?;
-            fs::write(
-                &message_dir_processing_context.output_json_path,
-                json_output,
-            )?;
+            new_release_message
         }
-    }
+    };
 
-    Ok(())
+    Ok(new_release_message)
 }
 
 fn is_xml_file_empty(file_path: &Path) -> Result<bool, Box<dyn Error>> {
@@ -97,7 +91,7 @@ async fn process_message_folder(
 
                     message_dir_processing_context.output_json_path = format!(
                         "{}/{}.json",
-                        OUTPUT_FILES_DIR,
+                        &config.output_files_dir,
                         &message_folder_path
                             .file_name()
                             .and_then(|name| name.to_str())
@@ -111,8 +105,20 @@ async fn process_message_folder(
                     message_dir_processing_context.empty = false;
                     let ddex_message: DdexMessage =
                         ddex_parse_xml_file(&message_dir_processing_context.input_xml_path)?;
-                    attach_cid_and_save(&mut message_dir_processing_context, ddex_message, &config)
-                        .await?;
+                    let new_release_message = pin_and_write_cid(
+                        &mut message_dir_processing_context,
+                        ddex_message,
+                        &config,
+                    )
+                    .await?;
+
+                    let json_output = new_release_message.to_json_string_pretty()?;
+                    ddex_parse_json_str(&json_output)?;
+
+                    fs::write(
+                        &message_dir_processing_context.output_json_path,
+                        json_output,
+                    )?;
                 }
             }
         }
@@ -124,7 +130,7 @@ pub async fn create_output_files(
     config: &Config,
 ) -> Result<Vec<MessageDirProcessingContext>, Box<dyn Error>> {
     let mut result: Vec<MessageDirProcessingContext> = Vec::new();
-    let output_files_path = Path::new(OUTPUT_FILES_DIR);
+    let output_files_path = Path::new(&config.output_files_dir);
     if output_files_path.is_dir() {
         fs::remove_dir_all(output_files_path)?;
     }
@@ -203,6 +209,7 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
             pinata_jwt: String::new(),
+            output_files_dir: "./output_files".to_string(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -231,6 +238,7 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::new(),
             pinata_jwt: String::new(),
+            output_files_dir: "./output_files".to_string(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 

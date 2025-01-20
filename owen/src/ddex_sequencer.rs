@@ -78,10 +78,6 @@ impl DdexSequencerContext<'_> {
                 FixedBytes::<32>::from(transaction_data.blob_sha2),
             )
             .sidecar(transaction_data.blob_sidecar)
-            // TODO make gas settings optional CLI/setting file parameters
-            .max_fee_per_blob_gas(10000000)
-            .max_fee_per_gas(100000000)
-            .max_priority_fee_per_gas(100000000)
             .send()
             .await
             .unwrap()

@@ -15,6 +15,13 @@
 3. To run with CPU: `cargo run --release`
 4. To run with GPU: `cargo run --release -F cuda`
 
+Prerequisites:
+1. [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
+2. OpenSSL library. Can be install with  `libssl-dev` on Debian based systems or with `openssl-dev` on Fedora/RedHat. 
+3. [RISC Zero Toolchain](https://dev.risczero.com/api/zkvm/quickstart).
+4. To run with GPU you need the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
+5. [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
+
 ## Notes on GPU
 
 To run this project on a GPU, you'll need a graphics card with sufficient memory.

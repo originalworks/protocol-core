@@ -3,21 +3,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Whitelist/WhitelistConsumer.sol";
 import "./interfaces/IStakeVault.sol";
 import "./interfaces/IDdexEmitter.sol";
+import "./interfaces/IProverPublicOutputs.sol";
 
 pragma solidity ^0.8.24;
 
 contract DdexSequencer is WhitelistConsumer, Ownable {
     event NewBlobSubmitted(bytes commitment);
-    event MessageDigested(DdexMessageData data);
 
     struct Blob {
         bytes32 nextBlob;
         bool submitted;
         address proposer;
-    }
-
-    struct DdexMessageData {
-        uint256 x;
+        bytes32 blobId;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -63,8 +60,6 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         _;
     }
 
-    //
-
     function submitNewBlob(
         bytes memory commitment,
         bytes32 blobSha2
@@ -76,9 +71,13 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         require(newBlobhash != bytes32(0), "Blob not found in tx");
 
         bytes32 blobId = sha256(abi.encodePacked(newBlobhash, blobSha2));
-        require(blobs[blobId].submitted == false, "Blob already submitted");
-        blobs[blobId].submitted = true;
-        blobs[blobId].proposer = msg.sender;
+        require(
+            blobs[newBlobhash].submitted == false,
+            "Blob already submitted"
+        );
+        blobs[newBlobhash].submitted = true;
+        blobs[newBlobhash].proposer = msg.sender;
+        blobs[newBlobhash].blobId = blobId;
 
         if (blobQueueHead == bytes32(0)) {
             blobQueueHead = newBlobhash;
@@ -90,16 +89,15 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         emit NewBlobSubmitted(commitment);
     }
 
-    function submitProofOfProcessing(
-        uint256 x, // TODO implement DdexMessageData[] type here with proper fields
+    function submitProof(
+        bytes memory journal,
         bytes calldata seal
-    ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
+    ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "Queue is empty");
 
-        ddexEmitter.verifyAndEmit(x, seal);
+        ddexEmitter.verifyAndEmit(journal, seal);
 
         _moveQueue();
-        emit MessageDigested(DdexMessageData(x));
     }
 
     function submitProofForFraudulentBlob(

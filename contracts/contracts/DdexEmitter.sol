@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../lib/risc0-ethereum/contracts/src/IRiscZeroVerifier.sol";
 import "./interfaces/IDdexEmitter.sol";
+import {ImageID} from "./ImageID.sol";
 
 contract DdexEmitter is
     Initializable,
@@ -15,11 +16,7 @@ contract DdexEmitter is
 {
     IRiscZeroVerifier riscZeroGroth16Verifier;
     address ddexSequencerAddress;
-    bytes32 imageId;
-
-    bool public allesKlar;
-
-    event DigestedBlobDetails(uint256 x);
+    bytes32 public imageId;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -28,24 +25,36 @@ contract DdexEmitter is
 
     function initialize(
         IRiscZeroVerifier _riscZeroGroth16Verifier,
-        address _ddexSequencerAddress,
-        bytes32 _imageId
+        address _ddexSequencerAddress
     ) public initializer {
+        imageId = ImageID.DDEX_GUEST_ID;
         riscZeroGroth16Verifier = _riscZeroGroth16Verifier;
         ddexSequencerAddress = _ddexSequencerAddress;
-        imageId = _imageId;
         __Ownable_init(msg.sender);
     }
 
-    function verifyAndEmit(uint256 x, bytes calldata seal) public {
+    function setImageId(bytes32 newImage) public onlyOwner {
+        imageId = newImage;
+    }
+
+    function verifyAndEmit(
+        bytes memory journal,
+        bytes calldata seal
+    ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
             "msg.sender is not DdexSequencer"
         );
-        bytes memory journal = abi.encode(x);
+
+        ProverPublicOutputs memory proverPublicOutputs = abi.decode(
+            journal,
+            (ProverPublicOutputs)
+        );
         riscZeroGroth16Verifier.verify(seal, imageId, sha256(journal));
 
-        emit DigestedBlobDetails(x);
+        emit BlobProcessed(proverPublicOutputs);
+
+        return proverPublicOutputs.digest;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

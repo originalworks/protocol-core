@@ -4,7 +4,10 @@ use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    dotenvy::dotenv()?;
+    match dotenvy::dotenv() {
+        Ok(_) => println!("Config loaded from .env file"),
+        Err(e) => println!("Config loaded from env"),
+    }
 
     let config = match Config::build(env::args()) {
         Ok(config) => config,

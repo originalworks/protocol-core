@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "./IProverPublicOutputs.sol";
+
 interface IDdexEmitter {
-    function verifyAndEmit(uint256 x, bytes calldata seal) external;
+    event BlobProcessed(ProverPublicOutputs proverPublicOutputs);
+
+    function verifyAndEmit(
+        bytes memory journal,
+        bytes calldata seal
+    ) external returns (bytes32 blobDigest);
 }

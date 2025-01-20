@@ -1,5 +1,8 @@
 import { ethers, upgrades } from "hardhat";
 import { DdexEmitter } from "../../../../typechain-types";
+import { verifyContract } from "../../verifyContract";
+import hre from "hardhat";
+import { getImplementationAddressFromProxy } from "@openzeppelin/upgrades-core";
 
 export async function deployDdexEmitter(
   ddexSequencerAddress: string,
@@ -8,23 +11,28 @@ export async function deployDdexEmitter(
   const riscZeroGroth16VerifierAddress =
     _riscZeroGroth16VerifierAddress || process.env.RISC_ZERO_GROTH16_VERIFIER;
 
-  const imageId = process.env.RISC_ZERO_GUEST_IMAGE_ID;
-  if (!riscZeroGroth16VerifierAddress || !imageId) {
-    throw new Error(
-      `Missing variables: ${{
-        riscZeroGroth16VerifierAddress,
-        imageId,
-      }}`
-    );
+  if (!riscZeroGroth16VerifierAddress) {
+    throw new Error(`Missing variable: riscZeroGroth16VerifierAddress`);
   }
 
   const DdexEmitter = await ethers.getContractFactory("DdexEmitter");
 
   const ddexEmitter = await upgrades.deployProxy(
     DdexEmitter,
-    [riscZeroGroth16VerifierAddress, ddexSequencerAddress, imageId],
-    { kind: "uups" }
+    [riscZeroGroth16VerifierAddress, ddexSequencerAddress],
+    {
+      kind: "uups",
+    }
   );
   await ddexEmitter.waitForDeployment();
+  const implementationAddress = await getImplementationAddressFromProxy(
+    ethers.provider,
+    await ddexEmitter.getAddress()
+  );
+  if (!implementationAddress) {
+    throw new Error("Implementation address not found");
+  }
+  await verifyContract(implementationAddress, hre);
+
   return ddexEmitter as unknown as DdexEmitter;
 }

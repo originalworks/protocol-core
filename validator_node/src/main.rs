@@ -1,6 +1,6 @@
-use ow_validator_node::Config;
 use std::error::Error;
 use std::process;
+use validator_node::{run, Config};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         process::exit(1);
     });
 
-    ow_validator_node::run(config).await?;
+    run(config).await?;
 
     Ok(())
 }

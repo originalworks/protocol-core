@@ -1,0 +1,6 @@
+type ProvedMessage @entity {
+  id: ID!
+  message_id: String!
+  timestamp: BigInt!
+  validator: Bytes!
+}

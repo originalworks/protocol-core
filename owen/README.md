@@ -44,6 +44,7 @@ cp ./owen/.env.example ./owen/.env
   - `DEFAULT_IPFS_INTERFACE`: Change the value from `KUBO` to `PINATA`.
 - If you are running a local Kubo IPFS client with Docker, no changes are needed. However, if you run your own full IPFS Kubo client, update this value:
   - `IPFS_KUBO_URL`: Your Kubo IPFS client API URL.
+- `OUTPUT_FILES_DIR`: Path were output files will be saved
 
 ### 4. Prepare your messages folder:
 
