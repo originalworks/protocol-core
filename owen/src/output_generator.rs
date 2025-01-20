@@ -209,7 +209,6 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
             pinata_jwt: String::new(),
-            max_fee_per_gas: 1,
             output_files_dir: "./output_files".to_string(),
         };
         let processing_context_vec = create_output_files(&config).await?;
@@ -239,7 +238,6 @@ mod tests {
             default_ipfs_interface: IpfsInterface::KUBO,
             ipfs_kubo_url: String::new(),
             pinata_jwt: String::new(),
-            max_fee_per_gas: 1,
             output_files_dir: "./output_files".to_string(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
