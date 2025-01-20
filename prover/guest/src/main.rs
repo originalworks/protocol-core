@@ -47,9 +47,7 @@ fn main() {
     for message in messages {
         reader = Cursor::new(&message);
         let parsed = ddex_parse_json_reader(reader).unwrap();
-        results.push(ProvedMessage {
-            message_id: parsed.message_header.message_id,
-        });
+        results.push(ProvedMessage::from_ddex(parsed));
     }
 
     after_cycle = env::cycle_count();
