@@ -33,7 +33,7 @@ fn main() {
     // let blob = BlobCodec::from_file("res/0Audio_lite.json").unwrap();
     let blob = BlobCodec::from_dir("res").unwrap();
     let env = ExecutorEnv::builder()
-        .segment_limit_po2(18)
+        .segment_limit_po2(19)
         .write_slice(&blob.to_bytes().to_vec())
         .build()
         .unwrap();
