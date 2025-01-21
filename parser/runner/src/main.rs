@@ -14,7 +14,7 @@ fn main() {
 
     // Read and validate json file against the schema
 
-    let json_string = fs::read_to_string("resources/example_messages/0Audio_lite.json").unwrap();
+    let json_string = fs::read_to_string("../resources/example_messages/0Audio_lite.json").unwrap();
     let parsed_json = NewReleaseMessage::from_json_str(&json_string).unwrap();
     dbg!(parsed_json);
 }

@@ -5,7 +5,7 @@ use serde_valid::validation::error::{Format, Message};
 use serde_valid::validation::Error;
 use serde_valid::PatternError;
 
-use crate::{PartyList, ResourceList, RightsType, SoundRecording, UseType};
+use crate::{PartyList, ReleaseId, ResourceList, RightsType, SoundRecording, UseType};
 
 pub trait Validator {
     const PATTERN: &'static str = "";
@@ -465,6 +465,31 @@ impl ProtocolValidator {
             return Err(Error::Custom(format!(
                 "Protocol Check 10 failed: TerritoryOfRightsDelegation needs to contain at least one of Stream/PermanentDownload/ConditionalDownload/TetheredDownload"
             )));
+        }
+
+        Ok(())
+    }
+
+    pub fn release_id(release_id: &ReleaseId) -> Result<(), Error> {
+        if let (None, None, true) = (
+            &release_id.g_rid,
+            &release_id.icpn,
+            release_id.proprietary_ids.is_empty(),
+        ) {
+            return Err(Error::Custom(format!(
+                "Protocol Check 11 failed: ReleaseId must specify at least one of grid/icpn/proprietary_id"
+            )));
+        }
+
+        if let Some(icpn) = &release_id.icpn {
+            let re = Regex::new(r#"^\d{8}$|^\d{12}$|^\d{13}$"#).unwrap();
+            if re.is_match(icpn.as_str()) {
+                return Ok(());
+            } else {
+                return Err(Error::Custom(format!(
+                    "Protocol Check 11 failed: ICPN must contain 8 or 13 digits for EAN or 12 digits for UPC"
+                )));
+            }
         }
 
         Ok(())

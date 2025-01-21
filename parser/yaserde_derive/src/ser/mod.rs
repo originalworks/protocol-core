@@ -6,7 +6,7 @@ pub mod label;
 pub mod namespace;
 
 use crate::common::YaSerdeAttribute;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 
 pub fn expand_derive_serialize(ast: &syn::DeriveInput) -> Result<TokenStream, String> {
