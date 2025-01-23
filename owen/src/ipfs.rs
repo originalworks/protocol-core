@@ -51,8 +51,11 @@ pub async fn pin_file_pinata(
         .and_then(|name| name.to_str()) // Converts OsStr to &str
         .ok_or("Failed to extract filename from file_path")?;
 
-    let multipart_form = file_to_multipart_form(file_path).await?;
-    let client = reqwest::Client::new();
+    // Open the file and prepare the multipart form
+    let file = tokio::fs::File::open(file_path).await?;
+    let file_stream = FramedRead::new(file, BytesCodec::new());
+    let file_part = multipart::Part::stream(Body::wrap_stream(file_stream))
+        .file_name(filename.to_string());
 
     // Add metadata
     let metadata = json!({
@@ -68,18 +71,35 @@ pub async fn pin_file_pinata(
         }
     });
 
+    //Add options
+    let options = json!({
+        "cidVersion": 1
+    });
+
+    // Create the multipart form
+    let multipart_form = multipart::Form::new()
+        .part("file", file_part)
+        .text("pinataMetadata", metadata.to_string())
+        .text("pinataOptions", options.to_string());
+
+
+ // Send the request
+    let client = reqwest::Client::new();
     let response = client
         .post("https://api.pinata.cloud/pinning/pinFileToIPFS")
         .header("Authorization", format!("Bearer {}", pinata_jwt))
         .multipart(multipart_form)
-        .header("pinataMetadata", metadata.to_string()) // Include the metadata as a header
         .send()
         .await?;
 
-    let result = response.json::<IpfsPinataResponse>().await?;
-    println!("{result:?}");
-
-    Ok(result.IpfsHash)
+    if response.status().is_success() {
+        let result = response.json::<IpfsPinataResponse>().await?;
+        println!("{result:?}");
+        Ok(result.IpfsHash)
+    } else {
+        let error_text = response.text().await?;
+        Err(format!("Error: {}", error_text).into())
+    }
 }
 
 #[cfg(test)]
