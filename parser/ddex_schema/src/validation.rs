@@ -391,6 +391,8 @@ impl ProtocolValidator {
         Ok(())
     }
 
+    // TODO
+    #[allow(dead_code)]
     pub fn music_licensing_companies(
         resource_list: &ResourceList,
         party_list: &PartyList,

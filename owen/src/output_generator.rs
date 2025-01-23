@@ -1,7 +1,7 @@
 use crate::errors::OwenCliError;
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
-use ddex_schema::{ddex_parse_json_str, ddex_parse_xml_file, DdexMessage, NewReleaseMessage};
+use ddex_schema::{DdexParser, NewReleaseMessage};
 use serde_valid::json::ToJsonString;
 use std::fs;
 use std::path::PathBuf;
@@ -19,33 +19,27 @@ pub struct MessageDirProcessingContext {
 
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
-    ddex_message: DdexMessage,
+    new_release_message: &mut NewReleaseMessage,
     config: &Config,
-) -> Result<NewReleaseMessage, Box<dyn Error>> {
-    let new_release_message = match ddex_message {
-        DdexMessage::NewRelease(mut new_release_message) => {
-            for image_resource in &mut new_release_message.resource_list.images {
-                if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
-                    if let Some(file) = &mut technical_details.file {
-                        let input_image_file = format!(
-                            "{}/{}",
-                            message_dir_processing_context.message_dir_path, file.uri
-                        );
-                        message_dir_processing_context.input_image_path = input_image_file;
-                        let file_uri =
-                            pin_file(&message_dir_processing_context.input_image_path, &config)
-                                .await?;
+) -> Result<(), Box<dyn Error>> {
+    for image_resource in &mut new_release_message.resource_list.images {
+        if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
+            if let Some(file) = &mut technical_details.file {
+                let input_image_file = format!(
+                    "{}/{}",
+                    message_dir_processing_context.message_dir_path, file.uri
+                );
+                message_dir_processing_context.input_image_path = input_image_file;
+                let file_uri =
+                    pin_file(&message_dir_processing_context.input_image_path, &config).await?;
 
-                        message_dir_processing_context.image_cid = file_uri.clone();
-                        file.uri = file_uri;
-                    }
-                }
+                message_dir_processing_context.image_cid = file_uri.clone();
+                file.uri = file_uri;
             }
-            new_release_message
         }
-    };
+    }
 
-    Ok(new_release_message)
+    Ok(())
 }
 
 fn is_xml_file_empty(file_path: &Path) -> Result<bool, Box<dyn Error>> {
@@ -103,17 +97,21 @@ async fn process_message_folder(
                     );
 
                     message_dir_processing_context.empty = false;
-                    let ddex_message: DdexMessage =
-                        ddex_parse_xml_file(&message_dir_processing_context.input_xml_path)?;
-                    let new_release_message = pin_and_write_cid(
+
+                    let mut new_release_message =
+                        DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)?;
+
+                    let mut json_output = new_release_message.to_json_string_pretty()?;
+                    new_release_message = DdexParser::from_json_string(&json_output)?;
+
+                    pin_and_write_cid(
                         &mut message_dir_processing_context,
-                        ddex_message,
+                        &mut new_release_message,
                         &config,
                     )
                     .await?;
 
-                    let json_output = new_release_message.to_json_string_pretty()?;
-                    ddex_parse_json_str(&json_output)?;
+                    json_output = new_release_message.to_json_string_pretty()?;
 
                     fs::write(
                         &message_dir_processing_context.output_json_path,

@@ -23,10 +23,13 @@ pub struct NewReleaseMessage {
     #[yaserde(rename = "ReleaseAdmin", prefix = "ern")]
     pub release_admins: Vec<ReleaseAdmin>,
     #[yaserde(rename = "PartyList", prefix = "ern")]
+    #[validate]
     pub party_list: PartyList,
     #[yaserde(rename = "ResourceList", prefix = "ern")]
+    #[validate]
     pub resource_list: ResourceList,
     #[yaserde(rename = "ReleaseList", prefix = "ern")]
+    #[validate]
     pub release_list: ReleaseList,
 }
 
@@ -1364,6 +1367,7 @@ pub struct Release {
     #[validate(min_items = 1)]
     pub release_types: Vec<ReleaseTypeForReleaseNotification>,
     #[yaserde(rename = "ReleaseId", prefix = "ern")]
+    #[validate]
     #[validate(custom = ProtocolValidator::release_id)]
     pub release_id: ReleaseId,
     #[yaserde(rename = "DisplayTitleText", prefix = "ern")]
@@ -1425,6 +1429,7 @@ pub struct ReleaseTypeForReleaseNotification {
     yaserde_derive::YaSerialize,
     serde::Serialize,
     serde::Deserialize,
+    serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct ReleaseId {
