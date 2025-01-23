@@ -1,4 +1,4 @@
-use ddex_schema::{DdexMessage, NewReleaseMessage};
+use ddex_schema::NewReleaseMessage;
 use serde::{Deserialize, Serialize};
 
 alloy_sol_types::sol!(
@@ -184,6 +184,6 @@ impl ProvedMessage {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PrivateOutputs {
-    pub full_content: Option<DdexMessage>,
+    pub full_content: Option<NewReleaseMessage>,
     pub error: Option<String>,
 }

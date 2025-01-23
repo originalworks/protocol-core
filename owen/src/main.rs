@@ -6,7 +6,7 @@ use std::error::Error;
 async fn main() -> Result<(), Box<dyn Error>> {
     match dotenvy::dotenv() {
         Ok(_) => println!("Config loaded from .env file"),
-        Err(e) => println!("Config loaded from env"),
+        Err(_) => println!("Config loaded from env"),
     }
 
     let config = match Config::build(env::args()) {
