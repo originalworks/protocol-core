@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Exit on any error except for the dependency checks we handle manually
+# Exit on any error except for the dependency checks
 set -e
 
 # Define the relative paths
@@ -9,17 +9,21 @@ OWEN_CLI_DIR="./owen_cli"
 OWEN_CLI_BINARY="./target/release/owen_cli"
 OUTPUT_ZIP="./owen_cli.zip"
 
-###########################
-# 1) DEPENDENCY CHECKING  #
-###########################
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+RESET='\033[0m'
 
 # Array to store missing dependencies
 missing_deps=()
 
 # Function that checks if a given command is installed
-# and, if not, adds it to the missing_deps array
+# and prints a green check or red cross
 check_dependency() {
-  if ! command -v "$1" &> /dev/null; then
+  if command -v "$1" &> /dev/null; then
+    printf "  ${GREEN}✔${RESET} %s\n" "$1"
+  else
+    printf "  ${RED}✘${RESET} %s\n" "$1"
     missing_deps+=("$1")
   fi
 }
@@ -28,41 +32,41 @@ check_dependency() {
 print_install_instructions() {
   case "$1" in
     cargo)
-      echo "  - cargo is missing. Install Rust and Cargo with:"
+      echo "  - Install Rust and Cargo with:"
       echo "    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
       echo "    source \$HOME/.cargo/env"
       ;;
     git)
-      echo "  - git is missing. Install Git with:"
+      echo "  - Install Git with:"
       echo "    sudo apt install git -y"
       ;;
     forge)
-      echo "  - forge is missing. Install Foundry with:"
+      echo "  - Install Foundry with:"
       echo "    curl -L https://foundry.paradigm.xyz | bash"
       echo "    foundryup"
       ;;
     npm)
-      echo "  - npm is missing. Install Node.js (which includes npm) with:"
+      echo "  - Install Node.js (includes npm) with:"
       echo "    sudo apt install nodejs npm -y"
       ;;
     curl)
-      echo "  - curl is missing. Install curl with:"
+      echo "  - Install curl with:"
       echo "    sudo apt install curl -y"
       ;;
     pkg-config)
-      echo "  - pkg-config is missing. Install pkg-config with:"
+      echo "  - Install pkg-config with:"
       echo "    sudo apt install pkg-config -y"
       ;;
     openssl)
-      echo "  - openssl is missing. Install OpenSSL development headers with:"
+      echo "  - Install OpenSSL development headers with:"
       echo "    sudo apt install libssl-dev -y"
       ;;
     npx)
-      echo "  - npx is missing. It should be included with npm/node. Try installing Node.js again:"
+      echo "  - Install Node.js (includes npx) with:"
       echo "    sudo apt install nodejs npm -y"
       ;;
     *)
-      echo "  - $1 is missing. Please install $1."
+      echo "  - Install $1 using your package manager."
       ;;
   esac
 }
@@ -81,7 +85,8 @@ required_deps=(
   openssl
 )
 
-# Check each required dependency and store any that are missing
+# Display the dependency check table
+echo "Dependencies:"
 for dep in "${required_deps[@]}"; do
   check_dependency "$dep"
 done
@@ -145,6 +150,10 @@ echo "Hardhat compile completed."
 echo "Returning to the /owen directory..."
 cd - > /dev/null
 
+
+#####################################
+# 3) Prepare and package the binary #
+#####################################
 # Build the Rust binary
 echo "Building the owen_cli binary..."
 cargo build --release --bin owen_cli
@@ -159,10 +168,7 @@ if [ ! -f "$OWEN_CLI_BINARY" ]; then
   exit 1
 fi
 
-
-#####################################
-# 3) Prepare and package the binary #
-#####################################
+# Prepare and package the binary
 echo "Packaging the owen_cli binary..."
 mkdir -p "$OWEN_CLI_DIR"
 cp "$OWEN_CLI_BINARY" "$OWEN_CLI_DIR/owen_cli"
