@@ -30,16 +30,29 @@ if [ ! -d "$CONTRACTS_DIR" ]; then
   exit 1
 fi
 
-# Navigate to the contracts directory and compile
+# Navigate to the contracts directory and update submodules
 echo "Navigating to $CONTRACTS_DIR..."
 cd "$CONTRACTS_DIR"
+
+echo "Initializing and updating Git submodules..."
+git submodule update --init --recursive
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to initialize or update Git submodules."
+  exit 1
+fi
+echo "Git submodules initialized and updated successfully."
 
 # Check if Hardhat is installed locally
 if [ ! -f "./node_modules/.bin/hardhat" ]; then
   echo "Error: Hardhat is not installed locally in $CONTRACTS_DIR. Installing Hardhat..."
   npm install --save-dev hardhat
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to install Hardhat."
+    exit 1
+  fi
 fi
 
+# Run Hardhat compile
 echo "Running 'npx hardhat compile' in $CONTRACTS_DIR..."
 npx hardhat compile
 if [ $? -ne 0 ]; then
@@ -74,4 +87,4 @@ zip -r "$OUTPUT_ZIP" "$OWEN_CLI_DIR/owen_cli" > /dev/null
 rm -rf "$OWEN_CLI_DIR"
 
 echo "Packaging completed: $OUTPUT_ZIP"
-echo "You may upload this file as a Lambda layer to your AWS account".
+echo "You may upload this file as a Lambda layer to your AWS account."
