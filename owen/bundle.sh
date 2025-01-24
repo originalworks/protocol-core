@@ -17,19 +17,33 @@ check_dependency() {
         echo "Error: $1 is not installed. Please install Rust and Cargo by running:"
         echo "      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
         echo "After installation, restart your terminal or run:"
-        echo "      source $HOME/.cargo/env"
+        echo "      source \$HOME/.cargo/env"
         ;;
       git)
-        echo "Error: $1 is not installed. Please install Git using your package manager, e.g.:"
-        echo "      sudo apt install git -y     # For Debian/Ubuntu"
-        echo "      brew install git            # For macOS"
-        echo "      choco install git           # For Windows with Chocolatey"
+        echo "Error: $1 is not installed. Please install Git using:"
+        echo "      sudo apt install git -y"
         ;;
       forge)
         echo "Error: $1 is not installed. Please install Forge by running:"
         echo "      curl -L https://foundry.paradigm.xyz | bash"
         echo "Then, initialize Foundry by running:"
         echo "      foundryup"
+        ;;
+      npm)
+        echo "Error: $1 is not installed. Please install Node.js (which includes npm) using:"
+        echo "      sudo apt install nodejs npm -y"
+        ;;
+      curl)
+        echo "Error: $1 is not installed. Please install curl using:"
+        echo "      sudo apt install curl -y"
+        ;;
+      pkg-config)
+        echo "Error: $1 is not installed. Please install pkg-config using:"
+        echo "      sudo apt install pkg-config -y"
+        ;;
+      openssl)
+        echo "Error: $1 is not installed. Please install OpenSSL using:"
+        echo "      sudo apt install libssl-dev -y"
         ;;
       *)
         echo "Error: $1 is not installed. Please install $1 and try again."
@@ -42,9 +56,13 @@ check_dependency() {
 # Ensure the required tools are installed
 echo "Checking dependencies..."
 check_dependency git
+check_dependency curl
 check_dependency cargo
+check_dependency npm
 check_dependency npx
 check_dependency forge
+check_dependency pkg-config
+check_dependency openssl
 echo "All dependencies are installed."
 
 # Ensure the contracts directory exists
