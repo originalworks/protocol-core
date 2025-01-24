@@ -19,9 +19,9 @@ Producing RISC Zero ZK proofs requires a significant amount of computational pow
 - CPU: 8+ core processor
 - RAM: 16GB minimum
 - Network: 100Mbps stable connection
-- For GPU mode: Nvidia GPU with at least 4GB VRAM
+- For GPU mode: Nvidia GPU with at least 4GB VRAM (optional but recommended)
 
-\*notes on GPU mode:
+**notes on GPU mode:**
 
 To run this project on a GPU, you'll need a graphics card with sufficient memory.
 
@@ -57,26 +57,36 @@ To run this project on a GPU, you'll need a graphics card with sufficient memory
 Clone the Repository
 
 ```
-git clone <repository_url>
-cd host
+git clone https://github.com/originalworks/protocol-core
+cd validatore_node
 ```
 
-Run in CPU Mode
+### Adjusting the `segment_limit_po2` Value
+Before running make sure that your validator node is properly configured for your GPU:
 
-```
+- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/host/src/main.rs`.
+- For GPU with 8GB VRAM (default) The default value `.segment_limit_po2(19)` should work without any changes.
+- For GPU with 24GB VRAM or higher For optimal performance comment out the entire line containing `.segment_limit_po2(19)`. Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
+- For CPU Mode (no GPU), its recommened to remove the ``.segment_limit_po2(19)` line entirely to increase perfomance.
+
+#### Run in CPU Mode
+
+```bash
 cargo run --release
 ```
 
-Run in GPU Mode:
+### Run in GPU Mode:
 
-Before running make sure that your validator node is properly configured for your GPU:
-
-- For GPU with 4GB VRAM Change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/host/src/main.rs`.
-- For GPU with 8GB VRAM (default) The default value `.segment_limit_po2(19)` should work without any changes.
-- For GPU with 24GB VRAM or higher For optimal performance comment out the entire line containing `.segment_limit_po2(19)`. Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
-
-Then you can run it with:
-
-```
+```bash
 cargo run --release -F cuda
 ```
+
+#### Notes
+
+On some systems with GPU you might need to set these values first:
+
+```bash
+export NVCC_APPEND_FLAGS='--gpu-architecture=compute_86 --gpu-code=compute_86,sm_86 --generate-code arch=compute_86,code=sm_86'
+```
+
+To run risc0 additional resources are required. Full installation guide can be found at https://dev.risczero.com/api/zkvm/install
