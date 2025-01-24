@@ -1,35 +1,22 @@
-use std::error::Error;
-use std::fmt;
-
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum OwCodecError {
-    BlobOverflowError(String),
-    EmptyDirectory(String),
-    NotADirectory(String),
-    NotAFile(String),
-    EmptyFile(String),
+    #[error("Blob overflow error at: {path}")]
+    BlobOverflow { path: String, loc: String },
+    #[error("Error while reading a file at {path} - {source}")]
+    Io {
+        #[source]
+        source: std::io::Error,
+        path: String,
+        loc: String,
+    },
+    #[error("No files found at: {path}")]
+    EmptyDirectory { path: String, loc: String },
+    #[error("{path} is not a directory")]
+    NotADirectory { path: String, loc: String },
+    #[error("{path} is not a file")]
+    NotAFile { path: String, loc: String },
+    #[error("{path} is an empty file")]
+    EmptyFile { path: String, loc: String },
+    #[error("Error while decompressing the blob: {msg}")]
+    Decompress { msg: String, loc: String },
 }
-
-impl fmt::Display for OwCodecError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::BlobOverflowError(file_path) => {
-                write!(f, "Blob overflow error at: {}", file_path)
-            }
-            Self::EmptyDirectory(dir_path) => {
-                write!(f, "No files found at: {}", dir_path)
-            }
-            Self::NotADirectory(dir_path) => {
-                write!(f, "{} is not a directory", dir_path)
-            }
-            Self::NotAFile(file_path) => {
-                write!(f, "{} is not a file", file_path)
-            }
-            Self::EmptyFile(file_path) => {
-                write!(f, "{} is an empty file", file_path)
-            }
-        }
-    }
-}
-
-impl Error for OwCodecError {}

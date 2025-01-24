@@ -5,8 +5,8 @@ pub mod errors;
 use constants::BYTES_PER_BLOB;
 use decoder::blob_to_vecs;
 use errors::OwCodecError;
+use log_macros::loc;
 use sha2::{Digest as _, Sha256};
-use std::error::Error;
 use std::fs;
 use std::path::Path;
 
@@ -16,7 +16,7 @@ pub struct BlobCodec {
 }
 
 impl BlobCodec {
-    pub fn from_file(path: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn from_file(path: &str) -> Result<Self, OwCodecError> {
         let path = Path::new(path);
         let mut kzg_blob: [u8; BYTES_PER_BLOB] = [0; BYTES_PER_BLOB];
         let mut blob_cursor = 0;
@@ -24,9 +24,10 @@ impl BlobCodec {
         if path.is_file() {
             append_to_blob(&mut kzg_blob, path, &mut blob_cursor)?;
         } else {
-            return Err(Box::new(OwCodecError::NotAFile(
-                path.to_string_lossy().to_string(),
-            )));
+            return Err(OwCodecError::NotAFile {
+                path: path.to_string_lossy().to_string(),
+                loc: loc!(),
+            });
         }
         Ok(Self {
             blob_bytes: kzg_blob,
@@ -34,15 +35,25 @@ impl BlobCodec {
         })
     }
 
-    pub fn from_dir(path: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn from_dir(path: &str) -> Result<Self, OwCodecError> {
         let dir = Path::new(path);
         let mut kzg_blob: [u8; BYTES_PER_BLOB] = [0; BYTES_PER_BLOB];
         let mut blob_cursor = 0;
         if dir.is_dir() {
-            let files = fs::read_dir(dir)?;
+            let files = fs::read_dir(dir).map_err(|e| OwCodecError::Io {
+                source: e,
+                path: dir.to_string_lossy().to_string(),
+                loc: loc!(),
+            })?;
             let mut empty_folder = true;
             for file_entry in files {
-                let path = file_entry?.path();
+                let path = file_entry
+                    .map_err(|e| OwCodecError::Io {
+                        source: e,
+                        path: dir.to_string_lossy().to_string(),
+                        loc: loc!(),
+                    })?
+                    .path();
 
                 if path.is_file() && path.extension().unwrap() == "json" {
                     append_to_blob(&mut kzg_blob, &path, &mut blob_cursor)?;
@@ -50,14 +61,16 @@ impl BlobCodec {
                 }
             }
             if empty_folder {
-                return Err(Box::new(OwCodecError::EmptyDirectory(
-                    dir.to_string_lossy().to_string(),
-                )));
+                return Err(OwCodecError::EmptyDirectory {
+                    path: dir.to_string_lossy().to_string(),
+                    loc: loc!(),
+                });
             }
         } else {
-            return Err(Box::new(OwCodecError::NotADirectory(
-                dir.to_string_lossy().to_string(),
-            )));
+            return Err(OwCodecError::NotADirectory {
+                path: dir.to_string_lossy().to_string(),
+                loc: loc!(),
+            });
         }
         Ok(Self {
             blob_bytes: kzg_blob,
@@ -65,7 +78,7 @@ impl BlobCodec {
         })
     }
 
-    pub fn from_vec(vec: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+    pub fn from_vec(vec: Vec<u8>) -> Result<Self, OwCodecError> {
         Ok(Self {
             blob_bytes: vec.try_into().unwrap_or_else(|v: Vec<u8>| {
                 panic!(
@@ -92,15 +105,15 @@ impl BlobCodec {
         Sha256::digest(&self.blob_bytes.as_slice()).into()
     }
 
-    pub fn decode(self) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
+    pub fn decode(self) -> Result<Vec<Vec<u8>>, OwCodecError> {
         if !self.initialized {
             panic!("Not initialized");
         }
 
-        match blob_to_vecs(self.blob_bytes) {
-            Ok(res) => return Ok(res),
-            Err(err) => return Err(err.to_string().into()),
-        }
+        blob_to_vecs(self.blob_bytes).map_err(|e| OwCodecError::Decompress {
+            msg: e.to_string(),
+            loc: loc!(),
+        })
     }
 
     pub fn to_bytes(self) -> [u8; BYTES_PER_BLOB] {
@@ -116,18 +129,20 @@ fn append_to_blob<'a>(
     kzg_blob: &'a mut [u8; BYTES_PER_BLOB],
     path: &Path,
     cursor: &'a mut usize,
-) -> Result<&'a mut [u8; BYTES_PER_BLOB], Box<dyn Error>> {
+) -> Result<&'a mut [u8; BYTES_PER_BLOB], OwCodecError> {
     let compressed_file = encoder::file_to_vec(path)?;
     let compressed_file_len = compressed_file.len();
     if compressed_file_len + *cursor > BYTES_PER_BLOB {
-        return Err(Box::new(OwCodecError::BlobOverflowError(
-            path.to_string_lossy().to_string(),
-        )));
+        return Err(OwCodecError::BlobOverflow {
+            path: path.to_string_lossy().to_string(),
+            loc: loc!(),
+        });
     }
     if compressed_file_len == 0 {
-        return Err(Box::new(OwCodecError::EmptyFile(
-            path.to_string_lossy().to_string(),
-        )));
+        return Err(OwCodecError::EmptyFile {
+            path: path.to_string_lossy().to_string(),
+            loc: loc!(),
+        });
     }
     kzg_blob[*cursor..*cursor + compressed_file.len()].copy_from_slice(&compressed_file);
     *cursor += compressed_file.len();

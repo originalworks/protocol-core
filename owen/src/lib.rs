@@ -1,25 +1,26 @@
 mod blob;
 mod constants;
 mod ddex_sequencer;
-mod errors;
 mod ipfs;
 mod output_generator;
 
 use alloy::network::EthereumWallet;
 use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
+use anyhow::Context;
 use blob::BlobTransactionData;
 use ddex_sequencer::DdexSequencerContext;
-use errors::OwenCliError;
+pub use log;
+use log_macros::{log_debug, log_error, log_info};
 use std::env;
-use std::error::Error;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum IpfsInterface {
     KUBO,
     PINATA,
 }
 
+#[derive(Debug)]
 pub struct Config {
     pub rpc_url: String,
     pub private_key: String,
@@ -31,24 +32,16 @@ pub struct Config {
 }
 
 impl Config {
-    fn get_env_var(key: &str) -> Result<String, Box<dyn Error>> {
-        match env::var(key) {
-            Ok(value) => Ok(value),
-            Err(_) => return Err(Box::new(OwenCliError::MissingEnvVar(key.to_string()))),
-        }
+    fn get_env_var(key: &str) -> anyhow::Result<String> {
+        env::var(key).with_context(|| log_error!("Missing variable in .env file: {key}"))
     }
 
-    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, Box<dyn Error>> {
+    pub fn build(mut args: impl Iterator<Item = String>) -> anyhow::Result<Config> {
         args.next();
 
-        let folder_path = match args.next() {
-            Some(arg) => arg,
-            None => {
-                return Err(Box::new(OwenCliError::MissingCliArg(
-                    "folder path".to_string(),
-                )))
-            }
-        };
+        let folder_path = args
+            .next()
+            .ok_or_else(|| log_error!("Missing command line argument: folder path"))?;
 
         let rpc_url = Config::get_env_var("RPC_URL")?;
         let private_key = Config::get_env_var("PRIVATE_KEY")?;
@@ -61,7 +54,7 @@ impl Config {
         }
         let output_files_dir = Config::get_env_var("OUTPUT_FILES_DIR")?;
 
-        Ok(Config {
+        let config = Config {
             rpc_url,
             private_key,
             folder_path,
@@ -69,17 +62,21 @@ impl Config {
             pinata_jwt,
             ipfs_kubo_url,
             output_files_dir,
-        })
+        };
+
+        log_debug!("{:?}", config);
+        log_info!("Config created");
+        Ok(config)
     }
 }
 
-pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub async fn run(config: Config) -> anyhow::Result<()> {
     output_generator::create_output_files(&config).await?;
 
     let private_key_signer: PrivateKeySigner = config
         .private_key
         .parse()
-        .expect("Failed to parse PRIVATE_KEY:");
+        .with_context(|| "Failed to parse PRIVATE_KEY")?;
     let wallet = EthereumWallet::from(private_key_signer);
 
     let provider = ProviderBuilder::new()
@@ -89,7 +86,6 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let ddex_sequencer_context = DdexSequencerContext::build(&provider).await?;
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
-    println!("sending tx...");
     ddex_sequencer_context
         .send_blob(blob_transaction_data)
         .await?;

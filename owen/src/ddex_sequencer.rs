@@ -14,7 +14,7 @@ use alloy::{
     sol,
     transports::http::{reqwest, Client, Http},
 };
-use std::error::Error;
+use log_macros::log_info;
 
 sol!(
     #[allow(missing_docs)]
@@ -61,16 +61,15 @@ impl DdexSequencerContext<'_> {
             Http<Client>,
             Ethereum,
         >,
-    ) -> Result<DdexSequencerContext, Box<dyn Error>> {
+    ) -> anyhow::Result<DdexSequencerContext> {
+        log_info!("Creating DdexSequencerContext...");
         let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
         let result = DdexSequencerContext { contract };
         Ok(result)
     }
 
-    pub async fn send_blob(
-        &self,
-        transaction_data: BlobTransactionData,
-    ) -> Result<(), Box<dyn Error>> {
+    pub async fn send_blob(&self, transaction_data: BlobTransactionData) -> anyhow::Result<()> {
+        log_info!("Sending tx...");
         let receipt = self
             .contract
             .submitNewBlob(
@@ -79,12 +78,22 @@ impl DdexSequencerContext<'_> {
             )
             .sidecar(transaction_data.blob_sidecar)
             .send()
-            .await
-            .unwrap()
+            .await?
             .get_receipt()
-            .await
-            .unwrap();
-        println!("{receipt:?}");
+            .await?;
+        log_info!("Success!");
+        log_info!("--From: {}", receipt.from.to_string());
+        log_info!("--To: {}", receipt.to.unwrap_or_default().to_string());
+        log_info!(
+            "--ContractAddress: {}",
+            receipt.contract_address.unwrap_or_default().to_string()
+        );
+
+        log_info!("--TxHash: {}", receipt.transaction_hash.to_string());
+        log_info!("--GasPrice: {}", receipt.blob_gas_price.unwrap_or_default());
+        log_info!("--EffGasPrice: {}", receipt.effective_gas_price.to_string());
+        log_info!("--GasUsed: {}", receipt.blob_gas_used.unwrap_or_default());
+
         Ok(())
     }
 }
