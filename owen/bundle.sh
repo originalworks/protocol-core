@@ -12,13 +12,36 @@ OUTPUT_ZIP="./owen_cli.zip"
 # Function to check if a required command is installed
 check_dependency() {
   if ! command -v "$1" &> /dev/null; then
-    echo "Error: $1 is not installed. Please install $1 before running this script."
+    case "$1" in
+      cargo)
+        echo "Error: $1 is not installed. Please install Rust and Cargo by running:"
+        echo "      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+        echo "After installation, restart your terminal or run:"
+        echo "      source $HOME/.cargo/env"
+        ;;
+      git)
+        echo "Error: $1 is not installed. Please install Git using your package manager, e.g.:"
+        echo "      sudo apt install git -y     # For Debian/Ubuntu"
+        echo "      brew install git            # For macOS"
+        echo "      choco install git           # For Windows with Chocolatey"
+        ;;
+      forge)
+        echo "Error: $1 is not installed. Please install Forge by running:"
+        echo "      curl -L https://foundry.paradigm.xyz | bash"
+        echo "Then, initialize Foundry by running:"
+        echo "      foundryup"
+        ;;
+      *)
+        echo "Error: $1 is not installed. Please install $1 and try again."
+        ;;
+    esac
     exit 1
   fi
 }
 
 # Ensure the required tools are installed
 echo "Checking dependencies..."
+check_dependency git
 check_dependency cargo
 check_dependency npx
 check_dependency forge
