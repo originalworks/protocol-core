@@ -1,13 +1,12 @@
 import { Whitelist } from "../../../../typechain-types/contracts/Whitelist/Whitelist";
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
-import { verifyContract } from "../../verifyContract";
-import hre from "hardhat";
+import { DeploymentOutput } from "../types";
 
 export async function deployWhitelist(
   deployer: Signer,
   initiallyWhitelisted: string[]
-): Promise<Whitelist> {
+): Promise<DeploymentOutput<Whitelist>> {
   const Whitelist = await ethers.getContractFactory("Whitelist");
   const whitelist = await Whitelist.deploy(deployer);
   await whitelist.waitForDeployment();
@@ -17,8 +16,11 @@ export async function deployWhitelist(
     await whitelist.addToWhitelist(address);
   }
 
-  await verifyContract(await whitelist.getAddress(), hre, [
-    await deployer.getAddress(),
-  ]);
-  return whitelist;
+  return {
+    contract: whitelist,
+    contractVerificationInput: {
+      deployedContractAddress: await whitelist.getAddress(),
+      args: [await deployer.getAddress()],
+    },
+  };
 }

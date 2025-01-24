@@ -1,6 +1,8 @@
 import { ethers } from "hardhat";
 import fs from "fs";
 import { deployFixture } from "../../fixture/fixture.deploy";
+import { verifyContracts } from "../../actions/verify/verifyContract";
+import hre from "hardhat";
 
 function buildDeploymentFileName() {
   const network = process.env.HARDHAT_NETWORK || "unknown";
@@ -34,6 +36,15 @@ async function main() {
     deploymentDataFilePath,
     JSON.stringify(fixtureOutput.fixtureAddresses, null, 2)
   );
+
+  await verifyContracts(hre, [
+    fixtureOutput.ownToken.contractVerificationInput,
+    fixtureOutput.stakeVault.contractVerificationInput,
+    fixtureOutput.ddexSequencer.contractVerificationInput,
+    fixtureOutput.ddexEmitter.contractVerificationInput,
+    fixtureOutput.dataProvidersWhitelist.contractVerificationInput,
+    fixtureOutput.validatorsWhitelist.contractVerificationInput,
+  ]);
 }
 
 main();

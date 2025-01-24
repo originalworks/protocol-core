@@ -1,12 +1,11 @@
 import { ethers } from "hardhat";
 import { DdexSequencer } from "../../../../typechain-types";
 import { DdexSequencerDeploymentInput } from "./DdexSequencer.types";
-import { verifyContract } from "../../verifyContract";
-import hre from "hardhat";
+import { DeploymentOutput } from "../types";
 
 export async function deployDdexSequencer(
   input: DdexSequencerDeploymentInput
-): Promise<DdexSequencer> {
+): Promise<DeploymentOutput<DdexSequencer>> {
   const DdexSequencer = await ethers.getContractFactory("DdexSequencer");
   const ddexSequencer = await DdexSequencer.deploy(
     input.dataProvidersWhitelist,
@@ -15,11 +14,15 @@ export async function deployDdexSequencer(
   );
   await ddexSequencer.waitForDeployment();
 
-  await verifyContract(await ddexSequencer.getAddress(), hre, [
-    input.dataProvidersWhitelist,
-    input.validatorsWhitelist,
-    input.stakeVaultAddress,
-  ]);
-
-  return ddexSequencer;
+  return {
+    contract: ddexSequencer,
+    contractVerificationInput: {
+      deployedContractAddress: await ddexSequencer.getAddress(),
+      args: [
+        input.dataProvidersWhitelist,
+        input.validatorsWhitelist,
+        input.stakeVaultAddress,
+      ],
+    },
+  };
 }

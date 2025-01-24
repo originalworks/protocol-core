@@ -1,9 +1,10 @@
 import { ethers } from "hardhat";
 import { RiscZeroGroth16Verifier } from "../../../../typechain-types";
-import hre from "hardhat";
-import { verifyContract } from "../../verifyContract";
+import { DeploymentOutput } from "../types";
 
-export async function deployRiscZeroGroth16Verifier(): Promise<RiscZeroGroth16Verifier> {
+export async function deployRiscZeroGroth16Verifier(): Promise<
+  DeploymentOutput<RiscZeroGroth16Verifier>
+> {
   const ControlID = await ethers.getContractFactory("ControlID");
   const controlId = await ControlID.deploy();
   await controlId.waitForDeployment();
@@ -17,9 +18,15 @@ export async function deployRiscZeroGroth16Verifier(): Promise<RiscZeroGroth16Ve
     await controlId.BN254_CONTROL_ID()
   );
   await riscZeroGroth16Verifier.waitForDeployment();
-  await verifyContract(await riscZeroGroth16Verifier.getAddress(), hre, [
-    await controlId.CONTROL_ROOT(),
-    await controlId.BN254_CONTROL_ID(),
-  ]);
-  return riscZeroGroth16Verifier;
+
+  return {
+    contract: riscZeroGroth16Verifier,
+    contractVerificationInput: {
+      deployedContractAddress: await riscZeroGroth16Verifier.getAddress(),
+      args: [
+        await controlId.CONTROL_ROOT(),
+        await controlId.BN254_CONTROL_ID(),
+      ],
+    },
+  };
 }
