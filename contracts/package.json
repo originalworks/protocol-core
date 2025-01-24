@@ -7,7 +7,7 @@
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "@openzeppelin/hardhat-upgrades": "^3.5.0",
     "dotenv": "16.4.5",
-    "hardhat": "^2.22.9",
+    "hardhat": "^2.22.18",
     "kzg-wasm": "^0.4.0"
   }
 }
