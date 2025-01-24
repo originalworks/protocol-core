@@ -1,4 +1,4 @@
-import { Signer, HDNodeWallet } from "ethers";
+import { Signer } from "ethers";
 import {
   DdexEmitter,
   DdexSequencer,
@@ -6,6 +6,7 @@ import {
   StakeVault,
   Whitelist,
 } from "../../typechain-types";
+import { DeploymentOutput } from "../actions/contract-deployment/types";
 
 export interface FixtureInput {
   deployer: Signer;
@@ -16,12 +17,12 @@ export interface FixtureInput {
 
 export interface FixtureOutput {
   deployer: Signer;
-  ownToken: OwnToken;
-  stakeVault: StakeVault;
-  ddexSequencer: DdexSequencer;
-  ddexEmitter: DdexEmitter;
-  dataProvidersWhitelist: Whitelist;
-  validatorsWhitelist: Whitelist;
+  ownToken: DeploymentOutput<OwnToken>;
+  stakeVault: DeploymentOutput<StakeVault>;
+  ddexSequencer: DeploymentOutput<DdexSequencer>;
+  ddexEmitter: DeploymentOutput<DdexEmitter>;
+  dataProvidersWhitelist: DeploymentOutput<Whitelist>;
+  validatorsWhitelist: DeploymentOutput<Whitelist>;
   dataProviders: string[];
   validators: string[];
   fixtureAddresses: FixtureAddresses;

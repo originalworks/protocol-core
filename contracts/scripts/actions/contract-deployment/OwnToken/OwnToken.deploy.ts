@@ -1,14 +1,16 @@
 import { ethers } from "hardhat";
 import { OwnToken } from "../../../../typechain-types";
-import { verifyContract } from "../../verifyContract";
-import hre from "hardhat";
+import { DeploymentOutput } from "../types";
 
-export async function deployOwnToken(): Promise<OwnToken> {
+export async function deployOwnToken(): Promise<DeploymentOutput<OwnToken>> {
   const OwnToken = await ethers.getContractFactory("OwnToken");
   const ownToken = await OwnToken.deploy();
   await ownToken.waitForDeployment();
 
-  await verifyContract(await ownToken.getAddress(), hre);
-
-  return ownToken;
+  return {
+    contract: ownToken,
+    contractVerificationInput: {
+      deployedContractAddress: await ownToken.getAddress(),
+    },
+  };
 }

@@ -14,57 +14,62 @@ export async function deployFixture(
   input: FixtureInput
 ): Promise<FixtureOutput> {
   console.log("Deploying whitelists...");
-  const dataProvidersWhitelist = await deployWhitelist(
+  const dataProvidersWhitelistOutput = await deployWhitelist(
     input.deployer,
     input.dataProviders
   );
-  const validatorsWhitelist = await deployWhitelist(
+  const validatorsWhitelistOutput = await deployWhitelist(
     input.deployer,
     input.validators
   );
 
   console.log("Deploying DdexSequencer...");
-  const ownToken = await deployOwnToken();
-  const stakeVault = await deployStakeVault({
-    stakeTokenAddress: await ownToken.getAddress(),
+  const ownTokenOutput = await deployOwnToken();
+  const stakeVaultOutput = await deployStakeVault({
+    stakeTokenAddress: await ownTokenOutput.contract.getAddress(),
     _slashRate: SLASH_RATE,
   });
-  const ddexSequencer = await deployDdexSequencer({
-    dataProvidersWhitelist: await dataProvidersWhitelist.getAddress(),
-    validatorsWhitelist: await validatorsWhitelist.getAddress(),
-    stakeVaultAddress: await stakeVault.getAddress(),
+  const ddexSequencerOutput = await deployDdexSequencer({
+    dataProvidersWhitelist:
+      await dataProvidersWhitelistOutput.contract.getAddress(),
+    validatorsWhitelist: await validatorsWhitelistOutput.contract.getAddress(),
+    stakeVaultAddress: await stakeVaultOutput.contract.getAddress(),
   });
 
   if (input.disableWhitelist) {
-    await ddexSequencer.disableWhitelist();
+    await ddexSequencerOutput.contract.disableWhitelist();
   }
 
   console.log("Deploying DdexEmitter...");
-  const riscZeroGroth16Verifier = await deployRiscZeroGroth16Verifier();
-  const ddexEmitter = await deployDdexEmitter(
-    await ddexSequencer.getAddress(),
-    await riscZeroGroth16Verifier.getAddress()
+  const riscZeroGroth16VerifierOutput = await deployRiscZeroGroth16Verifier();
+  const ddexEmitterOutput = await deployDdexEmitter(
+    await ddexSequencerOutput.contract.getAddress(),
+    await riscZeroGroth16VerifierOutput.contract.getAddress()
   );
-  await ddexSequencer.setDdexEmitter(ddexEmitter);
+  await ddexSequencerOutput.contract.setDdexEmitter(
+    await ddexEmitterOutput.contract.getAddress()
+  );
 
   return {
     deployer: input.deployer,
-    ownToken,
-    stakeVault,
-    ddexSequencer,
-    ddexEmitter,
-    dataProvidersWhitelist,
-    validatorsWhitelist,
+    ownToken: ownTokenOutput,
+    stakeVault: stakeVaultOutput,
+    ddexSequencer: ddexSequencerOutput,
+    ddexEmitter: ddexEmitterOutput,
+    dataProvidersWhitelist: validatorsWhitelistOutput,
+    validatorsWhitelist: validatorsWhitelistOutput,
     dataProviders: input.dataProviders,
     validators: input.validators,
     fixtureAddresses: {
       deployer: await input.deployer.getAddress(),
-      ownToken: await ownToken.getAddress(),
-      stakeVault: await stakeVault.getAddress(),
-      ddexSequencer: await ddexSequencer.getAddress(),
-      ddexEmitter: await ddexEmitter.getAddress(),
-      dataProvidersWhitelist: await dataProvidersWhitelist.getAddress(),
-      validatorsWhitelist: await validatorsWhitelist.getAddress(),
+      ownToken: await ownTokenOutput.contract.getAddress(),
+      stakeVault: await stakeVaultOutput.contract.getAddress(),
+      ddexSequencer: await ddexSequencerOutput.contract.getAddress(),
+      ddexEmitter: await ddexEmitterOutput.contract.getAddress(),
+      dataProvidersWhitelist:
+        await dataProvidersWhitelistOutput.contract.getAddress(),
+      validatorsWhitelist:
+        await validatorsWhitelistOutput.contract.getAddress(),
       dataProviders: input.dataProviders,
       validators: input.validators,
     },
