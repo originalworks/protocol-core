@@ -65,6 +65,10 @@ print_install_instructions() {
       echo "  - Install Node.js (includes npx) with:"
       echo "    sudo apt install nodejs npm -y"
       ;;
+    zip)
+      echo "  - Install zip with:"
+      echo "    sudo apt install zip -y"
+      ;;
     *)
       echo "  - Install $1 using your package manager."
       ;;
@@ -83,6 +87,7 @@ required_deps=(
   forge
   pkg-config
   openssl
+  zip
 )
 
 # Display the dependency check table
