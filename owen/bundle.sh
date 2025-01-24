@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Exit on any error
+# Exit on any error except for the dependency checks we handle manually
 set -e
 
 # Define the relative paths
@@ -9,61 +9,100 @@ OWEN_CLI_DIR="./owen_cli"
 OWEN_CLI_BINARY="./target/release/owen_cli"
 OUTPUT_ZIP="./owen_cli.zip"
 
-# Function to check if a required command is installed
+###########################
+# 1) DEPENDENCY CHECKING  #
+###########################
+
+# Array to store missing dependencies
+missing_deps=()
+
+# Function that checks if a given command is installed
+# and, if not, adds it to the missing_deps array
 check_dependency() {
   if ! command -v "$1" &> /dev/null; then
-    case "$1" in
-      cargo)
-        echo "Error: $1 is not installed. Please install Rust and Cargo by running:"
-        echo "      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-        echo "After installation, restart your terminal or run:"
-        echo "      source \$HOME/.cargo/env"
-        ;;
-      git)
-        echo "Error: $1 is not installed. Please install Git using:"
-        echo "      sudo apt install git -y"
-        ;;
-      forge)
-        echo "Error: $1 is not installed. Please install Forge by running:"
-        echo "      curl -L https://foundry.paradigm.xyz | bash"
-        echo "Then, initialize Foundry by running:"
-        echo "      foundryup"
-        ;;
-      npm)
-        echo "Error: $1 is not installed. Please install Node.js (which includes npm) using:"
-        echo "      sudo apt install nodejs npm -y"
-        ;;
-      curl)
-        echo "Error: $1 is not installed. Please install curl using:"
-        echo "      sudo apt install curl -y"
-        ;;
-      pkg-config)
-        echo "Error: $1 is not installed. Please install pkg-config using:"
-        echo "      sudo apt install pkg-config -y"
-        ;;
-      openssl)
-        echo "Error: $1 is not installed. Please install OpenSSL using:"
-        echo "      sudo apt install libssl-dev -y"
-        ;;
-      *)
-        echo "Error: $1 is not installed. Please install $1 and try again."
-        ;;
-    esac
-    exit 1
+    missing_deps+=("$1")
   fi
 }
 
-# Ensure the required tools are installed
+# Function that prints installation instructions for a given missing dependency
+print_install_instructions() {
+  case "$1" in
+    cargo)
+      echo "  - cargo is missing. Install Rust and Cargo with:"
+      echo "    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      echo "    source \$HOME/.cargo/env"
+      ;;
+    git)
+      echo "  - git is missing. Install Git with:"
+      echo "    sudo apt install git -y"
+      ;;
+    forge)
+      echo "  - forge is missing. Install Foundry with:"
+      echo "    curl -L https://foundry.paradigm.xyz | bash"
+      echo "    foundryup"
+      ;;
+    npm)
+      echo "  - npm is missing. Install Node.js (which includes npm) with:"
+      echo "    sudo apt install nodejs npm -y"
+      ;;
+    curl)
+      echo "  - curl is missing. Install curl with:"
+      echo "    sudo apt install curl -y"
+      ;;
+    pkg-config)
+      echo "  - pkg-config is missing. Install pkg-config with:"
+      echo "    sudo apt install pkg-config -y"
+      ;;
+    openssl)
+      echo "  - openssl is missing. Install OpenSSL development headers with:"
+      echo "    sudo apt install libssl-dev -y"
+      ;;
+    npx)
+      echo "  - npx is missing. It should be included with npm/node. Try installing Node.js again:"
+      echo "    sudo apt install nodejs npm -y"
+      ;;
+    *)
+      echo "  - $1 is missing. Please install $1."
+      ;;
+  esac
+}
+
 echo "Checking dependencies..."
-check_dependency git
-check_dependency curl
-check_dependency cargo
-check_dependency npm
-check_dependency npx
-check_dependency forge
-check_dependency pkg-config
-check_dependency openssl
+
+# List of all required dependencies
+required_deps=(
+  git
+  curl
+  cargo
+  npm
+  npx
+  forge
+  pkg-config
+  openssl
+)
+
+# Check each required dependency and store any that are missing
+for dep in "${required_deps[@]}"; do
+  check_dependency "$dep"
+done
+
+# If any dependencies are missing, print instructions and exit
+if [ "${#missing_deps[@]}" -ne 0 ]; then
+  echo ""
+  echo "Some dependencies are missing. Please install them and re-run the script:"
+  for dep in "${missing_deps[@]}"; do
+    print_install_instructions "$dep"
+  done
+  echo ""
+  echo "Exiting now..."
+  exit 1
+fi
+
 echo "All dependencies are installed."
+
+###############################
+# 2) HARDHAT / RUST WORKFLOW  #
+###############################
 
 # Ensure the contracts directory exists
 if [ ! -d "$CONTRACTS_DIR" ]; then
@@ -85,7 +124,7 @@ echo "Git submodules initialized and updated successfully."
 
 # Check if Hardhat is installed locally
 if [ ! -f "./node_modules/.bin/hardhat" ]; then
-  echo "Error: Hardhat is not installed locally in $CONTRACTS_DIR. Installing Hardhat..."
+  echo "Hardhat is not installed locally in $CONTRACTS_DIR. Installing Hardhat..."
   npm install --save-dev hardhat
   if [ $? -ne 0 ]; then
     echo "Error: Failed to install Hardhat."
@@ -120,7 +159,10 @@ if [ ! -f "$OWEN_CLI_BINARY" ]; then
   exit 1
 fi
 
-# Prepare and package the binary
+
+#####################################
+# 3) Prepare and package the binary #
+#####################################
 echo "Packaging the owen_cli binary..."
 mkdir -p "$OWEN_CLI_DIR"
 cp "$OWEN_CLI_BINARY" "$OWEN_CLI_DIR/owen_cli"
