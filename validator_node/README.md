@@ -45,12 +45,23 @@ To run this project on a GPU, you'll need a graphics card with sufficient memory
 5. [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
 6. Docker environment
 
-**Network Requirements:**
+### `.env` File Setup:
 
-- RPC url for Holesky network
-- websocket url for Holesky network
-- Beacon chain API url for Holesky network (available on chainstack for free)
-- Private key with funds on Holesky
+1. Use a template to create your `.env` file:
+
+```
+cd validator_node
+cp .env.template .env
+```
+
+2. Update variables in your `.env` file:
+
+- `PRIVATE_KEY`: Your private key with funds on Holesky
+- `RPC_URL`: Your RPC endpoint URL pointing to Holesky
+- `OUTPUT_FILES_DIR`: Path were output files will be saved
+- `WS_URL`: Your websocket endpoint pointing to Holesky
+- `BEACON_RPC_URL`: Beacon chain API url for Holesky network
+- `START_BLOCK`: Block from which your validator will start looking for new BLOBs to process
 
 ## How to Run It
 
@@ -65,7 +76,7 @@ cd validatore_node
 
 Before running make sure that your validator node is properly configured for your GPU:
 
-- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/validator_node/src/main.rs`.
+- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/validator_node/src/prover_wrapper.rs`.
 - For GPU with 8GB VRAM (default) The default value `.segment_limit_po2(19)` should work without any changes.
 - For GPU with 24GB VRAM or higher For optimal performance comment out the entire line containing `.segment_limit_po2(19)`. Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
 - For CPU Mode (no GPU), its recommened to remove the ``.segment_limit_po2(19)` line entirely to increase perfomance.
