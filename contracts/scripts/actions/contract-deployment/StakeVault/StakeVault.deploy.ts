@@ -7,7 +7,7 @@ export async function deployStakeVault(
   input: StakeVaultDeploymentInput
 ): Promise<DeploymentOutput<StakeVault>> {
   const StakeVault = await ethers.getContractFactory("StakeVault");
-  const stakeVault = await StakeVault.deploy(
+  const stakeVault = await StakeVault.connect(input.deployer).deploy(
     input.stakeTokenAddress,
     input._slashRate
   );

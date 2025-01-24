@@ -5,6 +5,7 @@ import { loadKZG } from "kzg-wasm";
 
 export class KzgHelper {
   public BYTES_PER_BLOB = 131072;
+  static abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
   static blobhashFromCommitment(commitment: Uint8Array): string {
     return `0x01${ethers.sha256(commitment).slice(4)}`;
@@ -23,7 +24,21 @@ export class KzgHelper {
     const blobFile = Buffer.alloc(131072, fileHexString);
     const commitment = kzg.blobToKzgCommitment(blobFile);
     const proof = kzg.computeBlobKzgProof(blobFile, commitment);
+    const blobSha2 = ethers.sha256("0x" + fileHexString);
 
-    return { proof, commitment, blobFile, blobFileHexString: fileHexString };
+    const blobhash = this.blobhashFromCommitment(commitment);
+    const blobId = ethers.sha256(
+      this.abiCoder.encode(["bytes32", "bytes32"], [blobhash, blobSha2])
+    );
+
+    return {
+      proof,
+      commitment,
+      blobFile,
+      blobFileHexString: fileHexString,
+      blobSha2,
+      blobId,
+      blobhash,
+    };
   }
 }
