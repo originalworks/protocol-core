@@ -8,7 +8,7 @@ export async function deployWhitelist(
   initiallyWhitelisted: string[]
 ): Promise<DeploymentOutput<Whitelist>> {
   const Whitelist = await ethers.getContractFactory("Whitelist");
-  const whitelist = await Whitelist.deploy(deployer);
+  const whitelist = await Whitelist.connect(deployer).deploy(deployer);
   await whitelist.waitForDeployment();
 
   for (let i = 0; i < initiallyWhitelisted.length; i++) {

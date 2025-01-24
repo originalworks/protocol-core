@@ -29,6 +29,7 @@ async function main() {
     validators: [validator.address, validator2.address],
     dataProviders: [dataProvider.address, dataProvider2.address],
     disableWhitelist: false,
+    printLogs: true,
   });
 
   console.log("deployment data:", fixtureOutput.fixtureAddresses);

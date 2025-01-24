@@ -7,7 +7,7 @@ export async function deployDdexSequencer(
   input: DdexSequencerDeploymentInput
 ): Promise<DeploymentOutput<DdexSequencer>> {
   const DdexSequencer = await ethers.getContractFactory("DdexSequencer");
-  const ddexSequencer = await DdexSequencer.deploy(
+  const ddexSequencer = await DdexSequencer.connect(input.deployer).deploy(
     input.dataProvidersWhitelist,
     input.validatorsWhitelist,
     input.stakeVaultAddress

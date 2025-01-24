@@ -26,6 +26,7 @@ async function main() {
     dataProviders: [],
     validators: [],
     disableWhitelist: true,
+    printLogs: true,
   });
 
   const deploymentDataFilePath = `./deployments/${buildDeploymentFileName()}`;

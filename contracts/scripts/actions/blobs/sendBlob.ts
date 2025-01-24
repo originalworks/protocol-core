@@ -8,11 +8,10 @@ export async function sendBlob(
   ddexMessagePath: string
 ) {
   const kzgOutput = await KzgHelper.generate(ddexMessagePath);
-  const blobhash = KzgHelper.blobhashFromCommitment(kzgOutput.commitment);
 
   const tx = await ddexSequencer
     .connect(signer)
-    .submitNewBlob(kzgOutput.commitment, {
+    .submitNewBlob(kzgOutput.commitment, kzgOutput.blobSha2, {
       type: 3,
       maxFeePerBlobGas: 10,
       gasLimit: 1000000,
@@ -27,5 +26,5 @@ export async function sendBlob(
 
   await tx.wait();
 
-  return { ...kzgOutput, blobhash };
+  return kzgOutput;
 }

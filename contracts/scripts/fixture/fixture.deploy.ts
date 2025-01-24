@@ -4,16 +4,31 @@ import { deployStakeVault } from "../actions/contract-deployment/StakeVault/Stak
 import { deployWhitelist } from "../actions/contract-deployment/Whitelist/Whitelist.deploy";
 import { ethers as hardhatEthers } from "hardhat";
 import { ethers, Signer, HDNodeWallet } from "ethers";
-import { FixtureInput, FixtureOutput } from "./fixture.types";
+import {
+  FixtureInput,
+  FixtureOutput,
+  GetEthersType3WalletsInput,
+} from "./fixture.types";
 import { deployRiscZeroGroth16Verifier } from "../actions/contract-deployment/RiscZeroGroth16Verifier/RiscZeroGroth16Verifier.deploy";
 import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/DdexEmitter.deploy";
+import { deployFakeVerifier } from "../actions/contract-deployment/FakeVerifier/FakeVerifier.deploy";
 
 const SLASH_RATE = 1000;
+
+class ConsoleLog {
+  constructor(private active: boolean) {}
+  public log(message?: any, ...optionalParams: any[]) {
+    if (this.active) {
+      console.log(message, ...optionalParams);
+    }
+  }
+}
 
 export async function deployFixture(
   input: FixtureInput
 ): Promise<FixtureOutput> {
-  console.log("Deploying whitelists...");
+  const _console = new ConsoleLog(input.printLogs || false);
+  _console.log("Deploying whitelists...");
   const dataProvidersWhitelistOutput = await deployWhitelist(
     input.deployer,
     input.dataProviders
@@ -23,13 +38,15 @@ export async function deployFixture(
     input.validators
   );
 
-  console.log("Deploying DdexSequencer...");
-  const ownTokenOutput = await deployOwnToken();
+  _console.log("Deploying DdexSequencer...");
+  const ownTokenOutput = await deployOwnToken(input.deployer);
   const stakeVaultOutput = await deployStakeVault({
+    deployer: input.deployer,
     stakeTokenAddress: await ownTokenOutput.contract.getAddress(),
     _slashRate: SLASH_RATE,
   });
   const ddexSequencerOutput = await deployDdexSequencer({
+    deployer: input.deployer,
     dataProvidersWhitelist:
       await dataProvidersWhitelistOutput.contract.getAddress(),
     validatorsWhitelist: await validatorsWhitelistOutput.contract.getAddress(),
@@ -40,12 +57,24 @@ export async function deployFixture(
     await ddexSequencerOutput.contract.disableWhitelist();
   }
 
-  console.log("Deploying DdexEmitter...");
-  const riscZeroGroth16VerifierOutput = await deployRiscZeroGroth16Verifier();
-  const ddexEmitterOutput = await deployDdexEmitter(
-    await ddexSequencerOutput.contract.getAddress(),
-    await riscZeroGroth16VerifierOutput.contract.getAddress()
-  );
+  _console.log("Deploying DdexEmitter...");
+  let riscZeroGroth16VerifierAddress: string;
+  if (input.fakeRisc0Groth16Verifier) {
+    const fakeVerifier = await deployFakeVerifier(input.deployer);
+    riscZeroGroth16VerifierAddress = await fakeVerifier.getAddress();
+  } else {
+    const riscZeroGroth16VerifierOutput = await deployRiscZeroGroth16Verifier(
+      input.deployer
+    );
+    riscZeroGroth16VerifierAddress =
+      await riscZeroGroth16VerifierOutput.contract.getAddress();
+  }
+
+  const ddexEmitterOutput = await deployDdexEmitter({
+    deployer: input.deployer,
+    ddexSequencerAddress: await ddexSequencerOutput.contract.getAddress(),
+    _riscZeroGroth16VerifierAddress: riscZeroGroth16VerifierAddress,
+  });
   await ddexSequencerOutput.contract.setDdexEmitter(
     await ddexEmitterOutput.contract.getAddress()
   );
@@ -79,13 +108,18 @@ export async function deployFixture(
 // it's necessary to use ethers.Wallet instead of hardhatEthers.Wallet
 // as only the first one currently supports type 3 EIP4844 transaction
 export async function getEthersType3Wallets(
-  fundsSource: Signer
-): Promise<HDNodeWallet> {
-  const wallet = ethers.Wallet.createRandom(hardhatEthers.provider);
-  const tx = await fundsSource.sendTransaction({
-    to: wallet,
-    value: ethers.parseEther("5"),
-  });
-  await tx.wait();
-  return wallet;
+  input: GetEthersType3WalletsInput
+): Promise<HDNodeWallet[]> {
+  let wallets: HDNodeWallet[] = [];
+  for (let i = 0; i < input.numberOfWallets; i++) {
+    const wallet = ethers.Wallet.createRandom(hardhatEthers.provider);
+    const tx = await input.fundsSource.sendTransaction({
+      to: wallet,
+      value: input.prefundValue,
+    });
+    await tx.wait();
+    wallets.push(wallet);
+  }
+
+  return wallets;
 }

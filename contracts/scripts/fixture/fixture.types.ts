@@ -13,6 +13,8 @@ export interface FixtureInput {
   dataProviders: string[];
   validators: string[];
   disableWhitelist: boolean;
+  printLogs?: boolean;
+  fakeRisc0Groth16Verifier?: boolean;
 }
 
 export interface FixtureOutput {
@@ -38,4 +40,10 @@ export interface FixtureAddresses {
   validatorsWhitelist: string;
   dataProviders: string[];
   validators: string[];
+}
+
+export interface GetEthersType3WalletsInput {
+  fundsSource: Signer;
+  numberOfWallets: number;
+  prefundValue: bigint;
 }

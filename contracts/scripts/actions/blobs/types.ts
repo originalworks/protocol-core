@@ -5,6 +5,9 @@ export interface KzgOutput {
   blobFileHexString: string;
   proof: Uint8Array;
   commitment: Uint8Array;
+  blobSha2: string;
+  blobId: string;
+  blobhash: string;
 }
 
 export interface SendBlobInput {

@@ -1,10 +1,11 @@
 import { ethers } from "hardhat";
 import { RiscZeroGroth16Verifier } from "../../../../typechain-types";
 import { DeploymentOutput } from "../types";
+import { Signer } from "ethers";
 
-export async function deployRiscZeroGroth16Verifier(): Promise<
-  DeploymentOutput<RiscZeroGroth16Verifier>
-> {
+export async function deployRiscZeroGroth16Verifier(
+  deployer: Signer
+): Promise<DeploymentOutput<RiscZeroGroth16Verifier>> {
   const ControlID = await ethers.getContractFactory("ControlID");
   const controlId = await ControlID.deploy();
   await controlId.waitForDeployment();
@@ -13,10 +14,9 @@ export async function deployRiscZeroGroth16Verifier(): Promise<
     "RiscZeroGroth16Verifier"
   );
 
-  const riscZeroGroth16Verifier = await RiscZeroGroth16Verifier.deploy(
-    await controlId.CONTROL_ROOT(),
-    await controlId.BN254_CONTROL_ID()
-  );
+  const riscZeroGroth16Verifier = await RiscZeroGroth16Verifier.connect(
+    deployer
+  ).deploy(await controlId.CONTROL_ROOT(), await controlId.BN254_CONTROL_ID());
   await riscZeroGroth16Verifier.waitForDeployment();
 
   return {
