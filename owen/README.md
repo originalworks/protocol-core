@@ -193,3 +193,37 @@ kurtosis clean
 
 docker compose -f ./docker/run-local.yml down
 ```
+
+
+# HOW TO RUN OWEN AS AL LAMBDA LAYER ON AWS
+
+1. Clone this repository`git clone https://github.com/originalworks/protocol-core`
+2. Enter its directory `cd protocol-core`
+3. Download dependcies with `git submodule update --init --recursive`
+4. Confirm requirements. You will need to have hardhat and foundry installed.
+
+You can install [Hardhat](https://hardhat.org/) by running `npm install hardhat`.
+You can install [Foundry](https://getfoundry.sh/) by running: `curl -L https://foundry.paradigm.xyz | bash` and follwing the stes.
+
+5. Compile contracts.
+
+```bash
+cd contracts
+npx hardhat compile
+
+Downloading compiler 0.8.24
+Generating typings for: 44 artifacts in dir: typechain-types for target: ethers-v6
+Successfully generated 140 typings!
+Compiled 42 Solidity files successfully (evm target: cancun).
+
+```
+
+6. Make bundle of owen by running `/owen/bundle.sh` that will generate a file named `owen_cli.zip`.
+7. Log into AWS Console, and go to Lambda -> layers -> owen_cli:
+![alt text](image.png)
+
+8. Click on Create version:
+![alt text](image-2.png)
+
+9. Upload the newley generated file`owen_cli.zip
+![alt text](image-1.png)
