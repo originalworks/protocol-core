@@ -62,9 +62,10 @@ cd validatore_node
 ```
 
 ### Adjusting the `segment_limit_po2` Value
+
 Before running make sure that your validator node is properly configured for your GPU:
 
-- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/host/src/main.rs`.
+- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/validator_node/src/main.rs`.
 - For GPU with 8GB VRAM (default) The default value `.segment_limit_po2(19)` should work without any changes.
 - For GPU with 24GB VRAM or higher For optimal performance comment out the entire line containing `.segment_limit_po2(19)`. Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
 - For CPU Mode (no GPU), its recommened to remove the ``.segment_limit_po2(19)` line entirely to increase perfomance.
