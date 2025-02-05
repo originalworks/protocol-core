@@ -12,6 +12,7 @@ regex = "1.10.6"
 serde = {version = "1.0.0", features = ["derive"]}
 serde_valid = "0.25.0"
 thiserror = "2"
+log_macros = { path = "../../log_macros" }
 
 [dev-dependencies]
 serde_json = "1.0.134"

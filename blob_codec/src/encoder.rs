@@ -1,14 +1,24 @@
 use crate::constants::RAW_CHUNK_SIZE;
+use crate::errors::OwCodecError;
+use log_macros::loc;
 use miniz_oxide::deflate::compress_to_vec;
-use std::error::Error;
 use std::path::Path;
 use std::{fs::File, io::Read};
 
-pub fn file_to_vec(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
-    let mut file = File::open(path)?;
+pub fn file_to_vec(path: &Path) -> Result<Vec<u8>, OwCodecError> {
+    let mut file = File::open(path).map_err(|e| OwCodecError::Io {
+        source: e,
+        path: path.to_string_lossy().to_string(),
+        loc: loc!(),
+    })?;
 
     let mut file_buffer = Vec::new();
-    file.read_to_end(&mut file_buffer)?;
+    file.read_to_end(&mut file_buffer)
+        .map_err(|e| OwCodecError::Io {
+            source: e,
+            path: path.to_string_lossy().to_string(),
+            loc: loc!(),
+        })?;
 
     file_buffer = compress_to_vec(&file_buffer, 10);
 

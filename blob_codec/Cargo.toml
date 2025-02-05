@@ -8,6 +8,8 @@ license = "MIT"
 [dependencies]
 miniz_oxide = "0.8.0"
 sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", rev = "244dc3b08788f7a4ccce14c66896ae3b4f24c166"}
+thiserror = "2"
+log_macros = { path = "../log_macros" }
 
 [dev-dependencies]
 c-kzg = "1.0.3"

@@ -1,8 +1,7 @@
-use crate::errors::OwenCliError;
 use alloy::consensus::BlobTransactionSidecar;
 use blob_codec::BlobCodec;
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
-use std::error::Error;
+use log_macros::{format_error, log_info};
 
 pub struct BlobTransactionData {
     pub kzg_commitment: KzgCommitment,
@@ -11,7 +10,8 @@ pub struct BlobTransactionData {
 }
 
 impl BlobTransactionData {
-    pub fn build(output_files_dir: &String) -> Result<Self, Box<dyn Error>> {
+    pub fn build(output_files_dir: &String) -> anyhow::Result<Self> {
+        log_info!("Creating blob...");
         let blob_codec = BlobCodec::from_dir(output_files_dir)?;
         let blob_sha2: [u8; 32] = blob_codec.digest();
         let blob: [u8; 131072] = blob_codec.to_bytes();
@@ -43,7 +43,7 @@ impl BlobTransactionData {
                 blob_sha2,
             })
         } else {
-            return Err(Box::new(OwenCliError::InvalidBlobProof()));
+            return Err(format_error!("c_kzg error during proof validation"));
         }
     }
 }

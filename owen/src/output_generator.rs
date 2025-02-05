@@ -1,11 +1,12 @@
-use crate::errors::OwenCliError;
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
+use anyhow::Context;
 use ddex_schema::{DdexParser, NewReleaseMessage};
+use log_macros::{format_error, log_info};
+use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
-use std::path::PathBuf;
-use std::{error::Error, path::Path};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
@@ -21,7 +22,7 @@ async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
     config: &Config,
-) -> Result<(), Box<dyn Error>> {
+) -> anyhow::Result<()> {
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
             if let Some(file) = &mut technical_details.file {
@@ -42,12 +43,12 @@ async fn pin_and_write_cid(
     Ok(())
 }
 
-fn is_xml_file_empty(file_path: &Path) -> Result<bool, Box<dyn Error>> {
+fn is_xml_file_empty(file_path: &Path) -> anyhow::Result<bool> {
     let content = fs::read_to_string(file_path)?;
     Ok(content.trim().is_empty())
 }
 
-async fn pin_file(path: &String, config: &Config) -> Result<String, Box<dyn Error>> {
+async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
     if config.default_ipfs_interface == IpfsInterface::KUBO {
         Ok(pin_file_ipfs_kubo(path).await?)
     } else {
@@ -58,7 +59,7 @@ async fn pin_file(path: &String, config: &Config) -> Result<String, Box<dyn Erro
 async fn process_message_folder(
     message_folder_path: PathBuf,
     config: &Config,
-) -> Result<MessageDirProcessingContext, Box<dyn Error>> {
+) -> anyhow::Result<MessageDirProcessingContext> {
     let mut message_dir_processing_context = MessageDirProcessingContext {
         input_xml_path: String::new(),
         input_image_path: String::new(),
@@ -83,24 +84,41 @@ async fn process_message_folder(
                     message_dir_processing_context.input_xml_path =
                         message_file_path.to_string_lossy().to_string();
 
+                    sentry::configure_scope(|scope| {
+                        scope.set_extra(
+                            "filename",
+                            json!(message_file_path
+                                .to_string_lossy()
+                                .to_string()
+                                .split("/")
+                                .last()
+                                .expect("Invalid filename")),
+                        );
+                    });
+
                     message_dir_processing_context.output_json_path = format!(
                         "{}/{}.json",
                         &config.output_files_dir,
                         &message_folder_path
                             .file_name()
                             .and_then(|name| name.to_str())
-                            .ok_or_else(|| {
-                                Box::new(OwenCliError::InvalidAssetFolderName(
-                                    message_folder_path.to_string_lossy().to_string(),
-                                ))
-                            })?
+                            .ok_or_else(|| format_error!(
+                                "Wrong folder name: {}",
+                                message_folder_path.to_string_lossy().to_string()
+                            ))?
                     );
 
                     message_dir_processing_context.empty = false;
 
+                    log_info!(
+                        "Parsing XML at {}",
+                        &message_dir_processing_context.input_xml_path.to_string()
+                    );
+
                     let mut new_release_message =
                         DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)?;
 
+                    log_info!("Parsing JSON");
                     let mut json_output = new_release_message.to_json_string_pretty()?;
                     new_release_message = DdexParser::from_json_string(&json_output)?;
 
@@ -113,10 +131,17 @@ async fn process_message_folder(
 
                     json_output = new_release_message.to_json_string_pretty()?;
 
+                    log_info!("Media files URIs have been replaced with CIDs");
+
                     fs::write(
                         &message_dir_processing_context.output_json_path,
                         json_output,
                     )?;
+
+                    log_info!(
+                        "Validated JSON saved at {}",
+                        &message_dir_processing_context.output_json_path
+                    )
                 }
             }
         }
@@ -126,18 +151,33 @@ async fn process_message_folder(
 
 pub async fn create_output_files(
     config: &Config,
-) -> Result<Vec<MessageDirProcessingContext>, Box<dyn Error>> {
+) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    log_info!("Creating output files");
     let mut result: Vec<MessageDirProcessingContext> = Vec::new();
     let output_files_path = Path::new(&config.output_files_dir);
     if output_files_path.is_dir() {
-        fs::remove_dir_all(output_files_path)?;
+        fs::remove_dir_all(output_files_path).with_context(|| {
+            format_error!("Failed to remove dir at {}", {
+                output_files_path.to_string_lossy().to_string()
+            })
+        })?;
     }
-    fs::create_dir_all(output_files_path)?;
+    fs::create_dir_all(output_files_path).with_context(|| {
+        format_error!("Failed to create dir at {}", {
+            output_files_path.to_string_lossy().to_string()
+        })
+    })?;
+
     let input_folder_path = Path::new(&config.folder_path);
     let mut empty_root_folder = true;
 
     if input_folder_path.is_dir() {
-        let message_folders = fs::read_dir(input_folder_path)?;
+        let message_folders = fs::read_dir(input_folder_path).with_context(|| {
+            format_error!(
+                "Failed to read dir at {}",
+                input_folder_path.to_string_lossy().to_string(),
+            )
+        })?;
 
         for message_folder in message_folders {
             let message_folder_path = message_folder?.path();
@@ -149,36 +189,40 @@ pub async fn create_output_files(
             }
         }
     } else {
-        return Err(Box::new(OwenCliError::SourcePathIsNotDir(
-            input_folder_path.to_string_lossy().to_string(),
-        )));
+        return Err(format_error!(
+            "Provided folder_path is not a directory: {}",
+            input_folder_path.to_string_lossy().to_string()
+        ))?;
     }
     if empty_root_folder {
-        return Err(Box::new(OwenCliError::EmptySourcePathFolder(
-            config.folder_path.to_string(),
-        )));
+        return Err(format_error!(
+            "Folder under provided folder_path is empty: {}",
+            config.folder_path.to_string()
+        ))?;
     }
 
     print_output(&result)?;
     Ok(result)
 }
 
-fn print_output(output: &Vec<MessageDirProcessingContext>) -> Result<(), Box<dyn Error>> {
+fn print_output(output: &Vec<MessageDirProcessingContext>) -> anyhow::Result<()> {
     for entry in output {
-        println!("PROCESSED DDEX MESSAGE:");
-        println!(
-            "Source files: image: {}; XML: {}",
-            entry.input_image_path, entry.input_xml_path
+        log_info!("-- PROCESSED DDEX MESSAGE");
+        log_info!(
+            "-- Source files: image: {}; XML: {}",
+            entry.input_image_path,
+            entry.input_xml_path
         );
-        println!(
-            "Image file {} was pined to IPFS under CID: {}",
-            entry.input_image_path, entry.image_cid
+        log_info!(
+            "-- Image file {} was pinned to IPFS under CID: {}",
+            entry.input_image_path,
+            entry.image_cid
         );
-        println!(
-            "CID: {} was included in the output file: {}",
-            entry.image_cid, entry.output_json_path
+        log_info!(
+            "-- CID: {} was included in the output file: {}",
+            entry.image_cid,
+            entry.output_json_path
         );
-        println!("----------")
     }
     Ok(())
 }
@@ -189,9 +233,7 @@ mod tests {
 
     use super::*;
 
-    fn find_cid_in_file(
-        processing_context: &MessageDirProcessingContext,
-    ) -> Result<bool, Box<dyn Error>> {
+    fn find_cid_in_file(processing_context: &MessageDirProcessingContext) -> anyhow::Result<bool> {
         let file = fs::read_to_string(&processing_context.output_json_path)?;
         let found = file.contains(&processing_context.image_cid);
 
@@ -199,7 +241,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_output_files_with_cids() -> Result<(), Box<dyn Error>> {
+    async fn create_output_files_with_cids() -> anyhow::Result<()> {
         let config = Config {
             rpc_url: String::new(),
             private_key: String::new(),
@@ -208,6 +250,8 @@ mod tests {
             ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
             pinata_jwt: String::new(),
             output_files_dir: "./output_files".to_string(),
+            environment: String::from_str("dev").unwrap(),
+            username: String::from_str("user").unwrap(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -237,6 +281,8 @@ mod tests {
             ipfs_kubo_url: String::new(),
             pinata_jwt: String::new(),
             output_files_dir: "./output_files".to_string(),
+            environment: String::from_str("dev").unwrap(),
+            username: String::from_str("user").unwrap(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 

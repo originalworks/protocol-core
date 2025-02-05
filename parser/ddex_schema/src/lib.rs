@@ -3,6 +3,7 @@ mod schema;
 mod validation;
 
 pub use errors::*;
+use log_macros::loc;
 use regex::Regex;
 pub use schema::*;
 use serde_valid::json::{FromJsonReader, FromJsonStr};

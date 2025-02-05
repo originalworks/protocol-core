@@ -1,11 +1,3 @@
-macro_rules! loc {
-    () => {
-        format!("{}:{}", file!(), line!())
-    };
-}
-
-pub(crate) use loc;
-
 #[derive(thiserror::Error, Debug)]
 pub enum ParserError {
     #[error("Error while reading a file at {path} - {source}")]

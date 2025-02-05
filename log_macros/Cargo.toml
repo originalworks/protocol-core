@@ -1,0 +1,8 @@
+[package]
+name = "log_macros"
+version = "0.1.0"
+authors = ["Daniel Cybulka <daniel.cybulka@rumblefish.com>"]
+edition = "2021"
+
+[dependencies]
+log = "0.4.25"
