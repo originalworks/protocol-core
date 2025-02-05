@@ -15,6 +15,7 @@ use alloy::{
     transports::http::{reqwest, Client, Http},
 };
 use log_macros::log_info;
+use serde_json::json;
 
 sol!(
     #[allow(missing_docs)]
@@ -81,6 +82,11 @@ impl DdexSequencerContext<'_> {
             .await?
             .get_receipt()
             .await?;
+
+        sentry::configure_scope(|scope| {
+            scope.set_extra("transaction", json!(receipt));
+        });
+
         log_info!("Success!");
         log_info!("--From: {}", receipt.from.to_string());
         log_info!("--To: {}", receipt.to.unwrap_or_default().to_string());
