@@ -1,12 +1,12 @@
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
-use crate::{log_error, Config, IpfsInterface};
+use crate::{Config, IpfsInterface};
 use anyhow::Context;
 use ddex_schema::{DdexParser, NewReleaseMessage};
-use log_macros::log_info;
+use log_macros::{format_error, log_info};
+use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
@@ -84,13 +84,25 @@ async fn process_message_folder(
                     message_dir_processing_context.input_xml_path =
                         message_file_path.to_string_lossy().to_string();
 
+                    sentry::configure_scope(|scope| {
+                        scope.set_extra(
+                            "filename",
+                            json!(message_file_path
+                                .to_string_lossy()
+                                .to_string()
+                                .split("/")
+                                .last()
+                                .expect("Invalid filename")),
+                        );
+                    });
+
                     message_dir_processing_context.output_json_path = format!(
                         "{}/{}.json",
                         &config.output_files_dir,
                         &message_folder_path
                             .file_name()
                             .and_then(|name| name.to_str())
-                            .ok_or_else(|| log_error!(
+                            .ok_or_else(|| format_error!(
                                 "Wrong folder name: {}",
                                 message_folder_path.to_string_lossy().to_string()
                             ))?
@@ -102,6 +114,7 @@ async fn process_message_folder(
                         "Parsing XML at {}",
                         &message_dir_processing_context.input_xml_path.to_string()
                     );
+
                     let mut new_release_message =
                         DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)?;
 
@@ -144,13 +157,13 @@ pub async fn create_output_files(
     let output_files_path = Path::new(&config.output_files_dir);
     if output_files_path.is_dir() {
         fs::remove_dir_all(output_files_path).with_context(|| {
-            log_error!("Failed to remove dir at {}", {
+            format_error!("Failed to remove dir at {}", {
                 output_files_path.to_string_lossy().to_string()
             })
         })?;
     }
     fs::create_dir_all(output_files_path).with_context(|| {
-        log_error!("Failed to create dir at {}", {
+        format_error!("Failed to create dir at {}", {
             output_files_path.to_string_lossy().to_string()
         })
     })?;
@@ -160,7 +173,7 @@ pub async fn create_output_files(
 
     if input_folder_path.is_dir() {
         let message_folders = fs::read_dir(input_folder_path).with_context(|| {
-            log_error!(
+            format_error!(
                 "Failed to read dir at {}",
                 input_folder_path.to_string_lossy().to_string(),
             )
@@ -176,16 +189,16 @@ pub async fn create_output_files(
             }
         }
     } else {
-        return Err(log_error!(
+        return Err(format_error!(
             "Provided folder_path is not a directory: {}",
             input_folder_path.to_string_lossy().to_string()
-        ));
+        ))?;
     }
     if empty_root_folder {
-        return Err(log_error!(
+        return Err(format_error!(
             "Folder under provided folder_path is empty: {}",
             config.folder_path.to_string()
-        ));
+        ))?;
     }
 
     print_output(&result)?;
@@ -237,6 +250,8 @@ mod tests {
             ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
             pinata_jwt: String::new(),
             output_files_dir: "./output_files".to_string(),
+            environment: String::from_str("dev").unwrap(),
+            username: String::from_str("user").unwrap(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -266,6 +281,8 @@ mod tests {
             ipfs_kubo_url: String::new(),
             pinata_jwt: String::new(),
             output_files_dir: "./output_files".to_string(),
+            environment: String::from_str("dev").unwrap(),
+            username: String::from_str("user").unwrap(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 

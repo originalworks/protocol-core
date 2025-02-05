@@ -1,6 +1,6 @@
 use crate::constants::{IPFS_API_ADD_FILE, IPFS_API_BASE_URL};
 use anyhow::Context;
-use log_macros::{log_error, log_info};
+use log_macros::{format_error, log_info};
 use reqwest::{multipart, Body};
 use serde::Deserialize;
 use serde_json::json;
@@ -38,7 +38,7 @@ pub async fn pin_file_ipfs_kubo(file_path: &String) -> anyhow::Result<String> {
         .multipart(multipart_form)
         .send()
         .await
-        .with_context(|| log_error!("Pinning to IPFS failed"))?;
+        .with_context(|| format_error!("Pinning to IPFS failed"))?;
 
     let result = response.json::<IpfsKuboResponse>().await?;
 
@@ -52,7 +52,7 @@ pub async fn pin_file_pinata(file_path: &String, pinata_jwt: &String) -> anyhow:
         .file_name() // Extracts the final component of the path
         .and_then(|name| name.to_str()) // Converts OsStr to &str
         .ok_or_else(|| {
-            log_error!("Failed to extract filename from {}", {
+            format_error!("Failed to extract filename from {}", {
                 file_path.to_string()
             })
         })?;
@@ -91,7 +91,7 @@ pub async fn pin_file_pinata(file_path: &String, pinata_jwt: &String) -> anyhow:
         .multipart(multipart_form)
         .send()
         .await
-        .with_context(|| log_error!("Pinning to IPFS failed"))?;
+        .with_context(|| format_error!("Pinning to IPFS failed"))?;
 
     let result = response.json::<IpfsPinataResponse>().await?;
     log_info!("Pinned! CID: {}", result.IpfsHash);

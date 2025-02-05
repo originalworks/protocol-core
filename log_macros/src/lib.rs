@@ -6,15 +6,25 @@ macro_rules! loc {
 }
 
 #[macro_export]
+macro_rules! format_error {
+    ($err:expr) => {{
+        anyhow::anyhow!("{} [{}:{}]",$err, file!(), line!())
+    }};
+    ($fmt:expr, $($arg:tt)*) => {{
+        anyhow::anyhow!("{} [{}:{}]", format!($fmt, $($arg)*), file!(), line!(), )
+    }};
+}
+
+#[macro_export]
 macro_rules! log_error {
     ($err:expr) => {{
         let error = anyhow::anyhow!($err);
-        log::error!("{:?} [{}:{}]",error, file!(), line!());
+        log::error!("{}", error);
         error
     }};
     ($fmt:expr, $($arg:tt)*) => {{
         let error = anyhow::anyhow!(format!($fmt, $($arg)*));
-        log::error!("{:?} [{}:{}]", error, file!(), line!());
+        log::error!("{}", error);
         error
     }};
 }

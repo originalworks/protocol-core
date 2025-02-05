@@ -11,16 +11,15 @@ use anyhow::Context;
 use blob::BlobTransactionData;
 use ddex_sequencer::DdexSequencerContext;
 pub use log;
-use log_macros::{log_debug, log_error, log_info};
 use std::env;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, serde::Serialize, Clone)]
 pub enum IpfsInterface {
     KUBO,
     PINATA,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, Clone)]
 pub struct Config {
     pub rpc_url: String,
     pub private_key: String,
@@ -29,30 +28,38 @@ pub struct Config {
     pub ipfs_kubo_url: String,
     pub pinata_jwt: String,
     pub output_files_dir: String,
+    pub username: String,
+    pub environment: String,
 }
 
 impl Config {
-    fn get_env_var(key: &str) -> anyhow::Result<String> {
-        env::var(key).with_context(|| log_error!("Missing variable in .env file: {key}"))
+    fn get_env_var(key: &str) -> String {
+        env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
 
-    pub fn build(mut args: impl Iterator<Item = String>) -> anyhow::Result<Config> {
+    pub fn build() -> Config {
+        dotenvy::dotenv().ok();
+        let mut args = std::env::args();
         args.next();
 
         let folder_path = args
             .next()
-            .ok_or_else(|| log_error!("Missing command line argument: folder path"))?;
+            .expect("Missing command line argument: folder path");
 
-        let rpc_url = Config::get_env_var("RPC_URL")?;
-        let private_key = Config::get_env_var("PRIVATE_KEY")?;
-        let ipfs_kubo_url = Config::get_env_var("IPFS_KUBO_URL")?;
-        let pinata_jwt = Config::get_env_var("PINATA_JWT")?;
-        let default_ipfs_interface_string = Config::get_env_var("DEFAULT_IPFS_INTERFACE")?;
-        let mut default_ipfs_interface = IpfsInterface::KUBO;
-        if default_ipfs_interface_string == "PINATA".to_string() {
-            default_ipfs_interface = IpfsInterface::PINATA;
-        }
-        let output_files_dir = Config::get_env_var("OUTPUT_FILES_DIR")?;
+        let rpc_url = Config::get_env_var("RPC_URL");
+        let private_key = Config::get_env_var("PRIVATE_KEY");
+        let ipfs_kubo_url = Config::get_env_var("IPFS_KUBO_URL");
+        let pinata_jwt = Config::get_env_var("PINATA_JWT");
+        let output_files_dir = Config::get_env_var("OUTPUT_FILES_DIR");
+        let username = Config::get_env_var("USERNAME");
+        let environment = Config::get_env_var("ENVIRONMENT");
+        let default_ipfs_interface = match Config::get_env_var("DEFAULT_IPFS_INTERFACE").as_str() {
+            "PINATA" => IpfsInterface::PINATA,
+            "KUBO" => IpfsInterface::KUBO,
+            _ => {
+                panic!("Invalid DEFAULT_IPFS_INTERFACE. Supported values: KUBO/PINATA")
+            }
+        };
 
         let config = Config {
             rpc_url,
@@ -62,15 +69,15 @@ impl Config {
             pinata_jwt,
             ipfs_kubo_url,
             output_files_dir,
+            environment,
+            username,
         };
 
-        log_debug!("{:?}", config);
-        log_info!("Config created");
-        Ok(config)
+        config
     }
 }
 
-pub async fn run(config: Config) -> anyhow::Result<()> {
+pub async fn run(config: &Config) -> anyhow::Result<()> {
     output_generator::create_output_files(&config).await?;
 
     let private_key_signer: PrivateKeySigner = config

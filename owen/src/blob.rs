@@ -1,7 +1,7 @@
 use alloy::consensus::BlobTransactionSidecar;
 use blob_codec::BlobCodec;
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
-use log_macros::{log_error, log_info};
+use log_macros::{format_error, log_info};
 
 pub struct BlobTransactionData {
     pub kzg_commitment: KzgCommitment,
@@ -43,7 +43,7 @@ impl BlobTransactionData {
                 blob_sha2,
             })
         } else {
-            return Err(log_error!("c_kzg error during proof validation"));
+            return Err(format_error!("c_kzg error during proof validation"));
         }
     }
 }
