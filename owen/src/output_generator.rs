@@ -3,7 +3,7 @@ use crate::{Config, IpfsInterface};
 use anyhow::Context;
 use ddex_schema::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
-use sentry::protocol::{Attachment, AttachmentType};
+use sentry::protocol::Attachment;
 use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
