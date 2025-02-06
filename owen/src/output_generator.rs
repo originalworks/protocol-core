@@ -2,10 +2,12 @@ use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
 use anyhow::Context;
 use ddex_schema::{DdexParser, NewReleaseMessage};
-use log_macros::{format_error, log_info};
+use log_macros::{format_error, log_info, log_warn};
+use sentry::protocol::{Attachment, AttachmentType};
 use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
@@ -53,6 +55,31 @@ async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
         Ok(pin_file_ipfs_kubo(path).await?)
     } else {
         Ok(pin_file_pinata(path, &config.pinata_jwt).await?)
+    }
+}
+
+fn add_attachment(xml_input_path: &String) -> () {
+    let mut buffer: Vec<u8> = Vec::new();
+    let attachment_added = std::fs::File::open(xml_input_path)
+        .ok()
+        .and_then(|mut f| f.read_to_end(&mut buffer).ok())
+        .and_then(|_| {
+            sentry::configure_scope(|scope| {
+                scope.add_attachment(Attachment {
+                    filename: xml_input_path
+                        .split("/")
+                        .last()
+                        .unwrap_or_else(|| "unknown")
+                        .to_string(),
+                    buffer,
+                    content_type: Some("text/xml".to_string()),
+                    ..Default::default()
+                });
+            });
+            Some(())
+        });
+    if attachment_added.is_none() {
+        log_warn!("Failed to add attachment");
     }
 }
 
@@ -116,11 +143,28 @@ async fn process_message_folder(
                     );
 
                     let mut new_release_message =
-                        DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)?;
+                        DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)
+                            .inspect_err(|_| {
+                            add_attachment(
+                                &message_dir_processing_context.input_xml_path.to_string(),
+                            );
+                        })?;
 
                     log_info!("Parsing JSON");
-                    let mut json_output = new_release_message.to_json_string_pretty()?;
-                    new_release_message = DdexParser::from_json_string(&json_output)?;
+                    let mut json_output =
+                        new_release_message
+                            .to_json_string_pretty()
+                            .inspect_err(|_| {
+                                add_attachment(
+                                    &message_dir_processing_context.input_xml_path.to_string(),
+                                );
+                            })?;
+                    new_release_message =
+                        DdexParser::from_json_string(&json_output).inspect_err(|_| {
+                            add_attachment(
+                                &message_dir_processing_context.input_xml_path.to_string(),
+                            );
+                        })?;
 
                     pin_and_write_cid(
                         &mut message_dir_processing_context,
