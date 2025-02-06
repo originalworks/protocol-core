@@ -30,6 +30,7 @@ for DATE in $DATES; do
         echo "Lambda invoked successfully for date: $DATE"
     else
         echo "Error: Lambda invocation failed for date: $DATE. Status code: $RESPONSE"
+        rm -rf ${PAYLOAD_FILE}
         exit 1 # Exit if the invocation failed
     fi
 done
