@@ -30,12 +30,12 @@ macro_rules! log_error {
 }
 
 #[macro_export]
-macro_rules! log_warning {
+macro_rules! log_warn {
     ($msg:expr) => {{
-        log::warning!("{} [{}:{}]", $msg, file!(), line!());
+        log::warn!("{} [{}:{}]", $msg, file!(), line!());
     }};
     ($fmt:expr, $($arg:tt)*) => {{
-        log::warning!("{} [{}:{}]", format!($fmt, $($arg)*), file!(), line!(), );
+        log::warn!("{} [{}:{}]", format!($fmt, $($arg)*), file!(), line!(), );
     }};
 }
 
