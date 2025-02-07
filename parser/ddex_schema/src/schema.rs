@@ -1094,7 +1094,8 @@ pub struct ResourceRightsController {
         validation = "AvsRightsControllerRoleValidator"
     )]
     #[validate(custom = AvsRightsControllerRoleValidator::json_validate_vec)]
-    #[validate(custom = ProtocolValidator::rights_control_types)]
+    // TODO
+    // #[validate(custom = ProtocolValidator::rights_control_types)]
     #[validate(min_items = 1)]
     pub rights_control_types: Vec<String>,
     #[yaserde(rename = "RightSharePercentage", prefix = "ern")]
