@@ -8,7 +8,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
     );
-    provedMessage.message_id = message.message_id;
+    provedMessage.message_id = message.release.release_id.toString();
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
     provedMessage.save();

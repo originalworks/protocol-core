@@ -109,7 +109,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
 
         require(isValid, "Invalid proof");
 
-        stakeVault.slashStake(blobs[blobQueueHead].proposer);
+        // stakeVault.slashStake(blobs[blobQueueHead].proposer);
 
         _moveQueue();
     }
