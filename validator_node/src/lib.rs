@@ -18,12 +18,15 @@ use std::cell::RefCell;
 use std::env;
 use std::error::Error;
 
+#[derive(Debug, Clone)]
 pub struct Config {
     pub rpc_url: String,
     pub beacon_rpc_url: String,
     pub ws_url: String,
     pub start_block: RefCell<u64>,
     pub private_key: String,
+    pub environment: String,
+    pub username: String,
     pub provider: FillProvider<
         JoinFill<
             JoinFill<
@@ -45,36 +48,42 @@ pub struct Config {
 }
 
 impl Config {
-    fn get_env_var(key: &str) -> Result<String, Box<dyn Error>> {
-        env::var(key).map_err(|err| {
-            format!("Error getting environment variable `{}`: {:?}", key, err).into()
-        })
+    fn get_env_var(key: &str) -> String {
+        env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
 
-    pub fn build() -> Result<Config, Box<dyn Error>> {
-        let private_key = Config::get_env_var("PRIVATE_KEY")?;
-        let rpc_url = Config::get_env_var("RPC_URL")?;
-        let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL")?;
-        let ws_url = Config::get_env_var("WS_URL")?;
-        let start_block = RefCell::new(Config::get_env_var("START_BLOCK")?.parse::<u64>()?);
-
+    pub fn build() -> Config {
+        dotenvy::dotenv().ok();
+        let private_key = Config::get_env_var("PRIVATE_KEY");
+        let rpc_url = Config::get_env_var("RPC_URL");
+        let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL");
+        let ws_url = Config::get_env_var("WS_URL");
+        let start_block = RefCell::new(
+            Config::get_env_var("START_BLOCK")
+                .parse::<u64>()
+                .expect("Failed to parse START_BLOCK"),
+        );
+        let environment = Config::get_env_var("ENVIRONMENT");
+        let username = Config::get_env_var("USERNAME");
         let private_key_signer: PrivateKeySigner =
-            private_key.parse().expect("Failed to parse PRIVATE_KEY:");
+            private_key.parse().expect("Failed to parse PRIVATE_KEY");
         let wallet = EthereumWallet::from(private_key_signer);
 
         let provider = ProviderBuilder::new()
             .with_recommended_fillers()
             .wallet(wallet)
-            .on_http(rpc_url.parse().expect("RPC_URL parsing error:"));
+            .on_http(rpc_url.parse().expect("RPC_URL parsing error"));
 
-        Ok(Config {
+        Config {
             rpc_url,
             beacon_rpc_url,
             ws_url,
             start_block,
             private_key,
             provider,
-        })
+            environment,
+            username,
+        }
     }
 }
 

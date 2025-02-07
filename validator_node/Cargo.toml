@@ -10,15 +10,22 @@ futures-util = "0.3.30"
 blob_codec = { path = "../blob_codec" }
 reqwest = "0.12.7"
 serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.133"
 sha2 = "0.10.8"
 tokio = { version = "1.39.3", features = ["full"] }
 prover = { path = "../prover" }
 risc0-zkvm = { version = "1.1.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 ddex_schema = { path = '../parser/ddex_schema' }
-env_logger = "0.11.5"
 risc0-ethereum-contracts = { git = "https://github.com/risc0/risc0-ethereum", tag = "v1.1.4" }
 alloy-sol-types = "0.8.18"
+anyhow = "1.0.95"
+log = "0.4.25"
+log_macros = { path = "../log_macros"}
+sentry = "0.36.0"
+sentry-log = "0.36"
+pretty_env_logger = "0.5.0"
+
 
 [features]
 cuda = ["risc0-zkvm/cuda"]
