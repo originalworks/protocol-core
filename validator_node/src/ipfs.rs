@@ -1,11 +1,9 @@
-use std::error::Error;
+use log_macros::format_error;
 
-use crate::{
-    constants::{IPFS_API_BASE_URL, IPFS_API_CAT_FILE},
-    errors::OwValidatorNodeError,
-};
+use crate::constants::{IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
 
-pub async fn check_file_accessibility(cids: Vec<String>) -> Result<(), Box<dyn Error>> {
+#[allow(dead_code)]
+pub async fn check_file_accessibility(cids: Vec<String>) -> anyhow::Result<()> {
     println!("{cids:?}");
     let client = reqwest::Client::new();
 
@@ -19,7 +17,7 @@ pub async fn check_file_accessibility(cids: Vec<String>) -> Result<(), Box<dyn E
             .await?;
 
         if response.status() != 200 {
-            return Err(Box::new(OwValidatorNodeError::ImageFileNotFoundInIpfs(cid)));
+            return Err(format_error!("Image file not found in IPFS: {}", cid));
         }
     }
 

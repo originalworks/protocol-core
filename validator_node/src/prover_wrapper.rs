@@ -1,9 +1,11 @@
 use alloy_sol_types::SolValue;
+use anyhow::Context;
 use core::str;
-use prover::{ProverPublicOutputs, DDEX_GUEST_ELF, DDEX_GUEST_ID};
+use log_macros::log_info;
+use prover::{ProverPublicOutputs, DDEX_GUEST_ELF};
 use risc0_ethereum_contracts::encode_seal;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
-use std::{error::Error, time::Instant};
+use std::time::Instant;
 
 pub struct StopWatch {
     timer: Instant,
@@ -18,12 +20,12 @@ impl StopWatch {
     pub fn stop(self, topic: &str) -> () {
         let secs = self.timer.elapsed().as_secs();
 
-        println!(
+        log_info!(
             "It took {}h{}m{}s to {}",
             (secs / 60) / 60,
             (secs / 60) % 60,
             secs % 60,
-            topic
+            topic,
         );
     }
 }
@@ -31,18 +33,18 @@ impl StopWatch {
 pub struct ProverRunResults {
     pub seal: Vec<u8>,
     pub journal: Vec<u8>,
+    #[allow(dead_code)]
     pub public_outputs: ProverPublicOutputs,
 }
 
-pub fn run(blob: &Vec<u8>) -> Result<ProverRunResults, Box<dyn Error>> {
-    env_logger::init();
-    let mut timer = StopWatch::start();
+pub fn run(blob: &Vec<u8>, segment_limit_po2: u32) -> anyhow::Result<ProverRunResults> {
+    log_info!("Proving...");
+    let timer = StopWatch::start();
 
     let env = ExecutorEnv::builder()
-        .segment_limit_po2(19)
+        .segment_limit_po2(segment_limit_po2)
         .write_slice(blob)
-        .build()
-        .unwrap();
+        .build()?;
 
     let prover = default_prover();
 
@@ -53,32 +55,20 @@ pub fn run(blob: &Vec<u8>) -> Result<ProverRunResults, Box<dyn Error>> {
             DDEX_GUEST_ELF,
             &ProverOpts::groth16(),
         )
-        .unwrap()
+        .with_context(|| "Prover failed")?
         .receipt;
 
-    let seal = encode_seal(&receipt).unwrap();
+    let seal = encode_seal(&receipt)?;
 
     let journal = receipt.journal.bytes.clone();
 
-    let public_outputs: ProverPublicOutputs =
-        ProverPublicOutputs::abi_decode(&journal, true).unwrap();
+    let public_outputs: ProverPublicOutputs = ProverPublicOutputs::abi_decode(&journal, true)?;
 
-    println!("public outputs: {public_outputs:?}");
-    println!("journal: {journal:?}");
-    println!("seal: {seal:?}");
+    log_info!("Public outputs: {:?}", public_outputs);
+    log_info!("Journal: {:?}", journal);
+    log_info!("Seal: {:?}", seal);
 
     timer.stop("produce the proof");
-
-    timer = StopWatch::start();
-
-    match receipt.verify(DDEX_GUEST_ID) {
-        Ok(_) => {
-            println!("Receipt has been verified to be computed with DDEX_PARSER_GUEST code image")
-        }
-        Err(_) => println!("Receipt failed to be verified"),
-    }
-
-    timer.stop("verify the proof.");
 
     Ok(ProverRunResults {
         seal,

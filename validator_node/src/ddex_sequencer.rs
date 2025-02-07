@@ -1,4 +1,4 @@
-use crate::{constants, errors::OwValidatorNodeError, Config};
+use crate::{constants, Config};
 use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::{Bytes, FixedBytes};
 use alloy::providers::fillers::{
@@ -14,8 +14,9 @@ use alloy::{
     sol_types::SolEvent,
 };
 use futures_util::StreamExt;
+use log_macros::{format_error, log_info};
+use serde_json::json;
 use sha2::{Digest, Sha256};
-use std::error::Error;
 
 sol!(
     #[allow(missing_docs)]
@@ -48,6 +49,7 @@ pub struct DdexSequencerContext<'a> {
     >,
 }
 
+#[derive(Debug, serde::Serialize)]
 pub struct QueueHeadData {
     pub commitment: Bytes,
     pub parent_beacon_block_root: FixedBytes<32>,
@@ -73,32 +75,46 @@ impl DdexSequencerContext<'_> {
             alloy::transports::http::Http<reqwest::Client>,
             Ethereum,
         >,
-    ) -> Result<DdexSequencerContext, Box<dyn Error>> {
+    ) -> DdexSequencerContext {
         let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
         let result = DdexSequencerContext { contract };
-        Ok(result)
+        result
     }
 
     pub async fn submit_proof(
         &self,
         journal: Vec<u8>,
         seal: Vec<u8>,
-    ) -> Result<TransactionReceipt, Box<dyn Error>> {
+    ) -> anyhow::Result<TransactionReceipt> {
         let receipt = self
             .contract
             .submitProof(journal.into(), seal.into())
             .send()
             .await?
             .get_receipt()
-            .await
-            .unwrap();
+            .await?;
 
-        println!("{receipt:?}");
+        sentry::configure_scope(|scope| {
+            scope.set_extra("transaction", json!(receipt));
+        });
+
+        log_info!("Success!");
+        log_info!("--From: {}", receipt.from.to_string());
+        log_info!("--To: {}", receipt.to.unwrap_or_default().to_string());
+        log_info!(
+            "--ContractAddress: {}",
+            receipt.contract_address.unwrap_or_default().to_string()
+        );
+
+        log_info!("--TxHash: {}", receipt.transaction_hash.to_string());
+        log_info!("--GasPrice: {}", receipt.blob_gas_price.unwrap_or_default());
+        log_info!("--EffGasPrice: {}", receipt.effective_gas_price.to_string());
+        log_info!("--GasUsed: {}", receipt.blob_gas_used.unwrap_or_default());
 
         Ok(receipt)
     }
 
-    fn commitment_to_blobhash(commitment: &Bytes) -> Result<FixedBytes<32>, Box<dyn Error>> {
+    fn commitment_to_blobhash(commitment: &Bytes) -> FixedBytes<32> {
         let mut hasher = Sha256::new();
         hasher.update(commitment);
         let mut hashed_commitment = hasher.finalize();
@@ -107,30 +123,34 @@ impl DdexSequencerContext<'_> {
         let mut fixed_bytes_input: [u8; 32] = [0u8; 32];
         fixed_bytes_input.copy_from_slice(&hashed_commitment);
 
-        Ok(FixedBytes::<32>::from(fixed_bytes_input))
+        FixedBytes::<32>::from(fixed_bytes_input)
     }
 
     async fn get_parent_beacon_block_root(
         &self,
         block_number: u64,
-    ) -> Result<FixedBytes<32>, Box<dyn Error>> {
+    ) -> anyhow::Result<FixedBytes<32>> {
         let parent_beacon_block_root = self
             .contract
             .provider()
             .get_block_by_number(BlockNumberOrTag::Number(block_number), true)
             .await?
-            .ok_or_else(|| return Box::new(OwValidatorNodeError::BlockNotFound(block_number)))?
+            .ok_or_else(|| {
+                format_error!("Block {} not found", block_number)
+                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
+            })?
             .header
             .parent_beacon_block_root
-            .ok_or_else(|| return Box::new(OwValidatorNodeError::BlockNotFound(block_number)))?;
+            .ok_or_else(|| {
+                format_error!("Block {} not found", block_number)
+                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
+            })?;
 
         Ok(parent_beacon_block_root)
     }
 
-    pub async fn subscribe_to_queue(
-        &self,
-        config: &Config,
-    ) -> Result<QueueHeadData, Box<dyn Error>> {
+    pub async fn subscribe_to_queue(&self, config: &Config) -> anyhow::Result<QueueHeadData> {
+        log_info!("Subscribing to queue");
         let ws_url = WsConnect::new(&config.ws_url);
         let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
 
@@ -138,7 +158,7 @@ impl DdexSequencerContext<'_> {
             .address(constants::DDEX_SEQUENCER_ADDRESS)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE);
 
-        println!("Subscribed to queue, waiting for new blobs...");
+        log_info!("Subscribed to queue, waiting for new blobs...");
         let subscription = ws_provider.subscribe_logs(&filter).await?;
         let mut stream = subscription.into_stream();
 
@@ -148,9 +168,9 @@ impl DdexSequencerContext<'_> {
         while let Some(log) = stream.next().await {
             println!("New blob detected!");
             let DdexSequencer::NewBlobSubmitted { commitment } = log.log_decode()?.inner.data;
-            let block_number = log.block_number.ok_or_else(|| {
-                return Box::new(OwValidatorNodeError::BlockNotFoundInLog());
-            })?;
+            let block_number = log
+                .block_number
+                .ok_or_else(|| format_error!("Block not found in log"))?;
             parent_beacon_block_root = self.get_parent_beacon_block_root(block_number).await?;
             queue_head_commitment = commitment;
             *config.start_block.borrow_mut() = block_number;
@@ -166,7 +186,7 @@ impl DdexSequencerContext<'_> {
         &self,
         config: &Config,
         queue_head: FixedBytes<32>,
-    ) -> Result<QueueHeadData, Box<dyn Error>> {
+    ) -> anyhow::Result<QueueHeadData> {
         let filter = Filter::new()
             .address(constants::DDEX_SEQUENCER_ADDRESS)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
@@ -182,11 +202,11 @@ impl DdexSequencerContext<'_> {
                 Some(&DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH) => {
                     let DdexSequencer::NewBlobSubmitted { commitment } =
                         log.log_decode()?.inner.data;
-                    let current_blobhash = Self::commitment_to_blobhash(&commitment)?;
+                    let current_blobhash = Self::commitment_to_blobhash(&commitment);
                     if queue_head == current_blobhash {
-                        let block_number = log.block_number.ok_or_else(|| {
-                            return Box::new(OwValidatorNodeError::BlockNotFoundInLog());
-                        })?;
+                        let block_number = log
+                            .block_number
+                            .ok_or_else(|| format_error!("Block not found in log"))?;
                         parent_beacon_block_root =
                             self.get_parent_beacon_block_root(block_number).await?;
                         queue_head_commitment = commitment;
@@ -200,8 +220,10 @@ impl DdexSequencerContext<'_> {
         if parent_beacon_block_root == FixedBytes::<32>::new([0u8; 32])
             || queue_head_commitment == Bytes::new()
         {
-            return Err(Box::new(OwValidatorNodeError::QueueHeadNotFound()));
+            // return Err(OwValidatorNodeError::QueueHeadNotFound());
+            return Err(format_error!("Queue head not found"));
         }
+
         Ok(QueueHeadData {
             parent_beacon_block_root,
             commitment: queue_head_commitment,

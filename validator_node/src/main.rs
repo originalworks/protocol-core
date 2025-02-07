@@ -1,22 +1,15 @@
-use std::error::Error;
-use std::process;
-use validator_node::{run, Config};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let config = Config::build();
-
-    run(config).await?;
-
-    Ok(())
-}
+use anyhow::Context;
+use log_macros::log_error;
+use sentry::{ClientInitGuard, User};
+use serde_json::json;
+use validator_node::Config;
 
 fn init_sentry(config: &Config) -> ClientInitGuard {
     sentry::init(("https://bfe1b70cabd02efab4e7045fb803bc79@o4508699010859008.ingest.de.sentry.io/4508777331359824",
         sentry::ClientOptions {
             environment: Some(config.environment.to_owned().into()),
             release: sentry::release_name!(),
-            attach_stacktrace: false,
+            attach_stacktrace: true,
             auto_session_tracking: true,
             ..Default::default()
         },
@@ -35,7 +28,7 @@ fn init_logging() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run(config: Config) -> Result<()> {
+async fn init(config: Config) -> anyhow::Result<()> {
     sentry::configure_scope(|scope| {
         scope.set_user(Some(User {
             username: Some(config.username.to_owned()),
@@ -43,20 +36,12 @@ async fn run(config: Config) -> Result<()> {
         }));
 
         let mut cloned_config = config.clone();
-        cloned_config.pinata_jwt = "***".to_string();
         cloned_config.private_key = "***".to_string();
         scope.set_extra("config", json!(cloned_config));
     });
 
-    owen_cli::run(&config).await.map_err(|e| {
+    validator_node::run(&config).await.map_err(|e| {
         sentry::configure_scope(|scope| {
-            scope.set_tag("error_type", {
-                if e.is::<ParserError>() {
-                    "parser"
-                } else {
-                    "other"
-                }
-            });
             scope.set_extra("error_object", json!(format!("{e:#?}")));
         });
 
@@ -73,7 +58,6 @@ fn main() -> anyhow::Result<()> {
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .build()
-        .unwrap()
-        .block_on(run(config))
+        .build()?
+        .block_on(init(config))
 }
