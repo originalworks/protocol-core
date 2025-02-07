@@ -1,6 +1,6 @@
 use alloy_sol_types::SolValue;
 use blob_codec::BlobCodec;
-use ddex_schema::ddex_parse_json_reader;
+use ddex_schema::DdexParser;
 use prover_interface::{ProvedMessage, ProverPublicOutputs};
 use risc0_zkvm::guest::env;
 use std::io::{Cursor, Read};
@@ -46,7 +46,7 @@ fn main() {
 
     for message in messages {
         reader = Cursor::new(&message);
-        let parsed = ddex_parse_json_reader(reader).unwrap();
+        let parsed = DdexParser::from_json_reader(reader).unwrap();
         results.push(ProvedMessage::from_ddex(parsed));
     }
 
