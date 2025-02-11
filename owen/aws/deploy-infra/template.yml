@@ -1,0 +1,148 @@
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  MessagesBucketName:
+    Type: String
+  MessageStatusTableName:
+    Type: String
+
+Resources:
+  NewUploadsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 10
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt NewUploadsDeadLetterQueue.Arn
+        maxReceiveCount: 1
+
+  NewUploadsDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600 # 20160 min | 336 h | 14 days
+
+  MessagesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref MessagesBucketName
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
+
+  NewUploadEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - Object Created
+        resources:
+          - !GetAtt MessagesBucket.Arn
+        detail:
+          object:
+            key:
+              - { "wildcard": "*BatchComplete_*" }
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt NewUploadsQueue.Arn
+          Id: NewUploadsQueueTarget
+
+  NewUploadsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - Ref: NewUploadsQueue
+        - Ref: NewUploadsDeadLetterQueue
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt NewUploadsQueue.Arn
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !GetAtt NewUploadEventRule.Arn
+
+  OwenLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../target/lambda/owen_cli
+      Runtime: "provided.al2023"
+      Architectures:
+        - x86_64
+      Handler: bootstrap
+      MemorySize: 128
+      Timeout: 20
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:Query
+              Resource:
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}/index/*"
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:ListBucket
+              Resource:
+                - !GetAtt MessagesBucket.Arn
+                - !Sub "${MessagesBucket.Arn}/*"
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(2 minutes)
+
+  QueueConsumerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../../aws-queue-consumer/target/lambda/queue-consumer
+      Runtime: "provided.al2023"
+      Architectures:
+        - x86_64
+      Handler: bootstrap
+      MemorySize: 128
+      Environment:
+        Variables:
+          MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: "dynamodb:PutItem"
+              Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
+      Events:
+        NewMessageSQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NewUploadsQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 3
+
+  MessageStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref MessageStatusTableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: messageFolder
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+        - AttributeName: processingStatus
+          AttributeType: S
+      KeySchema:
+        - AttributeName: messageFolder
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: processingStatus
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
