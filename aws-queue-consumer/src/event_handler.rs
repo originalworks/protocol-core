@@ -7,7 +7,7 @@ use chrono::Utc;
 use lambda_runtime::{tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EventBodyObject {
@@ -73,12 +73,12 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
 
 fn prepare_item(event_body_string: &String) -> Result<HashMap<String, AttributeValue>, Error> {
     let event_body: EventBody = serde_json::from_str(event_body_string.as_str())?;
-    let (message_folder, _) = event_body
-        .detail
-        .object
-        .key
-        .split_once("/BatchComplete_")
-        .expect("Could not find delimiter in object key!");
+    let s3_path = Path::new(&event_body.detail.object.key);
+    let message_folder = s3_path
+        .parent()
+        .expect("Message uploaded to root folder")
+        .to_str()
+        .expect("Couldn't parse message folder string");
 
     let mut item: HashMap<String, AttributeValue> = HashMap::new();
 

@@ -5,12 +5,16 @@ Parameters:
     Type: String
   MessageStatusTableName:
     Type: String
+  TriggerFilePattern:
+    Type: String
+  OwenLambdaScheduleRateMin:
+    Type: String
 
 Resources:
   NewUploadsQueue:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 10
+      VisibilityTimeout: 240
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt NewUploadsDeadLetterQueue.Arn
         maxReceiveCount: 1
@@ -42,7 +46,7 @@ Resources:
         detail:
           object:
             key:
-              - { "wildcard": "*BatchComplete_*" }
+              - { "wildcard": !Sub "*${TriggerFilePattern}*" }
       State: ENABLED
       Targets:
         - Arn: !GetAtt NewUploadsQueue.Arn
@@ -68,7 +72,7 @@ Resources:
   OwenLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../target/lambda/owen_cli
+      CodeUri: ../../target/lambda/owen_lambda
       Runtime: "provided.al2023"
       Architectures:
         - x86_64
@@ -95,7 +99,7 @@ Resources:
         Schedule:
           Type: Schedule
           Properties:
-            Schedule: rate(2 minutes)
+            Schedule: !Sub "rate(${OwenLambdaScheduleRateMin} minutes)"
 
   QueueConsumerLambda:
     Type: AWS::Serverless::Function

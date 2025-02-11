@@ -2,7 +2,7 @@
 name = "owen_cli"
 version = "0.2.1"
 edition = "2021"
-default-run = "main_bin"
+default-run = "main"
 
 [dependencies]
 reqwest = { version = "0.12.8", features = ["stream", "multipart", "json"] }
@@ -35,7 +35,7 @@ aws-sdk-dynamodb = { version = "1.64.0", optional = true }
 aws-sdk-s3 = { version = "1.74.0", optional = true }
 
 [features]
-owen-aws-lambda = [
+aws-integration = [
     "dep:aws_lambda_events",
     "dep:lambda_runtime",
     "dep:aws-config",
@@ -44,10 +44,10 @@ owen-aws-lambda = [
 ]
 
 [[bin]]
-name = "main_bin"
+name = "main"
 path = "src/main.rs"
 
 [[bin]]
-name = "aws_lambda_bin"
+name = "owen_lambda"
 path = "src/aws-lambda/entrypoint.rs"
-required-features = ["owen-aws-lambda"]
+required-features = ["aws-integration"]
