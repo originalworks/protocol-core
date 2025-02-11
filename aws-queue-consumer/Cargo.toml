@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-
 aws-config = { version = "1.5.16", features = ["behavior-version-latest"] }
 aws-sdk-dynamodb = "1.64.0"
 aws_lambda_events = { version = "0.15.1", default-features = false, features = [
