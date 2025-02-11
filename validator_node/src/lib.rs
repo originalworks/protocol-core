@@ -6,7 +6,7 @@ mod ipfs;
 mod prover_wrapper;
 
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{Bytes, FixedBytes};
+use alloy::primitives::{Address, Bytes, FixedBytes};
 use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
@@ -17,6 +17,16 @@ use ddex_sequencer::{DdexSequencerContext, QueueHeadData};
 use std::cell::RefCell;
 use std::env;
 use std::error::Error;
+use std::str::FromStr;
+
+pub fn is_local() -> bool {
+    matches!(
+        std::env::var("LOCAL")
+            .unwrap_or_else(|_| "false".to_string())
+            .as_str(),
+        "1" | "true"
+    )
+}
 
 pub struct Config {
     pub rpc_url: String,
@@ -24,6 +34,7 @@ pub struct Config {
     pub ws_url: String,
     pub start_block: RefCell<u64>,
     pub private_key: String,
+    pub ddex_sequencer_address: Address,
     pub provider: FillProvider<
         JoinFill<
             JoinFill<
@@ -52,6 +63,13 @@ impl Config {
     }
 
     pub fn build() -> Result<Config, Box<dyn Error>> {
+        if is_local() {
+            println!("Running local setup");
+            dotenvy::from_filename(".env.local").unwrap();
+        } else {
+            dotenvy::dotenv().ok();
+        }
+
         let private_key = Config::get_env_var("PRIVATE_KEY")?;
         let rpc_url = Config::get_env_var("RPC_URL")?;
         let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL")?;
@@ -67,6 +85,13 @@ impl Config {
             .wallet(wallet)
             .on_http(rpc_url.parse().expect("RPC_URL parsing error:"));
 
+        let ddex_sequencer_address = Address::from_str(
+            std::env::var("DDEX_SEQUENCER_ADDRESS")
+                .unwrap_or_else(|_| constants::DDEX_SEQUENCER_ADDRESS.to_string())
+                .as_str(),
+        )
+        .expect("Could not parse ddex sequencer address");
+
         Ok(Config {
             rpc_url,
             beacon_rpc_url,
@@ -74,6 +99,7 @@ impl Config {
             start_block,
             private_key,
             provider,
+            ddex_sequencer_address,
         })
     }
 }
@@ -130,8 +156,11 @@ async fn validate_blobs(
 }
 
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let ddex_sequencer_context =
-        ddex_sequencer::DdexSequencerContext::build(&config.provider).await?;
+    let ddex_sequencer_context = ddex_sequencer::DdexSequencerContext::build(
+        &config.provider,
+        config.ddex_sequencer_address,
+    )
+    .await?;
 
     loop {
         validate_blobs(&config, &ddex_sequencer_context).await?;

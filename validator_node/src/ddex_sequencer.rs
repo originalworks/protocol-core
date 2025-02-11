@@ -1,6 +1,6 @@
-use crate::{constants, errors::OwValidatorNodeError, Config};
+use crate::{errors::OwValidatorNodeError, Config};
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{Bytes, FixedBytes};
+use alloy::primitives::{Address, Bytes, FixedBytes};
 use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
@@ -73,8 +73,9 @@ impl DdexSequencerContext<'_> {
             alloy::transports::http::Http<reqwest::Client>,
             Ethereum,
         >,
+        ddex_asquencer_address: Address,
     ) -> Result<DdexSequencerContext, Box<dyn Error>> {
-        let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
+        let contract = DdexSequencer::new(ddex_asquencer_address, provider);
         let result = DdexSequencerContext { contract };
         Ok(result)
     }
@@ -135,7 +136,7 @@ impl DdexSequencerContext<'_> {
         let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
 
         let filter = Filter::new()
-            .address(constants::DDEX_SEQUENCER_ADDRESS)
+            .address(config.ddex_sequencer_address)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE);
 
         println!("Subscribed to queue, waiting for new blobs...");
@@ -168,7 +169,7 @@ impl DdexSequencerContext<'_> {
         queue_head: FixedBytes<32>,
     ) -> Result<QueueHeadData, Box<dyn Error>> {
         let filter = Filter::new()
-            .address(constants::DDEX_SEQUENCER_ADDRESS)
+            .address(config.ddex_sequencer_address)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
             .from_block(*config.start_block.borrow());
 
