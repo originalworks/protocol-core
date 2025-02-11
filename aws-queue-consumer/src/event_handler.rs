@@ -79,8 +79,6 @@ fn prepare_item(event_body_string: &String) -> Result<HashMap<String, AttributeV
         .expect("Message uploaded to root folder")
         .to_str()
         .expect("Couldn't parse message folder string");
-    // .split_once("/BatchComplete_")
-    // .expect("Could not find delimiter in object key!");
 
     let mut item: HashMap<String, AttributeValue> = HashMap::new();
 
