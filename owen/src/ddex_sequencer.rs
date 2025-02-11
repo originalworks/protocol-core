@@ -1,6 +1,6 @@
 use crate::blob::BlobTransactionData;
 use crate::constants;
-use alloy::primitives::FixedBytes;
+use alloy::primitives::{Address, FixedBytes};
 use alloy::sol_types::private::Bytes;
 use alloy::{
     network::{Ethereum, EthereumWallet},
@@ -62,9 +62,10 @@ impl DdexSequencerContext<'_> {
             Http<Client>,
             Ethereum,
         >,
+        ddex_sequencer_address: Address,
     ) -> anyhow::Result<DdexSequencerContext> {
         log_info!("Creating DdexSequencerContext...");
-        let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
+        let contract = DdexSequencer::new(ddex_sequencer_address, provider);
         let result = DdexSequencerContext { contract };
         Ok(result)
     }
