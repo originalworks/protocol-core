@@ -8,7 +8,7 @@ dataSources:
     name: DdexEmitter
     network: holesky
     source:
-      address: "0xE20B5eBa1159afCAD3f846a716A060858e9A4fB2"
+      address: "0x5282076BAC9a9D3df0d66fb2F83e5A51B4153FB5"
       abi: DdexEmitter
       startBlock: 3164428
     mapping:
@@ -22,5 +22,5 @@ dataSources:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: BlobProcessed((bool,bytes32,(string)[]))
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))
           handler: handleBlobProcessed
