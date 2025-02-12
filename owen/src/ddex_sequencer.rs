@@ -1,5 +1,5 @@
 use crate::blob::BlobTransactionData;
-use crate::constants;
+use crate::is_local;
 use alloy::primitives::{Address, FixedBytes};
 use alloy::sol_types::private::Bytes;
 use alloy::{
@@ -72,17 +72,21 @@ impl DdexSequencerContext<'_> {
 
     pub async fn send_blob(&self, transaction_data: BlobTransactionData) -> anyhow::Result<()> {
         log_info!("Sending tx...");
-        let receipt = self
+        let mut tx_builder = self
             .contract
             .submitNewBlob(
                 Bytes::from(transaction_data.kzg_commitment.to_vec()),
                 FixedBytes::<32>::from(transaction_data.blob_sha2),
             )
-            .sidecar(transaction_data.blob_sidecar)
-            .send()
-            .await?
-            .get_receipt()
-            .await?;
+            .sidecar(transaction_data.blob_sidecar);
+
+        if is_local() {
+            tx_builder = tx_builder
+                .max_priority_fee_per_gas(500000000)
+                .max_fee_per_gas(500000001);
+        }
+
+        let receipt = tx_builder.send().await?.get_receipt().await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));

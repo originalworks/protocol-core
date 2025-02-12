@@ -60,9 +60,11 @@ export async function deployFixture(
   _console.log("Deploying DdexEmitter...");
   let riscZeroGroth16VerifierAddress: string;
   if (input.fakeRisc0Groth16Verifier) {
+    _console.log("Deploying fake verifier...");
     const fakeVerifier = await deployFakeVerifier(input.deployer);
     riscZeroGroth16VerifierAddress = await fakeVerifier.getAddress();
   } else {
+    _console.log("Deploying real verifier...");
     const riscZeroGroth16VerifierOutput = await deployRiscZeroGroth16Verifier(
       input.deployer
     );

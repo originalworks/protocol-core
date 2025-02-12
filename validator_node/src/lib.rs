@@ -1,22 +1,22 @@
 mod beacon_chain;
 mod constants;
 mod ddex_sequencer;
-mod errors;
 mod ipfs;
 mod prover_wrapper;
 
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{Address, Bytes, FixedBytes};
+use alloy::primitives::Address;
 use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
 use alloy::providers::{ProviderBuilder, RootProvider};
 use alloy::signers::local::PrivateKeySigner;
 use constants::EMPTY_QUEUE_HEAD;
-use ddex_sequencer::{DdexSequencerContext, QueueHeadData};
+use ddex_sequencer::DdexSequencerContext;
+use log_macros::{log_debug, log_error, log_info};
+use serde_json::json;
 use std::cell::RefCell;
 use std::env;
-use std::error::Error;
 use std::str::FromStr;
 
 pub fn is_local() -> bool {
@@ -28,13 +28,18 @@ pub fn is_local() -> bool {
     )
 }
 
+#[derive(Debug, serde::Serialize, Clone)]
 pub struct Config {
     pub rpc_url: String,
     pub beacon_rpc_url: String,
     pub ws_url: String,
     pub start_block: RefCell<u64>,
     pub private_key: String,
+    pub environment: String,
+    pub username: String,
+    pub segment_limit_po2: u32,
     pub ddex_sequencer_address: Address,
+    #[serde(skip_serializing)]
     pub provider: FillProvider<
         JoinFill<
             JoinFill<
@@ -56,13 +61,11 @@ pub struct Config {
 }
 
 impl Config {
-    fn get_env_var(key: &str) -> Result<String, Box<dyn Error>> {
-        env::var(key).map_err(|err| {
-            format!("Error getting environment variable `{}`: {:?}", key, err).into()
-        })
+    fn get_env_var(key: &str) -> String {
+        env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
 
-    pub fn build() -> Result<Config, Box<dyn Error>> {
+    pub fn build() -> Config {
         if is_local() {
             println!("Running local setup");
             dotenvy::from_filename(".env.local").unwrap();
@@ -70,20 +73,28 @@ impl Config {
             dotenvy::dotenv().ok();
         }
 
-        let private_key = Config::get_env_var("PRIVATE_KEY")?;
-        let rpc_url = Config::get_env_var("RPC_URL")?;
-        let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL")?;
-        let ws_url = Config::get_env_var("WS_URL")?;
-        let start_block = RefCell::new(Config::get_env_var("START_BLOCK")?.parse::<u64>()?);
-
+        let private_key = Config::get_env_var("PRIVATE_KEY");
+        let rpc_url = Config::get_env_var("RPC_URL");
+        let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL");
+        let ws_url = Config::get_env_var("WS_URL");
+        let start_block = RefCell::new(
+            Config::get_env_var("START_BLOCK")
+                .parse::<u64>()
+                .expect("Failed to parse START_BLOCK"),
+        );
+        let environment = Config::get_env_var("ENVIRONMENT");
+        let username = Config::get_env_var("USERNAME");
         let private_key_signer: PrivateKeySigner =
-            private_key.parse().expect("Failed to parse PRIVATE_KEY:");
+            private_key.parse().expect("Failed to parse PRIVATE_KEY");
         let wallet = EthereumWallet::from(private_key_signer);
-
+        let segment_limit_po2: u32 = env::var("SEGMENT_LIMIT_PO2")
+            .unwrap_or_else(|_| "18".to_string())
+            .parse()
+            .expect("Failed to parse SEGMENT_LIMIT_PO2");
         let provider = ProviderBuilder::new()
             .with_recommended_fillers()
             .wallet(wallet)
-            .on_http(rpc_url.parse().expect("RPC_URL parsing error:"));
+            .on_http(rpc_url.parse().expect("RPC_URL parsing error"));
 
         let ddex_sequencer_address = Address::from_str(
             std::env::var("DDEX_SEQUENCER_ADDRESS")
@@ -92,22 +103,30 @@ impl Config {
         )
         .expect("Could not parse ddex sequencer address");
 
-        Ok(Config {
+        Config {
             rpc_url,
             beacon_rpc_url,
             ws_url,
             start_block,
             private_key,
             provider,
+            environment,
+            username,
+            segment_limit_po2,
             ddex_sequencer_address,
-        })
+        }
     }
 }
 
 async fn validate_blobs(
     config: &Config,
     ddex_sequencer_context: &DdexSequencerContext<'_>,
-) -> Result<(), Box<dyn Error>> {
+) -> anyhow::Result<()> {
+    let tx_context = sentry::TransactionContext::new("blob_processing", "process_blob");
+    let tx = sentry::start_transaction(tx_context);
+
+    let mut span = tx.start_child("queue_head_processing", "Get queue head data");
+
     let queue_head = ddex_sequencer_context
         .contract
         .blobQueueHead()
@@ -115,18 +134,24 @@ async fn validate_blobs(
         .await?
         ._0;
 
-    let mut queue_head_data: QueueHeadData = QueueHeadData {
-        commitment: Bytes::new(),
-        parent_beacon_block_root: FixedBytes::<32>::new([0u8; 32]),
-    };
+    let queue_head_data;
 
     if queue_head == EMPTY_QUEUE_HEAD {
+        log_info!("Queue head is empty");
         queue_head_data = ddex_sequencer_context.subscribe_to_queue(&config).await?;
     } else {
+        log_info!("Queue head points to {}", queue_head.to_string());
         queue_head_data = ddex_sequencer_context
             .get_queue_head_data(&config, queue_head)
             .await?;
     }
+
+    log_debug!("**Queue head data: {}", json!(queue_head_data));
+
+    span.finish();
+
+    span = tx.start_child("blob_discovery", "Get blob");
+
     let blob = beacon_chain::find_blob(
         &config.beacon_rpc_url,
         queue_head_data.commitment,
@@ -134,6 +159,7 @@ async fn validate_blobs(
     )
     .await?;
 
+    span.finish();
     // let ipfs_cids = ddex_messages_data
     //     .iter()
     //     .map(|emittable_values| emittable_values.image_ipfs_cid.clone())
@@ -141,28 +167,52 @@ async fn validate_blobs(
 
     // ipfs::check_file_accessibility(ipfs_cids).await?;
 
-    let prover_run_results = prover_wrapper::run(&blob.into())?;
+    span = tx.start_child("proving", "Proving");
 
-    println!("sending tx...");
-    let receipt = ddex_sequencer_context
+    let prover_run_results = prover_wrapper::run(&blob.into(), config.segment_limit_po2)?;
+
+    span.finish();
+
+    log_info!("Sending tx...");
+    span = tx.start_child("transaction_sending", "Sending transaction");
+
+    let _ = ddex_sequencer_context
         .submit_proof(
             prover_run_results.journal.into(),
             prover_run_results.seal.into(),
         )
         .await?;
 
-    println!("Receipt tx hash: {}", receipt.transaction_hash);
+    span.finish();
+    tx.finish();
+
     Ok(())
 }
 
-pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub async fn run(config: &Config) -> anyhow::Result<()> {
     let ddex_sequencer_context = ddex_sequencer::DdexSequencerContext::build(
         &config.provider,
         config.ddex_sequencer_address,
     )
-    .await?;
+    .await;
+
+    let mut consecutive_error_ct = 0;
+    let threshold = 5;
 
     loop {
-        validate_blobs(&config, &ddex_sequencer_context).await?;
+        if consecutive_error_ct == threshold {
+            return Err(log_error!(
+                "{} consecutive errors occured. Proccess has been terminated",
+                threshold
+            ));
+        }
+
+        let res = validate_blobs(&config, &ddex_sequencer_context).await;
+        if let Err(e) = res {
+            log_error!("{e}");
+            consecutive_error_ct += 1;
+        } else {
+            consecutive_error_ct = 0;
+        }
     }
 }
