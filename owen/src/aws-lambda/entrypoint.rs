@@ -1,10 +1,12 @@
 mod message_queue;
 mod message_storage;
+
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
 use lambda_runtime::{run, service_fn, tracing, Error, LambdaEvent};
 use message_queue::MessageQueue;
 use message_storage::MessageStorage;
+use std::fs;
 
 async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Error> {
     let payload = event.payload;
@@ -21,7 +23,15 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
 
     let message_folders = queue.get_message_folders().await.unwrap();
 
-    println!("test 123 elo {message_folders:?}");
+    storage.sync_message_folders(message_folders).await.unwrap();
+
+    let directories_tmp: Vec<String> = fs::read_dir("/tmp")
+        .unwrap()
+        .into_iter()
+        .map(|dir| dir.unwrap().path().to_string_lossy().to_string())
+        .collect();
+
+    println!("synced directories: {directories_tmp:?}");
 
     Ok(())
 }
