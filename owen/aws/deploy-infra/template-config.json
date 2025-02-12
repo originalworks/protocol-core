@@ -1,0 +1,8 @@
+{
+    "Parameters": {
+        "MessagesBucketName": "test-messages-bucket",
+        "MessageStatusTableName": "MessageStatusTable",
+        "TriggerFilePattern": "BatchComplete_",
+        "OwenLambdaScheduleRateMin": "2"
+    }
+}

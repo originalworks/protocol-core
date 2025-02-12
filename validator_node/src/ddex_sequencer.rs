@@ -1,3 +1,4 @@
+use crate::{errors::OwValidatorNodeError, Config};
 use crate::{is_local, Config};
 use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::{Address, Bytes, FixedBytes};
