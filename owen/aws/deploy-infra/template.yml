@@ -9,6 +9,22 @@ Parameters:
     Type: String
   OwenLambdaScheduleRateMin:
     Type: String
+  ProcessingStatusIndexName:
+    Type: String
+  MessageFolderAttributeName:
+    Type: String
+  ProcessingStatusAttributeName:
+    Type: String
+  CreatedTimestampAttributeName:
+    Type: String
+  UpdatedTimestampAttributeName:
+    Type: String
+  UnprocessedStatusValue:
+    Type: String
+  ProcessedStatusValue:
+    Type: String
+  MessagePerBlob:
+    Type: String
 
 Resources:
   NewUploadsQueue:
@@ -79,6 +95,16 @@ Resources:
       Handler: bootstrap
       MemorySize: 128
       Timeout: 20
+      Environment:
+        Variables:
+          MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
+          PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
+          MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
+          PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
+          MESSAGES_BUCKET_NAME: !Ref MessagesBucketName
+          UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
+          PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
+          MESSAGES_PER_BLOB: !Ref MessagePerBlob
       Policies:
         - Statement:
             - Effect: Allow
@@ -113,6 +139,11 @@ Resources:
       Environment:
         Variables:
           MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
+          UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
+          CREATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref CreatedTimestampAttributeName
+          UPDATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref UpdatedTimestampAttributeName
+          MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
+          PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
       Policies:
         - Statement:
             - Effect: Allow
@@ -132,21 +163,21 @@ Resources:
       TableName: !Ref MessageStatusTableName
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: messageFolder
+        - AttributeName: !Ref MessageFolderAttributeName
           AttributeType: S
-        - AttributeName: timestamp
+        - AttributeName: !Ref CreatedTimestampAttributeName
           AttributeType: N
-        - AttributeName: processingStatus
+        - AttributeName: !Ref ProcessingStatusAttributeName
           AttributeType: S
       KeySchema:
-        - AttributeName: messageFolder
+        - AttributeName: !Ref MessageFolderAttributeName
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: StatusIndex
+        - IndexName: !Ref ProcessingStatusIndexName
           KeySchema:
-            - AttributeName: processingStatus
+            - AttributeName: !Ref ProcessingStatusAttributeName
               KeyType: HASH
-            - AttributeName: timestamp
+            - AttributeName: !Ref CreatedTimestampAttributeName
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

@@ -28,8 +28,7 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
     let payload = event.payload;
     tracing::info!("Payload: {:?}", payload);
 
-    let queue_consumer_config =
-        queue_consumer::Config::build().expect("Error while loading queue_consumer config");
+    let queue_consumer_config = queue_consumer::Config::build();
 
     let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
     let aws_config = aws_config::defaults(BehaviorVersion::latest())
@@ -43,13 +42,16 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
             .body
             .as_ref()
             .expect("Event's record body is empty!");
-        let item = prepare_item(event_body_string)?;
+        let item = prepare_item(event_body_string, &queue_consumer_config)?;
 
         let resp = dynamo_client
             .put_item()
             .table_name(queue_consumer_config.message_status_table_name.as_str())
             .set_item(Some(item))
-            .condition_expression("attribute_not_exists(messageFolder)")
+            .condition_expression(format!(
+                "attribute_not_exists({})",
+                &queue_consumer_config.message_folder_attribute_name
+            ))
             .send()
             .await;
 
@@ -71,7 +73,10 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
     Ok(())
 }
 
-fn prepare_item(event_body_string: &String) -> Result<HashMap<String, AttributeValue>, Error> {
+fn prepare_item(
+    event_body_string: &String,
+    config: &queue_consumer::Config,
+) -> Result<HashMap<String, AttributeValue>, Error> {
     let event_body: EventBody = serde_json::from_str(event_body_string.as_str())?;
     let s3_path = Path::new(&event_body.detail.object.key);
     let message_folder = s3_path
@@ -83,17 +88,21 @@ fn prepare_item(event_body_string: &String) -> Result<HashMap<String, AttributeV
     let mut item: HashMap<String, AttributeValue> = HashMap::new();
 
     item.insert(
-        "messageFolder".to_string(),
+        config.message_folder_attribute_name.to_string(),
         AttributeValue::S(message_folder.to_string()),
     );
 
     item.insert(
-        "timestamp".to_string(),
+        config.created_timestamp_attribute_name.to_string(),
         AttributeValue::N(Utc::now().timestamp_millis().to_string()),
     );
     item.insert(
-        "processingStatus".to_string(),
-        AttributeValue::S("unprocessed".to_string()),
+        config.updated_timestamp_attribute_name.to_string(),
+        AttributeValue::N(Utc::now().timestamp_millis().to_string()),
+    );
+    item.insert(
+        config.processing_status_attribute_name.to_string(),
+        AttributeValue::S(config.unprocessed_status_value.to_string()),
     );
 
     Ok(item)
