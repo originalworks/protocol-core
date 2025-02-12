@@ -3,6 +3,14 @@
         "MessagesBucketName": "test-messages-bucket",
         "MessageStatusTableName": "MessageStatusTable",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "2"
+        "OwenLambdaScheduleRateMin": "2",
+        "ProcessingStatusIndexName": "ProcessingStatusIndex",
+        "MessageFolderAttributeName": "messageFolder",
+        "ProcessingStatusAttributeName": "processingStatus",
+        "CreatedTimestampAttributeName": "createdTimestamp",
+        "UpdatedTimestampAttributeName": "updatedTimestamp",
+        "UnprocessedStatusValue": "unprocessed",
+        "ProcessedStatusValue": "processed",
+        "MessagePerBlob": "10"
     }
 }
