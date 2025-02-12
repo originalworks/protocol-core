@@ -6,7 +6,7 @@ set -e
 # Define the relative paths
 CONTRACTS_DIR="../contracts"
 OWEN_CLI_DIR="./owen_cli"
-OWEN_CLI_BINARY="./target/release/owen_cli"
+OWEN_CLI_BINARY="./target/release/main"
 OUTPUT_ZIP="./owen_cli.zip"
 
 # Colors for output
@@ -161,7 +161,7 @@ cd - > /dev/null
 #####################################
 # Build the Rust binary
 echo "Building the owen_cli binary..."
-cargo build --release --bin owen_cli
+cargo build --release --bin main
 if [ $? -ne 0 ]; then
   echo "Error: Rust binary build failed."
   exit 1
