@@ -275,6 +275,8 @@ fn print_output(output: &Vec<MessageDirProcessingContext>) -> anyhow::Result<()>
 mod tests {
     use std::str::FromStr;
 
+    use alloy::primitives::Address;
+
     use super::*;
 
     fn find_cid_in_file(processing_context: &MessageDirProcessingContext) -> anyhow::Result<bool> {
@@ -296,6 +298,7 @@ mod tests {
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
             username: String::from_str("user").unwrap(),
+            ddex_sequencer_address: Address::ZERO,
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -327,6 +330,7 @@ mod tests {
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
             username: String::from_str("user").unwrap(),
+            ddex_sequencer_address: Address::ZERO,
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 

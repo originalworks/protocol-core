@@ -5,12 +5,13 @@ use serde_json::json;
 use validator_node::Config;
 
 fn init_sentry(config: &Config) -> ClientInitGuard {
-    sentry::init(("https://bfe1b70cabd02efab4e7045fb803bc79@o4508699010859008.ingest.de.sentry.io/4508777331359824",
+    sentry::init(("https://8a5e3e61ac0beb391ad84b32086674df@o4508766269014016.ingest.us.sentry.io/4508805625217024",
         sentry::ClientOptions {
             environment: Some(config.environment.to_owned().into()),
             release: sentry::release_name!(),
             attach_stacktrace: true,
             auto_session_tracking: true,
+            traces_sample_rate: 1.0, // lower it in prod
             ..Default::default()
         },
     ))

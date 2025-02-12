@@ -45,6 +45,7 @@ cp ./owen/.env.example ./owen/.env
 - If you are running a local Kubo IPFS client with Docker, no changes are needed. However, if you run your own full IPFS Kubo client, update this value:
   - `IPFS_KUBO_URL`: Your Kubo IPFS client API URL.
 - `OUTPUT_FILES_DIR`: Path were output files will be saved
+- `DDEX_SEQUENCER_ADDRESS`: Only for local testing. When unset it defaults to hardcoded protocol sequencer
 
 ### 4. Prepare your messages folder:
 

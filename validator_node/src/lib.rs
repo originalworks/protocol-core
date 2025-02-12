@@ -5,6 +5,7 @@ mod ipfs;
 mod prover_wrapper;
 
 use alloy::network::{Ethereum, EthereumWallet};
+use alloy::primitives::Address;
 use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
@@ -16,6 +17,16 @@ use log_macros::{log_debug, log_error, log_info};
 use serde_json::json;
 use std::cell::RefCell;
 use std::env;
+use std::str::FromStr;
+
+pub fn is_local() -> bool {
+    matches!(
+        std::env::var("LOCAL")
+            .unwrap_or_else(|_| "false".to_string())
+            .as_str(),
+        "1" | "true"
+    )
+}
 
 #[derive(Debug, serde::Serialize, Clone)]
 pub struct Config {
@@ -27,6 +38,7 @@ pub struct Config {
     pub environment: String,
     pub username: String,
     pub segment_limit_po2: u32,
+    pub ddex_sequencer_address: Address,
     #[serde(skip_serializing)]
     pub provider: FillProvider<
         JoinFill<
@@ -54,7 +66,13 @@ impl Config {
     }
 
     pub fn build() -> Config {
-        dotenvy::dotenv().ok();
+        if is_local() {
+            println!("Running local setup");
+            dotenvy::from_filename(".env.local").unwrap();
+        } else {
+            dotenvy::dotenv().ok();
+        }
+
         let private_key = Config::get_env_var("PRIVATE_KEY");
         let rpc_url = Config::get_env_var("RPC_URL");
         let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL");
@@ -78,6 +96,13 @@ impl Config {
             .wallet(wallet)
             .on_http(rpc_url.parse().expect("RPC_URL parsing error"));
 
+        let ddex_sequencer_address = Address::from_str(
+            std::env::var("DDEX_SEQUENCER_ADDRESS")
+                .unwrap_or_else(|_| constants::DDEX_SEQUENCER_ADDRESS.to_string())
+                .as_str(),
+        )
+        .expect("Could not parse ddex sequencer address");
+
         Config {
             rpc_url,
             beacon_rpc_url,
@@ -88,6 +113,7 @@ impl Config {
             environment,
             username,
             segment_limit_po2,
+            ddex_sequencer_address,
         }
     }
 }
@@ -97,7 +123,7 @@ async fn validate_blobs(
     ddex_sequencer_context: &DdexSequencerContext<'_>,
 ) -> anyhow::Result<()> {
     let tx_context = sentry::TransactionContext::new("blob_processing", "process_blob");
-    let tx = sentry::Hub::current().start_transaction(tx_context);
+    let tx = sentry::start_transaction(tx_context);
 
     let mut span = tx.start_child("queue_head_processing", "Get queue head data");
 
@@ -150,7 +176,7 @@ async fn validate_blobs(
     log_info!("Sending tx...");
     span = tx.start_child("transaction_sending", "Sending transaction");
 
-    let receipt = ddex_sequencer_context
+    let _ = ddex_sequencer_context
         .submit_proof(
             prover_run_results.journal.into(),
             prover_run_results.seal.into(),
@@ -158,13 +184,17 @@ async fn validate_blobs(
         .await?;
 
     span.finish();
+    tx.finish();
 
     Ok(())
 }
 
 pub async fn run(config: &Config) -> anyhow::Result<()> {
-    let ddex_sequencer_context =
-        ddex_sequencer::DdexSequencerContext::build(&config.provider).await;
+    let ddex_sequencer_context = ddex_sequencer::DdexSequencerContext::build(
+        &config.provider,
+        config.ddex_sequencer_address,
+    )
+    .await;
 
     let mut consecutive_error_ct = 0;
     let threshold = 5;

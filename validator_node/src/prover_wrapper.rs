@@ -1,5 +1,4 @@
 use alloy_sol_types::SolValue;
-use anyhow::Context;
 use core::str;
 use log_macros::log_info;
 use prover::{ProverPublicOutputs, DDEX_GUEST_ELF};
@@ -41,10 +40,13 @@ pub fn run(blob: &Vec<u8>, segment_limit_po2: u32) -> anyhow::Result<ProverRunRe
     log_info!("Proving...");
     let timer = StopWatch::start();
 
-    let env = ExecutorEnv::builder()
-        .segment_limit_po2(segment_limit_po2)
-        .write_slice(blob)
-        .build()?;
+    let mut env_builder = ExecutorEnv::builder();
+
+    if segment_limit_po2 != 0 {
+        env_builder.segment_limit_po2(segment_limit_po2);
+    }
+
+    let env = env_builder.write_slice(blob).build()?;
 
     let prover = default_prover();
 
@@ -54,8 +56,7 @@ pub fn run(blob: &Vec<u8>, segment_limit_po2: u32) -> anyhow::Result<ProverRunRe
             &VerifierContext::default(),
             DDEX_GUEST_ELF,
             &ProverOpts::groth16(),
-        )
-        .with_context(|| "Prover failed")?
+        )?
         .receipt;
 
     let seal = encode_seal(&receipt)?;

@@ -62,6 +62,11 @@ cp .env.template .env
 - `WS_URL`: Your websocket endpoint pointing to Holesky
 - `BEACON_RPC_URL`: Beacon chain API url for Holesky network
 - `START_BLOCK`: Block from which your validator will start looking for new BLOBs to process
+- `SEGMENT_LIMIT_PO2`: Please see next point
+- `ENVIRONMENT`: Used for sentry logging
+- `USERNAME`: Used for sentry logging
+- `DDEX_SEQUENCER_ADDRESS`: Used to set ddex sequencer address for testing purposes. When unset it defaults to hardcoded protocol sequencer. 
+
 
 ## How to Run It
 
@@ -76,10 +81,10 @@ cd validatore_node
 
 Before running make sure that your validator node is properly configured for your GPU:
 
-- For GPU with 4GB VRAM change the value of `.segment_limit_po2(19)` to `.segment_limit_po2(18)` in `/validator_node/src/prover_wrapper.rs`.
-- For GPU with 8GB VRAM (default) The default value `.segment_limit_po2(19)` should work without any changes.
-- For GPU with 24GB VRAM or higher For optimal performance comment out the entire line containing `.segment_limit_po2(19)`. Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
-- For CPU Mode (no GPU), its recommened to remove the ``.segment_limit_po2(19)` line entirely to increase perfomance.
+- For GPU with 4GB VRAM set `18` (default).
+- For GPU with 8GB VRAM set `19`.
+- For GPU with 24GB VRAM or higher for optimal performance set it to `0` (turn it off). Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
+- For CPU Mode (no GPU), its recommened to set `0` to increase perfomance.
 
 #### Run in CPU Mode
 
@@ -93,12 +98,14 @@ cargo run --release
 cargo run --release -F cuda
 ```
 
+## Running locally
+You can run `../setup_local.sh` to prepare local environment. After using it remember to run validator with `LOCAL=1` flag.
+
 #### Notes
-
-On some systems with GPU you might need to set these values first:
-
+If you feel that your GPU should perform better, you can set NVCC flags to fine tune performance of your Nvidia GPU:
 ```bash
-export NVCC_APPEND_FLAGS='--gpu-architecture=compute_86 --gpu-code=compute_86,sm_86 --generate-code arch=compute_86,code=sm_86'
+COMPUTE_CAP=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | awk -F'.' '{print $1$2}')
+export NVCC_APPEND_FLAGS="--gpu-architecture=compute_${COMPUTE_CAP} --gpu-code=compute_${COMPUTE_CAP},sm_${COMPUTE_CAP} --generate-code arch=compute_${COMPUTE_CAP},code=sm_${COMPUTE_CAP}"
 ```
 
 To run risc0 additional resources are required. Full installation guide can be found at https://dev.risczero.com/api/zkvm/install

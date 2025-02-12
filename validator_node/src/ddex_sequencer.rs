@@ -1,6 +1,6 @@
-use crate::{constants, Config};
+use crate::{is_local, Config};
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{Bytes, FixedBytes};
+use alloy::primitives::{Address, Bytes, FixedBytes};
 use alloy::providers::fillers::{
     ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
@@ -75,8 +75,9 @@ impl DdexSequencerContext<'_> {
             alloy::transports::http::Http<reqwest::Client>,
             Ethereum,
         >,
+        ddex_sequencer_address: Address,
     ) -> DdexSequencerContext {
-        let contract = DdexSequencer::new(constants::DDEX_SEQUENCER_ADDRESS, provider);
+        let contract = DdexSequencer::new(ddex_sequencer_address, provider);
         let result = DdexSequencerContext { contract };
         result
     }
@@ -86,13 +87,15 @@ impl DdexSequencerContext<'_> {
         journal: Vec<u8>,
         seal: Vec<u8>,
     ) -> anyhow::Result<TransactionReceipt> {
-        let receipt = self
-            .contract
-            .submitProof(journal.into(), seal.into())
-            .send()
-            .await?
-            .get_receipt()
-            .await?;
+        let mut tx_builder = self.contract.submitProof(journal.into(), seal.into());
+
+        if is_local() {
+            tx_builder = tx_builder
+                .max_priority_fee_per_gas(500000000)
+                .max_fee_per_gas(500000001);
+        }
+
+        let receipt = tx_builder.send().await?.get_receipt().await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));
@@ -155,7 +158,7 @@ impl DdexSequencerContext<'_> {
         let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
 
         let filter = Filter::new()
-            .address(constants::DDEX_SEQUENCER_ADDRESS)
+            .address(config.ddex_sequencer_address)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE);
 
         log_info!("Subscribed to queue, waiting for new blobs...");
@@ -188,7 +191,7 @@ impl DdexSequencerContext<'_> {
         queue_head: FixedBytes<32>,
     ) -> anyhow::Result<QueueHeadData> {
         let filter = Filter::new()
-            .address(constants::DDEX_SEQUENCER_ADDRESS)
+            .address(config.ddex_sequencer_address)
             .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
             .from_block(*config.start_block.borrow());
 

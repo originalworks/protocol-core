@@ -1,6 +1,7 @@
 import { deployFixture } from "../../fixture/fixture.deploy";
 import { ethers, HDNodeWallet } from "ethers";
 import { ethers as hardhatEthers } from "hardhat";
+import { writeFile } from 'fs/promises';
 
 // it's necessary to use ethers.Wallet instead of hardhatEthers.Wallet
 // as only the first one currently supports type 3 EIP4844 transaction
@@ -28,11 +29,13 @@ async function main() {
     deployer,
     validators: [validator.address, validator2.address],
     dataProviders: [dataProvider.address, dataProvider2.address],
-    disableWhitelist: false,
+    disableWhitelist: true,
     printLogs: true,
+    fakeRisc0Groth16Verifier: process.env.PROVING_SETUP == "false"
   });
 
   console.log("deployment data:", fixtureOutput.fixtureAddresses);
+  await writeFile("tmp.txt", fixtureOutput.fixtureAddresses.ddexSequencer)
 }
 
 main();
