@@ -1,3 +1,5 @@
+mod bee;
+
 use anyhow::Context;
 use log_macros::log_error; // your existing macro
 use regex::Regex;          // for replacing lines in .env
@@ -7,6 +9,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use validator_node::Config;
+use ctrlc;
 
 // Additional crates for key generation
 use rand::rngs::OsRng;
@@ -220,6 +223,20 @@ fn main() -> anyhow::Result<()> {
     // A) Init logging
     init_logging()?;
 
+    // Start Bee node
+    let mut bee_process = match bee::start_bee_node() {
+        Ok(proc) => {
+            log::info!("Bee node started successfully.");
+            proc
+        }
+        Err(e) => {
+            log::error!("Failed to start Bee node: {}", e);
+            std::process::exit(1);
+        }
+    };
+    
+
+
     // B) Check if .env exists; if not, create it from .env.template
     let env_path = Path::new(".env");
     if !env_path.exists() {
@@ -302,8 +319,14 @@ fn main() -> anyhow::Result<()> {
     let config = Config::build();
     let _guard = init_sentry(&config);
 
-    tokio::runtime::Builder::new_multi_thread()
+    let result = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?
-        .block_on(init(config))
+        .block_on(init(config));
+
+    // Stop the Bee node before exiting the application
+    bee::stop_bee_node(&mut bee_process);
+
+    result
+
 }
