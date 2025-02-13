@@ -2,3 +2,4 @@
 .env.local
 bee-config.yaml
 /target/
+.bee/

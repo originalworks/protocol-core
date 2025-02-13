@@ -5948,7 +5948,7 @@ dependencies = [
 
 [[package]]
 name = "validator_node"
-version = "0.1.0"
+version = "0.1.0-bee"
 dependencies = [
  "alloy 0.3.6",
  "alloy-sol-types",

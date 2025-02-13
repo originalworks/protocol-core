@@ -1,6 +1,6 @@
 [package]
 name = "validator_node"
-version = "0.1.0"
+version = "0.1.0-bee"
 edition = "2021"
 
 [dependencies]
