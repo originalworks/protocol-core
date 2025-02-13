@@ -36,14 +36,59 @@ To run this project on a GPU, you'll need a graphics card with sufficient memory
 - Linux-based operating system
 - For GPU mode: CUDA toolkit
 
-**If you want to compile the binary by yourself and test it locally:**
+## Steps to install the validator on a clean Debian system
 
-1. [Rust](https://www.rust-lang.org/tools/install) needs to be installed in your system.
-2. OpenSSL library. Can be install with `libssl-dev` on Debian based systems or with `openssl-dev` on Fedora/RedHat.
-3. [RISC Zero Toolchain](https://dev.risczero.com/api/zkvm/quickstart).
-4. To run with GPU you need the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
-5. [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
-6. Docker environment
+1.  Install dependencies: `apt install curl build-essential libssl-dev git pkg-config npm`
+2-  [Rust](https://www.rust-lang.org/tools/install) - Can be installed with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and shell refreshed with `. "$HOME/.cargo/env"`
+3. [Foundry](https://book.getfoundry.sh/getting-started/installation) - Can be installed with:
+
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+source $HOME/.bashrc
+foundryup
+```
+
+4. Install the [RISC Zero Toolchain](https://dev.risczero.com/api/zkvm/quickstart) with:
+
+```bash
+curl -L https://risczero.com/install | bash
+. "$HOME/.bashrc"
+rzup install
+```
+
+5. Optional but recommended. To run with GPU you need the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
+6. If running with NVIDIA GPU you will also need [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
+
+7. Clone the repo with its submodules and enter its folder
+
+```
+git clone --recursive https://github.com/originalworks/protocol-core && cd protocol-core
+```
+
+7. Compile contracts with
+```
+cd contracts
+npm install hardhat
+npx hardhat compile
+```
+
+8. Run cargo from validator folder
+
+```bash
+cd ../validator_node
+```
+
+Run in CPU Mode
+
+```bash
+cargo run --release
+```
+
+Run in GPU Mode:
+
+```bash
+cargo run --release -F cuda
+```
 
 ### `.env` File Setup:
 
@@ -67,20 +112,6 @@ cp .env.template .env
 - `USERNAME`: Used for sentry logging
 - `DDEX_SEQUENCER_ADDRESS`: Used to set ddex sequencer address for testing purposes. When unset it defaults to hardcoded protocol sequencer. 
 
-
-## Prerequisites
-* curl. Can be installed with `apt install curl`
-* [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) - Can be installed with `curl https://sh.rustup.rs -sSf | sh` and shell refreshed with `. "$HOME/.cargo/env"`
-
-## How to Run It
-
-Clone the Repository
-
-```
-git clone --recursive https://github.com/originalworks/protocol-core
-cd protocol-core/validator_node
-```
-
 ### Adjusting the `segment_limit_po2` Value
 
 Before running make sure that your validator node is properly configured for your GPU:
@@ -90,17 +121,7 @@ Before running make sure that your validator node is properly configured for you
 - For GPU with 24GB VRAM or higher for optimal performance set it to `0` (turn it off). Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
 - For CPU Mode (no GPU), its recommened to set `0` to increase perfomance.
 
-#### Run in CPU Mode
 
-```bash
-cargo run --release
-```
-
-### Run in GPU Mode:
-
-```bash
-cargo run --release -F cuda
-```
 
 ## Running locally
 You can run `../setup_local.sh` to prepare local environment. After using it remember to run validator with `LOCAL=1` flag.
