@@ -1,6 +1,6 @@
 use anyhow::Context;
-use log_macros::log_error;         // your existing macro
-use regex::Regex;                  // <--- new
+use log_macros::log_error; // your existing macro
+use regex::Regex;          // for replacing lines in .env
 use sentry::{ClientInitGuard, User};
 use serde_json::json;
 use std::fs;
@@ -43,14 +43,13 @@ fn init_logging() -> anyhow::Result<()> {
 /// Logs each GPU found and returns the largest memory (in MiB) among them.
 /// Returns `None` if `nvidia-smi` is unavailable or no GPUs are found.
 fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
-    // Now we query both the GPU `name` and `memory.total`
     let output = Command::new("nvidia-smi")
         .args(["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"])
         .output()
         .ok()?; // If the command fails, return None
 
     if !output.status.success() {
-        // nvidia-smi ran but returned non-zero exit code => no GPU or some error
+        // nvidia-smi ran but returned non-zero => no GPU or some error
         return None;
     }
 
@@ -62,16 +61,13 @@ fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
     }
 
     let mut max_mem = 0;
-    // Parse each line (one line per GPU)
     for line in lines {
         // Expect "Name,Memory"
         let parts: Vec<_> = line.split(',').map(|s| s.trim()).collect();
         if parts.len() == 2 {
             let gpu_name = parts[0];
             if let Ok(mem) = parts[1].parse::<u64>() {
-                // Log the GPU name and memory
                 log::info!("Found NVIDIA GPU: Model=\"{}\", Memory={} MiB", gpu_name, mem);
-                // Track the largest memory
                 if mem > max_mem {
                     max_mem = mem;
                 }
@@ -135,50 +131,62 @@ fn generate_new_eth_key() -> (String, String) {
 }
 
 /// If we just created .env, fill PRIVATE_KEY with a newly generated one,
-/// then set SEGMENT_LIMIT_PO2 based on GPU memory if not already set.
+/// then set SEGMENT_LIMIT_PO2 based on GPU memory (replacing or inserting).
 fn update_env_if_created(mut env_contents: String) -> anyhow::Result<String> {
     // 1) Generate a new Ethereum key pair
     let (private_key_hex, address) = generate_new_eth_key();
 
     // 2) Replace or insert PRIVATE_KEY=...
-    let private_key_line = format!("PRIVATE_KEY={}", private_key_hex);
-    if env_contents.contains("PRIVATE_KEY=") {
-        // Replace existing line using a small regex
+    {
+        let private_key_line = format!("PRIVATE_KEY={}", private_key_hex);
         let regex = Regex::new(r"(?m)^PRIVATE_KEY=.*$")?;
-        env_contents = regex
-            .replace_all(&env_contents, private_key_line.clone())
-            .to_string();
-    } else {
-        // If there's no existing line at all, append
-        env_contents.push_str(&format!("\n{}\n", private_key_line));
+        if regex.is_match(&env_contents) {
+            // Replace existing line
+            env_contents = regex
+                .replace_all(&env_contents, private_key_line.clone())
+                .to_string();
+        } else {
+            // If there's no existing line, append
+            env_contents.push_str(&format!("\n{}\n", private_key_line));
+        }
     }
 
-    // Only log the public address
+    // 3) Log the newly generated address (don't log the private key)
     log::info!("Generated new Ethereum key. Address={}", address);
     sentry::configure_scope(|scope| {
         scope.set_extra("generated_eth_address", address.clone().into());
     });
 
-    // 3) Detect GPU memory
-    match detect_nvidia_gpu_memory_mib() {
+    // 4) Detect GPU memory & set SEGMENT_LIMIT_PO2
+    let limit = match detect_nvidia_gpu_memory_mib() {
         Some(mib) => {
             log::info!("Detected 1 or more NVIDIA GPU(s). Maximum memory of them is: {} MiB", mib);
             let limit = decide_segment_limit_po2(mib);
-            if !env_contents.contains("SEGMENT_LIMIT_PO2=") {
-                env_contents.push_str(&format!("\nSEGMENT_LIMIT_PO2={}\n", limit));
-            }
             log::info!(
                 "Set SEGMENT_LIMIT_PO2={} for newly created .env (GPU has {} MiB)",
                 limit,
                 mib
             );
+            limit
         }
         None => {
             log::info!("No NVIDIA GPU detected or `nvidia-smi` not available.");
-            if !env_contents.contains("SEGMENT_LIMIT_PO2=") {
-                env_contents.push_str("\nSEGMENT_LIMIT_PO2=0\n");
-            }
+            let limit = 0;
             log::info!("Set SEGMENT_LIMIT_PO2=0 for newly created .env");
+            limit
+        }
+    };
+
+    // 5) Replace or insert SEGMENT_LIMIT_PO2=...
+    {
+        let seg_line = format!("SEGMENT_LIMIT_PO2={}", limit);
+        let regex = Regex::new(r"(?m)^SEGMENT_LIMIT_PO2=.*$")?;
+        if regex.is_match(&env_contents) {
+            // Replace existing line
+            env_contents = regex.replace_all(&env_contents, seg_line).to_string();
+        } else {
+            // Append if missing
+            env_contents.push_str(&format!("\n{}\n", seg_line));
         }
     }
 
@@ -193,7 +201,7 @@ async fn init(config: Config) -> anyhow::Result<()> {
         }));
 
         let mut cloned_config = config.clone();
-        // Do not log the real private key:
+        // Do not log the real private key
         cloned_config.private_key = "***".to_string();
         scope.set_extra("config", json!(cloned_config));
     });
@@ -237,7 +245,25 @@ fn main() -> anyhow::Result<()> {
     // C) Load .env
     dotenvy::dotenv().ok();
 
-    // C1) Derive & log the public address from PRIVATE_KEY, if present
+    // C1) Validate important env vars
+    // If the user left them as "placeholder" or empty, shut down gracefully with a clear error.
+    for (key, desc) in &[
+        ("RPC_URL", "HTTP(S) RPC endpoint"),
+        ("WS_URL", "WebSocket RPC endpoint"),
+        ("BEACON_RPC_URL", "Beacon chain RPC endpoint"),
+    ] {
+        let val = std::env::var(key).unwrap_or_default();
+        if val.is_empty() || val == "placeholder" {
+            log::error!(
+                "{} is unset or placeholder. Please set a valid {} in .env and restart.",
+                key,
+                desc
+            );
+            std::process::exit(1);
+        }
+    }
+
+    // C2) Derive & log the public address from PRIVATE_KEY, if present
     if let Ok(priv_key_hex) = std::env::var("PRIVATE_KEY") {
         match hex::decode(&priv_key_hex) {
             Ok(sk_bytes) if sk_bytes.len() == 32 => {
