@@ -5944,6 +5944,7 @@ dependencies = [
  "blob_codec",
  "ctrlc",
  "ddex_schema",
+ "dirs",
  "dotenvy",
  "futures-util",
  "hex",
