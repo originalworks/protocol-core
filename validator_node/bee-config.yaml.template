@@ -83,7 +83,7 @@ storage-incentives-enable: true
 # gas price in wei to use for deployment and funding
 swap-deployment-gas-price: ""
 # enable swap
-swap-enable: false
+swap-enable: true
 # swap blockchain endpoint
 swap-endpoint: ""
 # swap factory addresses

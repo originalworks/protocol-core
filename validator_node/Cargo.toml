@@ -32,6 +32,8 @@ tiny-keccak = "2.0.2"
 regex = "1.11.1"
 ctrlc = "3.4.5"
 dirs = "5.0"
+rand = "0.9"
+base64 = "0.22.1"
 
 [features]
 cuda = ["risc0-zkvm/cuda"]

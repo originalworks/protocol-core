@@ -5,6 +5,8 @@ use std::time::Duration;
 use std::fs;
 use std::env;
 use log::{info, error};
+use rand::RngCore;
+use rand::rngs::OsRng;
 
 const BEE_BINARY: &str = "bee";
 const BEE_BINARY_NAME: &str = "bee";
@@ -32,7 +34,7 @@ pub fn install_bee() -> Result<(), String> {
 
     if Path::new(&install_path).exists() {
         info!("Bee is already installed at: {}", install_path);
-        return Ok(());
+        return Ok(())
     }
 
     info!("Bee not found. Installing Bee...");
@@ -49,14 +51,9 @@ pub fn install_bee() -> Result<(), String> {
         .args(&["-L", "--fail", "-o", &install_path, BEE_RELEASE_URL])
         .status()
         .map_err(|e| format!("Failed to download Bee: {}", e))?;
-    
+
     if !status.success() {
         return Err(format!("Failed to download Bee binary with exit code: {:?}. Check network or URL.", status.code()));
-    }
-        
-    // Check download success
-    if !status.success() {
-        return Err(format!("Failed to download Bee binary. Exit code: {:?}", status.code()));
     }
 
     // Verify the binary file after download
@@ -78,15 +75,21 @@ pub fn install_bee() -> Result<(), String> {
     Ok(())
 }
 
+/// Generates a secure random key for the token-encryption-key field.
+pub fn generate_token_encryption_key() -> String {
+    let mut key = [0u8; 32];
+    OsRng.fill_bytes(&mut key);
+    base64::encode(key)
+}
 
-/// Copies the template to create the Bee configuration file if it doesn't exist.
+/// Copies the template to create the Bee configuration file if it doesn't exist and modifies it if needed.
 pub fn ensure_config_file() -> Result<(), String> {
     let config_path = Path::new(BEE_CONFIG_FILE);
     let template_path = Path::new(BEE_CONFIG_TEMPLATE);
 
     if config_path.exists() {
         info!("Bee configuration file already exists: {}", BEE_CONFIG_FILE);
-        return Ok(());
+        return Ok(())
     }
 
     if !template_path.exists() {
@@ -100,6 +103,19 @@ pub fn ensure_config_file() -> Result<(), String> {
         .map_err(|e| format!("Failed to copy config template: {}", e))?;
 
     info!("Copied '{}' to '{}'", BEE_CONFIG_TEMPLATE, BEE_CONFIG_FILE);
+
+    // Modify the config file to add a token-encryption-key
+    let config_content = fs::read_to_string(BEE_CONFIG_FILE)
+        .map_err(|e| format!("Failed to read config file: {}", e))?;
+
+    let token_key = generate_token_encryption_key();
+    let updated_content = config_content.replace("token-encryption-key: \"\"", &format!("token-encryption-key: \"{}\"", token_key));
+
+    fs::write(BEE_CONFIG_FILE, updated_content)
+        .map_err(|e| format!("Failed to update config file with token encryption key: {}", e))?;
+
+    info!("Generated and inserted a token-encryption-key into the config file.");
+
     Ok(())
 }
 
@@ -114,9 +130,6 @@ pub fn start_bee_node() -> Result<Child, String> {
     if !Path::new(&bee_binary).exists() {
         return Err(format!("Bee binary not found at: {}", bee_binary));
     }
-
-    let bee_binary = get_bee_install_path();
-    info!("Using Bee binary at: {}", bee_binary);
 
     let bee_process = Command::new(&bee_binary)
         .args(&["start", "--config", BEE_CONFIG_FILE])
