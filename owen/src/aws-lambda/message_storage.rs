@@ -4,6 +4,7 @@ use tokio::fs::File;
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
     bucket_name: String,
+    input_files_dir: String,
 }
 
 impl MessageStorage {
@@ -14,10 +15,12 @@ impl MessageStorage {
         Self {
             client: aws_sdk_s3::Client::new(aws_main_config),
             bucket_name: MessageStorage::get_env_var("MESSAGES_BUCKET_NAME"),
+            input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
         }
     }
 
     fn build_local_path(
+        &self,
         s3_key: &String,
         message_folder: &String,
     ) -> Result<String, Box<dyn Error>> {
@@ -27,7 +30,8 @@ impl MessageStorage {
             .to_str()
             .unwrap();
 
-        let local_message_folder = format!("/tmp/{s3_message_folder_parent_dir}");
+        let local_message_folder =
+            format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
         let (_, s3_parent_dir_file) = s3_key.split_once(message_folder).unwrap();
         let local_path = format!("{local_message_folder}{s3_parent_dir_file}");
 
@@ -66,8 +70,7 @@ impl MessageStorage {
 
             for s3_folder_object in s3_message_folder_objects.contents.unwrap() {
                 let s3_key = s3_folder_object.key.unwrap();
-                let local_path =
-                    MessageStorage::build_local_path(&s3_key, &s3_message_folder).unwrap();
+                let local_path = self.build_local_path(&s3_key, &s3_message_folder).unwrap();
 
                 self.copy_from_s3(s3_key, local_path).await?;
             }

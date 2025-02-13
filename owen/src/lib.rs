@@ -62,7 +62,8 @@ impl Config {
 
         let folder_path = args
             .next()
-            .expect("Missing command line argument: folder path");
+            .unwrap_or(Config::get_env_var("INPUT_FILES_DIR").to_string());
+
         let rpc_url = Config::get_env_var("RPC_URL");
         let private_key = Config::get_env_var("PRIVATE_KEY");
         let ipfs_kubo_url = Config::get_env_var("IPFS_KUBO_URL");

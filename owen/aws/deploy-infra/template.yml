@@ -25,6 +25,18 @@ Parameters:
     Type: String
   MessagePerBlob:
     Type: String
+  DefaultIpfsInterface:
+    Type: String
+  OutputFilesDir:
+    Type: String
+  InputFilesDir:
+    Type: String
+  Environment:
+    Type: String
+  OwenUsername:
+    Type: String
+  OwenLambdaSecretsName:
+    Type: String
 
 Resources:
   NewUploadsQueue:
@@ -105,6 +117,12 @@ Resources:
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
           MESSAGES_PER_BLOB: !Ref MessagePerBlob
+          DEFAULT_IPFS_INTERFACE: !Ref DefaultIpfsInterface
+          INPUT_FILES_DIR: !Ref InputFilesDir
+          OUTPUT_FILES_DIR: !Ref OutputFilesDir
+          ENVIRONMENT: !Ref Environment
+          USERNAME: !Ref OwenUsername
+          OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
       Policies:
         - Statement:
             - Effect: Allow
@@ -121,11 +139,24 @@ Resources:
               Resource:
                 - !GetAtt MessagesBucket.Arn
                 - !Sub "${MessagesBucket.Arn}/*"
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref OwenLambdaSecrets
       Events:
         Schedule:
           Type: Schedule
           Properties:
             Schedule: !Sub "rate(${OwenLambdaScheduleRateMin} minutes)"
+
+  OwenLambdaSecrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Ref OwenLambdaSecretsName
+      Description: "Environmental variables with sensitive data for OwenLambda"
+      # !!! Set those manually in your AWS Console after the deployment!!!
+      # !!! Do not edit this line here directly !!!
+      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "PINATA_JWT": "your-pinata-jwt", "IPFS_KUBO_URL": "your-kubo-url" }'
 
   QueueConsumerLambda:
     Type: AWS::Serverless::Function
