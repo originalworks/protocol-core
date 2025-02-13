@@ -117,10 +117,13 @@ pub fn ensure_config_file() -> Result<(), String> {
         .map_err(|e| format!("Failed to read config file: {}", e))?;
 
     let token_key = generate_token_encryption_key();
+    //token-encryption-key field no longer exists in the config file
+    /*
     let updated_content = config_content.replace(
         "token-encryption-key: \"\"",
         &format!("token-encryption-key: \"{}\"", token_key)
     );
+    */
 
     fs::write(BEE_CONFIG_FILE, updated_content)
         .map_err(|e| format!("Failed to update config file with token encryption key: {}", e))?;
@@ -143,7 +146,7 @@ pub fn start_bee_node() -> Result<Child, String> {
     }
 
     let bee_process = Command::new(&bee_binary)
-        .args(&["start", "--config", BEE_CONFIG_FILE])
+        .args(&["start", "--config", BEE_CONFIG_FILE, "--password 1234"]) // --password 1234 is a temporary workaround
         .spawn()
         .map_err(|e| format!("Failed to start Bee node: {}", e))?;
 
