@@ -68,6 +68,10 @@ cp .env.template .env
 - `DDEX_SEQUENCER_ADDRESS`: Used to set ddex sequencer address for testing purposes. When unset it defaults to hardcoded protocol sequencer. 
 
 
+## Prerequisites
+* curl. Can be installed with `apt install curl`
+* [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) - Can be installed with `curl https://sh.rustup.rs -sSf | sh` and shell refreshed with `. "$HOME/.cargo/env"`
+
 ## How to Run It
 
 Clone the Repository
