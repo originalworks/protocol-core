@@ -123,7 +123,7 @@ Before running make sure that your validator node is properly configured for you
 
 
 
-## Running locally
+## Running a test enviornment locally
 You can run `../setup_local.sh` to prepare local environment. After using it remember to run validator with `LOCAL=1` flag.
 
 #### Notes

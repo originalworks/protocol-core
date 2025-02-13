@@ -1,5 +1,6 @@
 use anyhow::Context;
 use log_macros::log_error;         // your existing macro
+use regex::Regex;                  // <--- new
 use sentry::{ClientInitGuard, User};
 use serde_json::json;
 use std::fs;
@@ -139,10 +140,19 @@ fn update_env_if_created(mut env_contents: String) -> anyhow::Result<String> {
     // 1) Generate a new Ethereum key pair
     let (private_key_hex, address) = generate_new_eth_key();
 
-    // 2) Insert PRIVATE_KEY=..., but never log the private key
-    if !env_contents.contains("PRIVATE_KEY=") {
-        env_contents.push_str(&format!("\nPRIVATE_KEY={}\n", private_key_hex));
+    // 2) Replace or insert PRIVATE_KEY=...
+    let private_key_line = format!("PRIVATE_KEY={}", private_key_hex);
+    if env_contents.contains("PRIVATE_KEY=") {
+        // Replace existing line using a small regex
+        let regex = Regex::new(r"(?m)^PRIVATE_KEY=.*$")?;
+        env_contents = regex
+            .replace_all(&env_contents, private_key_line.clone())
+            .to_string();
+    } else {
+        // If there's no existing line at all, append
+        env_contents.push_str(&format!("\n{}\n", private_key_line));
     }
+
     // Only log the public address
     log::info!("Generated new Ethereum key. Address={}", address);
     sentry::configure_scope(|scope| {
