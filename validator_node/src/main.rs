@@ -209,6 +209,26 @@ fn main() -> anyhow::Result<()> {
     // C) Load .env
     dotenvy::dotenv().ok();
 
+    // C1) **Parse PRIVATE_KEY** from the environment (if present), derive the public address, log it.
+    if let Ok(priv_key_hex) = std::env::var("PRIVATE_KEY") {
+        match hex::decode(&priv_key_hex) {
+            Ok(sk_bytes) if sk_bytes.len() == 32 => {
+                if let Ok(secret_key) = SecretKey::from_slice(&sk_bytes) {
+                    let address = eth_address_from_private_key(&secret_key);
+                    log::info!("Public key used: {}", address);
+                    sentry::configure_scope(|scope| {
+                        scope.set_extra("public_key_from_env", address.into());
+                    });
+                } else {
+                    log::warn!("PRIVATE_KEY in .env is not a valid secp256k1 key");
+                }
+            }
+            _ => {
+                log::warn!("PRIVATE_KEY in .env is missing or not valid hex for a 32-byte key");
+            }
+        }
+    }
+
     // D) Log out START_BLOCK, SEGMENT_LIMIT_PO2, ENVIRONMENT
     let start_block = std::env::var("START_BLOCK").unwrap_or_default();
     let segment_limit = std::env::var("SEGMENT_LIMIT_PO2").unwrap_or_default();
