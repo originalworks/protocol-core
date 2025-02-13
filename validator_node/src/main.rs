@@ -223,7 +223,18 @@ fn main() -> anyhow::Result<()> {
     // A) Init logging
     init_logging()?;
 
-    // Start Bee node
+    // -- (1) Ensure Bee is installed if not present:
+    if !bee::is_bee_installed() {                        // <-- Added
+        match bee::install_bee() {                       // <-- Added
+            Ok(_) => log::info!("Bee installed successfully."),    
+            Err(e) => {
+                log::error!("Failed to install Bee: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    // -- (2) Start Bee node
     let mut bee_process = match bee::start_bee_node() {
         Ok(proc) => {
             log::info!("Bee node started successfully.");
@@ -234,8 +245,6 @@ fn main() -> anyhow::Result<()> {
             std::process::exit(1);
         }
     };
-    
-
 
     // B) Check if .env exists; if not, create it from .env.template
     let env_path = Path::new(".env");
@@ -328,5 +337,4 @@ fn main() -> anyhow::Result<()> {
     bee::stop_bee_node(&mut bee_process);
 
     result
-
 }

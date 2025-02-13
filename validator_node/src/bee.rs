@@ -8,7 +8,8 @@ use log::{info, error};
 
 const BEE_BINARY: &str = "bee";
 const BEE_BINARY_NAME: &str = "bee";
-const BEE_RELEASE_URL: &str = "https://github.com/ethersphere/bee/releases/latest/download/bee-linux-amd64";
+const BEE_RELEASE_URL: &str = "https://github.com/ethersphere/bee/releases/download/v2.4.0/bee-linux-amd64";
+
 const BEE_CONFIG_FILE: &str = "./bee-config.yaml";
 const BEE_CONFIG_TEMPLATE: &str = "./bee-config.yaml.template";
 
@@ -42,15 +43,28 @@ pub fn install_bee() -> Result<(), String> {
         fs::create_dir_all(bee_dir).map_err(|e| format!("Failed to create directory: {}", e))?;
     }
 
+    // Download the Bee binary
+    info!("Downloading Bee from: {}", BEE_RELEASE_URL);
     let status = Command::new("curl")
-        .args(&["-L", "-o", &install_path, BEE_RELEASE_URL])
+        .args(&["-L", "--fail", "-o", &install_path, BEE_RELEASE_URL])
         .status()
         .map_err(|e| format!("Failed to download Bee: {}", e))?;
-
+    
     if !status.success() {
-        return Err("Failed to download Bee binary.".into());
+        return Err(format!("Failed to download Bee binary with exit code: {:?}. Check network or URL.", status.code()));
+    }
+        
+    // Check download success
+    if !status.success() {
+        return Err(format!("Failed to download Bee binary. Exit code: {:?}", status.code()));
     }
 
+    // Verify the binary file after download
+    if !Path::new(&install_path).exists() {
+        return Err("Bee binary was not downloaded despite successful curl execution.".into());
+    }
+
+    // Make the binary executable
     let chmod_status = Command::new("chmod")
         .args(&["+x", &install_path])
         .status()
@@ -63,6 +77,7 @@ pub fn install_bee() -> Result<(), String> {
     info!("Bee successfully installed to {}", install_path);
     Ok(())
 }
+
 
 /// Copies the template to create the Bee configuration file if it doesn't exist.
 pub fn ensure_config_file() -> Result<(), String> {
@@ -100,7 +115,10 @@ pub fn start_bee_node() -> Result<Child, String> {
         return Err(format!("Bee binary not found at: {}", bee_binary));
     }
 
-    let bee_process = Command::new(bee_binary)
+    let bee_binary = get_bee_install_path();
+    info!("Using Bee binary at: {}", bee_binary);
+
+    let bee_process = Command::new(&bee_binary)
         .args(&["start", "--config", BEE_CONFIG_FILE])
         .spawn()
         .map_err(|e| format!("Failed to start Bee node: {}", e))?;
