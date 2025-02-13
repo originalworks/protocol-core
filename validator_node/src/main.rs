@@ -38,28 +38,46 @@ fn init_logging() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Returns the maximum memory (in MiB) among all NVIDIA GPUs, if any detected.
+/// Queries nvidia-smi for both `name` and `memory.total`.
+/// Logs each GPU found and returns the largest memory (in MiB) among them.
 /// Returns `None` if `nvidia-smi` is unavailable or no GPUs are found.
 fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
+    // Now we query both the GPU `name` and `memory.total`
     let output = Command::new("nvidia-smi")
-        .args(["--query-gpu=memory.total", "--format=csv,noheader,nounits"])
+        .args(["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"])
         .output()
-        .ok()?; // If error, return None
+        .ok()?; // If the command fails, return None
 
     if !output.status.success() {
-        // nvidia-smi ran but returned a non-zero code, means no GPU or error
+        // nvidia-smi ran but returned non-zero exit code => no GPU or some error
         return None;
     }
 
     let stdout_str = String::from_utf8_lossy(&output.stdout);
+    let lines: Vec<&str> = stdout_str.lines().collect();
+    if lines.is_empty() {
+        // No GPUs found
+        return None;
+    }
+
     let mut max_mem = 0;
-    for line in stdout_str.lines() {
-        if let Ok(m) = line.trim().parse::<u64>() {
-            if m > max_mem {
-                max_mem = m;
+    // Parse each line (one line per GPU)
+    for line in lines {
+        // Expect "Name,Memory"
+        let parts: Vec<_> = line.split(',').map(|s| s.trim()).collect();
+        if parts.len() == 2 {
+            let gpu_name = parts[0];
+            if let Ok(mem) = parts[1].parse::<u64>() {
+                // Log the GPU name and memory
+                log::info!("Found NVIDIA GPU: Model=\"{}\", Memory={} MiB", gpu_name, mem);
+                // Track the largest memory
+                if mem > max_mem {
+                    max_mem = mem;
+                }
             }
         }
     }
+
     if max_mem > 0 {
         Some(max_mem)
     } else {
@@ -67,7 +85,7 @@ fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
     }
 }
 
-/// Given the GPU memory, decide which SEGMENT_LIMIT_PO2 to use.
+/// Decide which SEGMENT_LIMIT_PO2 to use based on GPU memory.
 fn decide_segment_limit_po2(mem_mib: u64) -> u64 {
     // If <4 GB => 0
     // If >=4 GB => 18
@@ -93,20 +111,20 @@ fn keccak256(bytes: &[u8]) -> [u8; 32] {
     hash
 }
 
-/// Given a secp256k1 SecretKey, derive the Ethereum address (0x + 40 hex chars).
+/// Given a secp256k1 SecretKey, derive the Ethereum address (0x + 40 hex).
 fn eth_address_from_private_key(sk: &SecretKey) -> String {
     let secp = Secp256k1::new();
     let pk = PublicKey::from_secret_key(&secp, sk);
-    // Serialize uncompressed (65 bytes: 0x04 + 64 bytes pubkey)
+    // Uncompressed => 65 bytes: 0x04 + 64-byte pubkey
     let uncompressed = pk.serialize_uncompressed();
-    // Skip the first byte (0x04). Hash the remaining 64 bytes with keccak256
+    // Skip the first byte (0x04). Hash the remaining 64 with keccak256
     let hash = keccak256(&uncompressed[1..]);
-    // Ethereum address is last 20 bytes of that hash, hex-encoded with "0x" prefix
+    // Eth address = last 20 bytes, hex-encoded with "0x" prefix
     let address = &hash[12..];
     format!("0x{}", hex::encode(address))
 }
 
-/// Generates a new secp256k1 private key, returns (private_key_hex, public_address).
+/// Generates a new secp256k1 private key, returning (private_key_hex, eth_address).
 fn generate_new_eth_key() -> (String, String) {
     let secp = Secp256k1::new();
     let (secret_key, _) = secp.generate_keypair(&mut OsRng);
@@ -115,8 +133,8 @@ fn generate_new_eth_key() -> (String, String) {
     (private_key_hex, address)
 }
 
-/// If we just created .env, fill PRIVATE_KEY with a newly generated one, and
-/// set SEGMENT_LIMIT_PO2 based on GPU memory if it's not already set.
+/// If we just created .env, fill PRIVATE_KEY with a newly generated one,
+/// then set SEGMENT_LIMIT_PO2 based on GPU memory if not already set.
 fn update_env_if_created(mut env_contents: String) -> anyhow::Result<String> {
     // 1) Generate a new Ethereum key pair
     let (private_key_hex, address) = generate_new_eth_key();
@@ -134,7 +152,7 @@ fn update_env_if_created(mut env_contents: String) -> anyhow::Result<String> {
     // 3) Detect GPU memory
     match detect_nvidia_gpu_memory_mib() {
         Some(mib) => {
-            log::info!("Detected NVIDIA GPU(s). Maximum memory: {} MiB", mib);
+            log::info!("Detected 1 or more NVIDIA GPU(s). Maximum memory of them is: {} MiB", mib);
             let limit = decide_segment_limit_po2(mib);
             if !env_contents.contains("SEGMENT_LIMIT_PO2=") {
                 env_contents.push_str(&format!("\nSEGMENT_LIMIT_PO2={}\n", limit));
@@ -181,7 +199,7 @@ async fn init(config: Config) -> anyhow::Result<()> {
 }
 
 fn main() -> anyhow::Result<()> {
-    // A) Init logging first
+    // A) Init logging
     init_logging()?;
 
     // B) Check if .env exists; if not, create it from .env.template
@@ -209,7 +227,7 @@ fn main() -> anyhow::Result<()> {
     // C) Load .env
     dotenvy::dotenv().ok();
 
-    // C1) **Parse PRIVATE_KEY** from the environment (if present), derive the public address, log it.
+    // C1) Derive & log the public address from PRIVATE_KEY, if present
     if let Ok(priv_key_hex) = std::env::var("PRIVATE_KEY") {
         match hex::decode(&priv_key_hex) {
             Ok(sk_bytes) if sk_bytes.len() == 32 => {
