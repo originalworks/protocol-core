@@ -3,33 +3,47 @@ use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
 use std::fs;
+use std::env;
 use log::{info, error};
 
 const BEE_BINARY: &str = "bee";
-const BEE_INSTALL_PATH: &str = "/usr/local/bin/bee";
+const BEE_BINARY_NAME: &str = "bee";
 const BEE_RELEASE_URL: &str = "https://github.com/ethersphere/bee/releases/latest/download/bee-linux-amd64";
 const BEE_CONFIG_FILE: &str = "./bee-config.yaml";
 const BEE_CONFIG_TEMPLATE: &str = "./bee-config.yaml.template";
 
-/// Checks if Bee is installed by checking if the binary is in the PATH.
+/// Resolves the Bee install path dynamically
+pub fn get_bee_install_path() -> String {
+    dirs::home_dir()
+        .map(|home| home.join(".local/bin").join(BEE_BINARY_NAME).to_string_lossy().to_string())
+        .unwrap_or_else(|| "/usr/local/bin/bee".to_string())
+}
+
+/// Checks if Bee is installed by checking if the binary exists.
 pub fn is_bee_installed() -> bool {
-    Command::new("which")
-        .arg(BEE_BINARY)
-        .output()
-        .map_or(false, |output| output.status.success())
+    let install_path = get_bee_install_path();
+    Path::new(&install_path).exists()
 }
 
 /// Downloads and installs Bee if it's missing.
 pub fn install_bee() -> Result<(), String> {
-    if Path::new(BEE_INSTALL_PATH).exists() {
-        info!("Bee is already installed.");
+    let install_path = get_bee_install_path();
+
+    if Path::new(&install_path).exists() {
+        info!("Bee is already installed at: {}", install_path);
         return Ok(());
     }
 
     info!("Bee not found. Installing Bee...");
 
+    // Ensure .local/bin directory exists
+    let bee_dir = Path::new(&install_path).parent().unwrap();
+    if !bee_dir.exists() {
+        fs::create_dir_all(bee_dir).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
     let status = Command::new("curl")
-        .args(&["-L", "-o", BEE_INSTALL_PATH, BEE_RELEASE_URL])
+        .args(&["-L", "-o", &install_path, BEE_RELEASE_URL])
         .status()
         .map_err(|e| format!("Failed to download Bee: {}", e))?;
 
@@ -38,7 +52,7 @@ pub fn install_bee() -> Result<(), String> {
     }
 
     let chmod_status = Command::new("chmod")
-        .args(&["+x", BEE_INSTALL_PATH])
+        .args(&["+x", &install_path])
         .status()
         .map_err(|e| format!("Failed to set executable permission: {}", e))?;
 
@@ -46,7 +60,7 @@ pub fn install_bee() -> Result<(), String> {
         return Err("Failed to set execute permission on Bee binary.".into());
     }
 
-    info!("Bee successfully installed to {}", BEE_INSTALL_PATH);
+    info!("Bee successfully installed to {}", install_path);
     Ok(())
 }
 
@@ -60,7 +74,6 @@ pub fn ensure_config_file() -> Result<(), String> {
         return Ok(());
     }
 
-    // Check if template exists
     if !template_path.exists() {
         return Err(format!(
             "Configuration template file '{}' not found.",
@@ -68,7 +81,6 @@ pub fn ensure_config_file() -> Result<(), String> {
         ));
     }
 
-    // Copy the template to create the config file
     fs::copy(BEE_CONFIG_TEMPLATE, BEE_CONFIG_FILE)
         .map_err(|e| format!("Failed to copy config template: {}", e))?;
 
@@ -78,12 +90,17 @@ pub fn ensure_config_file() -> Result<(), String> {
 
 /// Starts the Bee node as a background process with the configuration file.
 pub fn start_bee_node() -> Result<Child, String> {
-    // Ensure config file exists
     ensure_config_file()?;
 
     info!("Starting Bee node with config: {}", BEE_CONFIG_FILE);
 
-    let bee_process = Command::new(BEE_BINARY)
+    let bee_binary = get_bee_install_path();
+
+    if !Path::new(&bee_binary).exists() {
+        return Err(format!("Bee binary not found at: {}", bee_binary));
+    }
+
+    let bee_process = Command::new(bee_binary)
         .args(&["start", "--config", BEE_CONFIG_FILE])
         .spawn()
         .map_err(|e| format!("Failed to start Bee node: {}", e))?;
