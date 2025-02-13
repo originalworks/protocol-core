@@ -74,7 +74,7 @@ Clone the Repository
 
 ```
 git clone --recursive https://github.com/originalworks/protocol-core
-cd protocol-core/validatore_node
+cd protocol-core/validator_node
 ```
 
 ### Adjusting the `segment_limit_po2` Value
