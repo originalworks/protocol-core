@@ -1,11 +1,13 @@
 mod message_queue;
 mod message_storage;
+mod secrets;
 
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
 use lambda_runtime::{run, service_fn, tracing, Error, LambdaEvent};
 use message_queue::MessageQueue;
 use message_storage::MessageStorage;
+use secrets::set_secret_envs;
 use std::fs;
 
 async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Error> {
@@ -18,10 +20,16 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
         .load()
         .await;
 
+    set_secret_envs(&aws_main_config).await.unwrap();
+
     let queue = MessageQueue::build(&aws_main_config);
     let storage = MessageStorage::build(&aws_main_config);
 
     let message_folders = queue.get_message_folders().await.unwrap();
+    if message_folders.is_empty() {
+        tracing::info!("No message folders found, queue is empty. Terminating execution.");
+        return Ok(());
+    }
 
     storage.sync_message_folders(message_folders).await.unwrap();
 
@@ -32,6 +40,10 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
         .collect();
 
     println!("synced directories: {directories_tmp:?}");
+
+    let owen_config = owen_cli::Config::build();
+
+    owen_cli::run(&owen_config).await.unwrap();
 
     Ok(())
 }

@@ -3,7 +3,7 @@
         "MessagesBucketName": "test-messages-bucket",
         "MessageStatusTableName": "MessageStatusTable",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "2",
+        "OwenLambdaScheduleRateMin": "59",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
         "ProcessingStatusAttributeName": "processingStatus",
@@ -11,6 +11,12 @@
         "UpdatedTimestampAttributeName": "updatedTimestamp",
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
-        "MessagePerBlob": "10"
+        "MessagePerBlob": "10",
+        "DefaultIpfsInterface": "PINATA",
+        "OutputFilesDir": "/tmp/output_files",
+        "InputFilesDir": "/tmp/input_files",
+        "Environment": "development",
+        "OwenUsername": "owen_lambda",
+        "OwenLambdaSecretsName": "OwenLambdaSecrets"
     }
 }
