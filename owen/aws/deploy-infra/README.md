@@ -13,3 +13,4 @@
 1. In your [AWS Console](https://console.aws.amazon.com/) manually create a bucket named `owen-artifacts` to store your deployment artifacts
 2. On your local machine login to aws with `aws configure`
 3. Inside `owen/aws/deploy-infra` run `make deploy-infra`
+4. Go again to your [AWS Console](https://console.aws.amazon.com/) => AWS Secret Manager and set your secrets (private key, rpc url etc.) there
