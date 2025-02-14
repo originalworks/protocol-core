@@ -12,6 +12,7 @@ use anyhow::Context;
 use blob::BlobTransactionData;
 use ddex_sequencer::DdexSequencerContext;
 pub use log;
+use output_generator::MessageDirProcessingContext;
 use std::env;
 use std::str::FromStr;
 
@@ -62,7 +63,7 @@ impl Config {
 
         let folder_path = args
             .next()
-            .unwrap_or(Config::get_env_var("INPUT_FILES_DIR").to_string());
+            .unwrap_or_else(|| Config::get_env_var("INPUT_FILES_DIR").to_string());
 
         let rpc_url = Config::get_env_var("RPC_URL");
         let private_key = Config::get_env_var("PRIVATE_KEY");
@@ -102,8 +103,8 @@ impl Config {
     }
 }
 
-pub async fn run(config: &Config) -> anyhow::Result<()> {
-    output_generator::create_output_files(&config).await?;
+pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    let message_dir_processing_log = output_generator::create_output_files(&config).await?;
 
     let private_key_signer: PrivateKeySigner = config
         .private_key
@@ -122,5 +123,5 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     ddex_sequencer_context
         .send_blob(blob_transaction_data)
         .await?;
-    Ok(())
+    Ok(message_dir_processing_log)
 }
