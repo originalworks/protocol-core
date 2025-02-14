@@ -3,11 +3,11 @@ allow-private-cidrs: false
 # HTTP API listen address
 api-addr: 127.0.0.1:1633
 # chain block time
-block-time: "15"
+# block-time: "15"
 # rpc blockchain endpoint
 blockchain-rpc-endpoint: ""
 # initial nodes to connect to
-bootnode: []
+# bootnode: []
 # cause the node to always accept incoming connections
 bootnode-mode: false
 # cache capacity in chunks, multiply by 4096 to get approximate capacity in bytes
