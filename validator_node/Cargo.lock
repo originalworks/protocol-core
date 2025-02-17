@@ -5930,6 +5930,7 @@ dependencies = [
  "pretty_env_logger",
  "prover",
  "rand",
+ "regex",
  "reqwest",
  "risc0-ethereum-contracts",
  "risc0-zkvm",

@@ -2,15 +2,19 @@ mod message_queue;
 mod message_storage;
 mod secrets;
 
+// use anyhow::Ok;
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
-use lambda_runtime::{run, service_fn, tracing, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, LambdaEvent};
 use message_queue::MessageQueue;
 use message_storage::MessageStorage;
+use owen_cli::logger::{init_logging, init_sentry};
 use secrets::set_secret_envs;
 use std::fs;
 
-async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Error> {
+async fn function_handler(
+    event: LambdaEvent<CloudWatchEvent>,
+) -> Result<(), lambda_runtime::Error> {
     let payload = event.payload;
     tracing::info!("Payload: {:?}", payload);
 
@@ -41,16 +45,25 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
 
     println!("synced directories: {directories_tmp:?}");
 
+    // second owen_cli::Config declared here :(
     let owen_config = owen_cli::Config::build();
 
-    owen_cli::run(&owen_config).await.unwrap();
+    owen_cli::run_with_sentry(&owen_config).await.unwrap();
 
     Ok(())
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> Result<(), lambda_runtime::Error> {
     tracing::init_default_subscriber();
 
-    run(service_fn(function_handler)).await
+    init_logging()?;
+    // first owen_cli::Config declared here :(
+    let config = owen_cli::Config::build();
+    let _guard = init_sentry(&config);
+
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(lambda_runtime::run(service_fn(function_handler)))
 }
