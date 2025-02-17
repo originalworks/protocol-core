@@ -18,6 +18,20 @@ RESET='\033[0m'
 missing_deps=()
 missing_python_packages=()
 
+# This variable will hold either "sudo" or "" after we check_sudo()
+SUDO_PREFIX=""
+
+#############################################
+# Functions to check for sudo               #
+#############################################
+check_sudo() {
+  if command -v sudo &> /dev/null; then
+    SUDO_PREFIX="sudo"
+  else
+    SUDO_PREFIX=""
+  fi
+}
+
 #############################################
 # Functions to check commands/dependencies  #
 #############################################
@@ -35,7 +49,8 @@ check_command() {
 
 # Check if a Debian package is installed by verifying with dpkg -s.
 check_debian_package() {
-  # Turn off exit-on-error while checking, to avoid an immediate script exit on dpkg returning non-zero
+  # Temporarily turn off exit-on-error while checking,
+  # to avoid immediate script exit on dpkg returning non-zero
   set +e
   dpkg -s "$1" &> /dev/null
   local dpkg_status=$?
@@ -49,10 +64,9 @@ check_debian_package() {
   fi
 }
 
-# Check if a Python package is installed by trying to import it.
+# Check if a Python package is installed by checking pipx output.
 check_iscc_python_package() {
   set +e
-  # Try detecting iscc_sdk via pipx
   pipx list | grep idk 2> /dev/null
   local status=$?
   set -e
@@ -74,7 +88,7 @@ print_install_instructions() {
   case "$1" in
     python3)
       echo "  - Install Python 3.11 with:"
-      echo "    sudo apt update && sudo apt install -y python3.11 python3.11-venv python3.11-dev pip pipx"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y python3.11 python3.11-venv python3.11-dev pip pipx"
       ;;
     cargo)
       echo "  - Install Rust and Cargo with:"
@@ -83,7 +97,7 @@ print_install_instructions() {
       ;;
     git)
       echo "  - Install Git with:"
-      echo "    sudo apt update && sudo apt install -y git"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y git"
       ;;
     forge)
       echo "  - Install Foundry with:"
@@ -93,35 +107,35 @@ print_install_instructions() {
       ;;
     npm)
       echo "  - Install Node.js (includes npm) with:"
-      echo "    sudo apt update && sudo apt install -y nodejs npm"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
       ;;
     curl)
       echo "  - Install curl with:"
-      echo "    sudo apt update && sudo apt install -y curl"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y curl"
       ;;
     pkg-config)
       echo "  - Install pkg-config with:"
-      echo "    sudo apt update && sudo apt install -y pkg-config"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y pkg-config"
       ;;
     openssl)
       echo "  - Install OpenSSL development headers with:"
-      echo "    sudo apt update && sudo apt install -y libssl-dev"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
       ;;
     npx)
       echo "  - Install Node.js (includes npx) with:"
-      echo "    sudo apt update && sudo apt install -y nodejs npm"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
       ;;
     zip)
       echo "  - Install zip with:"
-      echo "    sudo apt update && sudo apt install -y zip"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y zip"
       ;;
     libmagic-dev)
       echo "  - Install libmagic-dev with:"
-      echo "    sudo apt update && sudo apt install -y libmagic-dev"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libmagic-dev"
       ;;
     libtag1-dev)
       echo "  - Install libtag1-dev with:"
-      echo "    sudo apt update && sudo apt install -y libtag1-dev"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libtag1-dev"
       ;;
     *)
       echo "  - Install $1 using your package manager."
@@ -140,8 +154,78 @@ print_python_package_instructions() {
 }
 
 #############################################
-# 1) Check all needed dependencies          #
+# Automatic Installation Helper Functions   #
 #############################################
+
+# Attempt to install a missing system dependency automatically
+install_dependency() {
+  dep="$1"
+  local install_cmd=""
+
+  case "$dep" in
+    python3)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y python3.11 python3.11-venv python3.11-dev pip pipx"
+      ;;
+    git)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y git"
+      ;;
+    forge)
+      # Foundry installation steps
+      install_cmd="curl -L https://foundry.paradigm.xyz | bash && source \$HOME/.bashrc && foundryup"
+      ;;
+    npm)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+      ;;
+    curl)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y curl"
+      ;;
+    cargo)
+      install_cmd="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && source \$HOME/.cargo/env"
+      ;;
+    pkg-config)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y pkg-config"
+      ;;
+    openssl)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
+      ;;
+    npx)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+      ;;
+    zip)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y zip"
+      ;;
+    libmagic-dev)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libmagic-dev"
+      ;;
+    libtag1-dev)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libtag1-dev"
+      ;;
+    *)
+      echo "  * Sorry, I don't know how to automatically install '$dep'. Please install it manually."
+      return
+      ;;
+  esac
+
+  echo "Installing system dependency '$dep' via:"
+  echo "  $install_cmd"
+  eval "$install_cmd"
+}
+
+# Attempt to install a missing Python package automatically
+install_python_pkg() {
+  local pkg="$1"
+  local run_cmd="pipx install $pkg && pipx ensurepath && source \$HOME/.bashrc"
+  echo "Installing Python package '$pkg' via:"
+  echo "  $run_cmd"
+  eval "$run_cmd"
+}
+
+#############################################
+# 1) Check for sudo & needed dependencies   #
+#############################################
+
+# First decide if we have 'sudo' or not
+check_sudo
 
 echo "Checking system dependencies..."
 echo "System Dependencies:"
@@ -176,38 +260,50 @@ echo "Checking Python packages..."
 check_command "pipx"
 
 if [ "${#missing_deps[@]}" -eq 0 ]; then
-  check_iscc_python_package
+  check_iscc_python_package "iscc_sdk"
 else
-  echo ""
-  echo "pipx is missing. Please install pipx first and re-run the script:"
-  print_install_instructions "pipx"
-  exit 1
+  # pipx might be missing, or something else
+  check_iscc_python_package "iscc_sdk"
 fi
 
-# If any system dependencies are missing, print instructions and exit
-if [ "${#missing_deps[@]}" -ne 0 ]; then
+# Summarize missing items
+all_missing_count=$(( ${#missing_deps[@]} + ${#missing_python_packages[@]} ))
+
+if [ $all_missing_count -eq 0 ]; then
+  echo "All dependencies are installed."
   echo ""
-  echo "Some system dependencies are missing. Please install them and re-run the script:"
+else
+  echo ""
+  echo "Some dependencies are missing. Please see instructions below:"
+  # Print instructions
   for dep in "${missing_deps[@]}"; do
     print_install_instructions "$dep"
   done
+  if [ "${#missing_python_packages[@]}" -ne 0 ]; then
+    print_python_package_instructions
+  fi
   echo ""
-  echo "Exiting now..."
-  exit 1
-fi
 
-# If any Python packages are missing, print instructions and exit
-if [ "${#missing_python_packages[@]}" -ne 0 ]; then
-  echo ""
-  echo "Some Python packages are missing. Please install them and re-run the script:"
-  print_python_package_instructions
-  echo ""
-  echo "Exiting now..."
-  exit 1
-fi
+  # Ask user if we should install them automatically
+  read -r -p "Do you want me to try installing these dependencies for you? [y/N] " user_choice
+  if [[ "$user_choice" =~ ^[Yy]$ ]]; then
+    echo "Attempting to install missing dependencies..."
+    for dep in "${missing_deps[@]}"; do
+      install_dependency "$dep" || true
+    done
+    for pkg in "${missing_python_packages[@]}"; do
+      install_python_pkg "$pkg" || true
+    done
 
-echo "All dependencies are installed."
-echo ""
+    echo ""
+    echo "Re-run this script to verify if everything installed properly."
+    echo "Exiting now..."
+    exit 0
+  else
+    echo "Please install the missing dependencies manually and re-run. Exiting."
+    exit 1
+  fi
+fi
 
 ###############################
 # 2) HARDHAT / RUST WORKFLOW  #
@@ -225,29 +321,17 @@ cd "$CONTRACTS_DIR"
 
 echo "Initializing and updating Git submodules..."
 git submodule update --init --recursive
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to initialize or update Git submodules."
-  exit 1
-fi
 echo "Git submodules initialized and updated successfully."
 
 # Check if Hardhat is installed locally
 if [ ! -f "./node_modules/.bin/hardhat" ]; then
   echo "Hardhat is not installed locally in $CONTRACTS_DIR. Installing Hardhat..."
   npm install --save-dev hardhat
-  if [ $? -ne 0 ]; then
-    echo "Error: Failed to install Hardhat."
-    exit 1
-  fi
 fi
 
 # Run Hardhat compile
 echo "Running 'npx hardhat compile' in $CONTRACTS_DIR..."
 npx hardhat compile
-if [ $? -ne 0 ]; then
-  echo "Error: Hardhat compilation failed."
-  exit 1
-fi
 echo "Hardhat compile completed."
 
 # Return to the /owen directory
@@ -258,14 +342,19 @@ cd - > /dev/null
 # 3) Decide: ZIP for Lambda or cargo run
 #####################################
 
+# If no arguments, just display instructions
+if [ -z "$1" ]; then
+  echo "All dependencies are installed."
+  echo "No argument supplied. Please use one of the following commands:"
+  echo "  owen --lambda       Build and package the binary for AWS Lambda"
+  echo "  owen foldername     Start Owen, indicating the folder of messages"
+  exit 0
+fi
+
 if [ "$1" == "--lambda" ]; then
   # Build the Rust binary
   echo "Building the owen_cli binary for Lambda packaging..."
   cargo build --release --bin main
-  if [ $? -ne 0 ]; then
-    echo "Error: Rust binary build failed."
-    exit 1
-  fi
 
   # Check if the binary was successfully built
   if [ ! -f "$OWEN_CLI_BINARY" ]; then
@@ -284,12 +373,6 @@ if [ "$1" == "--lambda" ]; then
   echo "You may upload this file as a Lambda layer to your AWS account."
 else
   # If the first argument is anything else (e.g., 'foldername'), run cargo with that argument
-  if [ -n "$1" ]; then
-    echo "Running 'cargo run --bin main $1' ..."
-    cargo run --bin main "$1"
-  else
-    echo "No argument supplied. Usage:"
-    echo "  $0 --lambda          # Build and package the binary for AWS Lambda"
-    echo "  $0 <foldername>      # Run 'cargo run <foldername>'"
-  fi
+  echo "Running 'cargo run --bin main $1' ..."
+  cargo run --bin main "$1"
 fi
