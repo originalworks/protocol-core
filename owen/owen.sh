@@ -52,8 +52,8 @@ check_debian_package() {
 # Check if a Python package is installed by trying to import it.
 check_iscc_python_package() {
   set +e
+  # Try detecting iscc_sdk via pipx
   pipx list | grep idk 2> /dev/null
-  # python3 -c "import $1" 2> /dev/null
   local status=$?
   set -e
 
@@ -184,11 +184,6 @@ else
   exit 1
 fi
 
-
-## for pkg in "${required_python_packages[@]}"; do
-##  check_iscc_python_package "$pkg"
-## done
-
 # If any system dependencies are missing, print instructions and exit
 if [ "${#missing_deps[@]}" -ne 0 ]; then
   echo ""
@@ -260,29 +255,41 @@ echo "Returning to the /owen directory..."
 cd - > /dev/null
 
 #####################################
-# 3) Prepare and package the binary #
+# 3) Decide: ZIP for Lambda or cargo run
 #####################################
 
-# Build the Rust binary
-echo "Building the owen_cli binary..."
-cargo build --release --bin main
-if [ $? -ne 0 ]; then
-  echo "Error: Rust binary build failed."
-  exit 1
+if [ "$1" == "--lambda" ]; then
+  # Build the Rust binary
+  echo "Building the owen_cli binary for Lambda packaging..."
+  cargo build --release --bin main
+  if [ $? -ne 0 ]; then
+    echo "Error: Rust binary build failed."
+    exit 1
+  fi
+
+  # Check if the binary was successfully built
+  if [ ! -f "$OWEN_CLI_BINARY" ]; then
+    echo "Error: owen_cli binary was not found after build."
+    exit 1
+  fi
+
+  # Prepare and package the binary
+  echo "Packaging the owen_cli binary into $OUTPUT_ZIP ..."
+  mkdir -p "$OWEN_CLI_DIR"
+  cp "$OWEN_CLI_BINARY" "$OWEN_CLI_DIR/owen_cli"
+  zip -r "$OUTPUT_ZIP" "$OWEN_CLI_DIR/owen_cli" > /dev/null
+  rm -rf "$OWEN_CLI_DIR"
+
+  echo "Packaging completed: $OUTPUT_ZIP"
+  echo "You may upload this file as a Lambda layer to your AWS account."
+else
+  # If the first argument is anything else (e.g., 'foldername'), run cargo with that argument
+  if [ -n "$1" ]; then
+    echo "Running 'cargo run --bin main $1' ..."
+    cargo run --bin main "$1"
+  else
+    echo "No argument supplied. Usage:"
+    echo "  $0 --lambda          # Build and package the binary for AWS Lambda"
+    echo "  $0 <foldername>      # Run 'cargo run <foldername>'"
+  fi
 fi
-
-# Check if the binary was successfully built
-if [ ! -f "$OWEN_CLI_BINARY" ]; then
-  echo "Error: owen_cli binary was not found after build."
-  exit 1
-fi
-
-# Prepare and package the binary
-echo "Packaging the owen_cli binary..."
-mkdir -p "$OWEN_CLI_DIR"
-cp "$OWEN_CLI_BINARY" "$OWEN_CLI_DIR/owen_cli"
-zip -r "$OUTPUT_ZIP" "$OWEN_CLI_DIR/owen_cli" > /dev/null
-rm -rf "$OWEN_CLI_DIR"
-
-echo "Packaging completed: $OUTPUT_ZIP"
-echo "You may upload this file as a Lambda layer to your AWS account."
