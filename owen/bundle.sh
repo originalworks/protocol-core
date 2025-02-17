@@ -157,7 +157,6 @@ required_commands=(
   pkg-config
   openssl
   zip
-  libmagic1
 )
 
 # Check commands
@@ -165,7 +164,8 @@ for cmd in "${required_commands[@]}"; do
   check_command "$cmd"
 done
 
-# Check Debian package
+# Check Debian packages
+check_debian_package "libmagic1"
 check_debian_package "libtag1-dev"
 
 echo ""
