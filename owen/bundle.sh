@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Exit on any error except for the dependency checks
+# Exit on any error unless specifically handled
 set -e
 
 # Define the relative paths
@@ -14,23 +14,67 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 RESET='\033[0m'
 
-# Array to store missing dependencies
+# Arrays to store missing items
 missing_deps=()
+missing_python_packages=()
 
-# Function that checks if a given command is installed
-# and prints a green check or red cross
-check_dependency() {
+#############################################
+# Functions to check commands/dependencies  #
+#############################################
+
+# Check if a given command-line tool is installed (by name).
+# If not found, add it to missing_deps.
+check_command() {
   if command -v "$1" &> /dev/null; then
-    printf "  ${GREEN}✔${RESET} %s\n" "$1"
+    printf "  ${GREEN}✔${RESET} %s\\n" "$1"
   else
-    printf "  ${RED}✘${RESET} %s\n" "$1"
+    printf "  ${RED}✘${RESET} %s\\n" "$1"
     missing_deps+=("$1")
   fi
 }
 
-# Function that prints installation instructions for a given missing dependency
+# Check if a Debian package is installed by verifying with dpkg -s.
+check_debian_package() {
+  # Turn off exit-on-error while checking, to avoid an immediate script exit on dpkg returning non-zero
+  set +e
+  dpkg -s "$1" &> /dev/null
+  local dpkg_status=$?
+  set -e
+
+  if [ $dpkg_status -eq 0 ]; then
+    printf "  ${GREEN}✔${RESET} %s (Debian package)\\n" "$1"
+  else
+    printf "  ${RED}✘${RESET} %s (Debian package)\\n" "$1"
+    missing_deps+=("$1")
+  fi
+}
+
+# Check if a Python package is installed by trying to import it.
+check_python_package() {
+  set +e
+  python3 -c "import $1" 2> /dev/null
+  local status=$?
+  set -e
+
+  if [ $status -eq 0 ]; then
+    printf "  ${GREEN}✔${RESET} Python package '%s'\\n" "$1"
+  else
+    printf "  ${RED}✘${RESET} Python package '%s'\\n" "$1"
+    missing_python_packages+=("$1")
+  fi
+}
+
+#############################################
+# Print instructions for missing items      #
+#############################################
+
+# Print installation instructions for system commands/libraries
 print_install_instructions() {
   case "$1" in
+    python3)
+      echo "  - Install Python 3.11 with:"
+      echo "    sudo apt update && sudo apt install -y python3.11 python3.11-venv python3.11-dev pip pipx"
+      ;;
     cargo)
       echo "  - Install Rust and Cargo with:"
       echo "    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
@@ -38,36 +82,45 @@ print_install_instructions() {
       ;;
     git)
       echo "  - Install Git with:"
-      echo "    sudo apt install git -y"
+      echo "    sudo apt update && sudo apt install -y git"
       ;;
     forge)
       echo "  - Install Foundry with:"
       echo "    curl -L https://foundry.paradigm.xyz | bash"
+      echo "    source \$HOME/.bashrc"
       echo "    foundryup"
       ;;
     npm)
       echo "  - Install Node.js (includes npm) with:"
-      echo "    sudo apt install nodejs npm -y"
+      echo "    sudo apt update && sudo apt install -y nodejs npm"
       ;;
     curl)
       echo "  - Install curl with:"
-      echo "    sudo apt install curl -y"
+      echo "    sudo apt update && sudo apt install -y curl"
       ;;
     pkg-config)
       echo "  - Install pkg-config with:"
-      echo "    sudo apt install pkg-config -y"
+      echo "    sudo apt update && sudo apt install -y pkg-config"
       ;;
     openssl)
       echo "  - Install OpenSSL development headers with:"
-      echo "    sudo apt install libssl-dev -y"
+      echo "    sudo apt update && sudo apt install -y libssl-dev"
       ;;
     npx)
       echo "  - Install Node.js (includes npx) with:"
-      echo "    sudo apt install nodejs npm -y"
+      echo "    sudo apt update && sudo apt install -y nodejs npm"
       ;;
     zip)
       echo "  - Install zip with:"
-      echo "    sudo apt install zip -y"
+      echo "    sudo apt update && sudo apt install -y zip"
+      ;;
+    libmagic1)
+      echo "  - Install libmagic1 with:"
+      echo "    sudo apt update && sudo apt install -y libmagic1"
+      ;;
+    libtag1-dev)
+      echo "  - Install libtag1-dev with:"
+      echo "    sudo apt update && sudo apt install -y libtag1-dev"
       ;;
     *)
       echo "  - Install $1 using your package manager."
@@ -75,11 +128,27 @@ print_install_instructions() {
   esac
 }
 
-echo "Checking dependencies..."
+# Print installation instructions for missing Python packages
+print_python_package_instructions() {
+  for pkg in "${missing_python_packages[@]}"; do
+    echo "  - Install Python package '$pkg' with:"
+    echo "    pipx install $pkg"
+    echo "    pipx ensurepath"
+    echo "    source \$HOME/.bashrc"
+  done
+}
 
-# List of all required dependencies
-required_deps=(
+#############################################
+# 1) Check all needed dependencies          #
+#############################################
+
+echo "Checking system dependencies..."
+echo "System Dependencies:"
+
+# List of required commands
+required_commands=(
   git
+  python3
   curl
   cargo
   npm
@@ -88,18 +157,32 @@ required_deps=(
   pkg-config
   openssl
   zip
+  libmagic1
 )
 
-# Display the dependency check table
-echo "Dependencies:"
-for dep in "${required_deps[@]}"; do
-  check_dependency "$dep"
+# Check commands
+for cmd in "${required_commands[@]}"; do
+  check_command "$cmd"
 done
 
-# If any dependencies are missing, print instructions and exit
+# Check Debian package
+check_debian_package "libtag1-dev"
+
+echo ""
+echo "Checking Python packages..."
+# List of required Python packages
+required_python_packages=(
+  iscc_sdk
+)
+
+for pkg in "${required_python_packages[@]}"; do
+  check_python_package "$pkg"
+done
+
+# If any system dependencies are missing, print instructions and exit
 if [ "${#missing_deps[@]}" -ne 0 ]; then
   echo ""
-  echo "Some dependencies are missing. Please install them and re-run the script:"
+  echo "Some system dependencies are missing. Please install them and re-run the script:"
   for dep in "${missing_deps[@]}"; do
     print_install_instructions "$dep"
   done
@@ -108,7 +191,18 @@ if [ "${#missing_deps[@]}" -ne 0 ]; then
   exit 1
 fi
 
+# If any Python packages are missing, print instructions and exit
+if [ "${#missing_python_packages[@]}" -ne 0 ]; then
+  echo ""
+  echo "Some Python packages are missing. Please install them and re-run the script:"
+  print_python_package_instructions
+  echo ""
+  echo "Exiting now..."
+  exit 1
+fi
+
 echo "All dependencies are installed."
+echo ""
 
 ###############################
 # 2) HARDHAT / RUST WORKFLOW  #
@@ -155,10 +249,10 @@ echo "Hardhat compile completed."
 echo "Returning to the /owen directory..."
 cd - > /dev/null
 
-
 #####################################
 # 3) Prepare and package the binary #
 #####################################
+
 # Build the Rust binary
 echo "Building the owen_cli binary..."
 cargo build --release --bin main
