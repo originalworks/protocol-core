@@ -50,16 +50,17 @@ check_debian_package() {
 }
 
 # Check if a Python package is installed by trying to import it.
-check_python_package() {
+check_iscc_python_package() {
   set +e
-  python3 -c "import $1" 2> /dev/null
+  pipx list | grep idk 2> /dev/null
+  # python3 -c "import $1" 2> /dev/null
   local status=$?
   set -e
 
   if [ $status -eq 0 ]; then
-    printf "  ${GREEN}✔${RESET} Python package '%s'\\n" "$1"
+    printf "  ${GREEN}✔${RESET} Python iscc_sdk package '%s'\\n" "$1"
   else
-    printf "  ${RED}✘${RESET} Python package '%s'\\n" "$1"
+    printf "  ${RED}✘${RESET} Python iscc_sdk package '%s'\\n" "$1"
     missing_python_packages+=("$1")
   fi
 }
@@ -170,14 +171,23 @@ check_debian_package "libtag1-dev"
 
 echo ""
 echo "Checking Python packages..."
-# List of required Python packages
-required_python_packages=(
-  iscc_sdk
-)
 
-for pkg in "${required_python_packages[@]}"; do
-  check_python_package "$pkg"
-done
+# Check if pipx is installed before checking Python packages
+check_command "pipx"
+
+if [ "${#missing_deps[@]}" -eq 0 ]; then
+  check_iscc_python_package
+else
+  echo ""
+  echo "pipx is missing. Please install pipx first and re-run the script:"
+  print_install_instructions "pipx"
+  exit 1
+fi
+
+
+## for pkg in "${required_python_packages[@]}"; do
+##  check_iscc_python_package "$pkg"
+## done
 
 # If any system dependencies are missing, print instructions and exit
 if [ "${#missing_deps[@]}" -ne 0 ]; then
