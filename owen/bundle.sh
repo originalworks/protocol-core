@@ -114,9 +114,9 @@ print_install_instructions() {
       echo "  - Install zip with:"
       echo "    sudo apt update && sudo apt install -y zip"
       ;;
-    libmagic1)
-      echo "  - Install libmagic1 with:"
-      echo "    sudo apt update && sudo apt install -y libmagic1"
+    libmagic-dev)
+      echo "  - Install libmagic-dev with:"
+      echo "    sudo apt update && sudo apt install -y libmagic-dev"
       ;;
     libtag1-dev)
       echo "  - Install libtag1-dev with:"
@@ -165,7 +165,7 @@ for cmd in "${required_commands[@]}"; do
 done
 
 # Check Debian packages
-check_debian_package "libmagic1"
+check_debian_package "libmagic-dev"
 check_debian_package "libtag1-dev"
 
 echo ""
