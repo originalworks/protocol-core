@@ -31,6 +31,10 @@ check_dependency() {
 # Function that prints installation instructions for a given missing dependency
 print_install_instructions() {
   case "$1" in
+    python3)
+      echo "  - Install Python 3.11 with:"
+      echo "    sudo apt install -y python3.11 python3.11-venv python3.11-dev pip"
+      ;;
     cargo)
       echo "  - Install Rust and Cargo with:"
       echo "    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
@@ -43,6 +47,7 @@ print_install_instructions() {
     forge)
       echo "  - Install Foundry with:"
       echo "    curl -L https://foundry.paradigm.xyz | bash"
+      echo "    source $HOME/.bashrc"
       echo "    foundryup"
       ;;
     npm)
@@ -80,6 +85,7 @@ echo "Checking dependencies..."
 # List of all required dependencies
 required_deps=(
   git
+  python3
   curl
   cargo
   npm
