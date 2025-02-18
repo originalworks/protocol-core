@@ -11,7 +11,7 @@
         "UpdatedTimestampAttributeName": "updatedTimestamp",
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
-        "MessagePerBlob": "10",
+        "MessagePerBlob": "2",
         "DefaultIpfsInterface": "PINATA",
         "OutputFilesDir": "/tmp/output_files",
         "InputFilesDir": "/tmp/input_files",
