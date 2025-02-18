@@ -3,7 +3,7 @@
         "MessagesBucketName": "test-messages-bucket",
         "MessageStatusTableName": "MessageStatusTable",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "59",
+        "OwenLambdaScheduleRateMin": "10",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
         "ProcessingStatusAttributeName": "processingStatus",

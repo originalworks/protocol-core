@@ -1,8 +1,6 @@
 use aws_sdk_dynamodb::types::AttributeValue;
 use std::{env, error::Error};
 
-// use crate::lambda_config::OwenLambdaConfig;
-
 pub struct MessageQueue {
     client: aws_sdk_dynamodb::Client,
     table_name: String,
@@ -49,11 +47,60 @@ impl MessageQueue {
 
         let message_folders = response
             .items
-            .unwrap()
+            .expect("No items in Dynamo response")
             .iter()
-            .map(|item| item.get(&self.pk_name).unwrap().as_s().unwrap().clone())
+            .map(|item| {
+                item.get(&self.pk_name)
+                    .expect("Could not find partition key value")
+                    .as_s()
+                    .expect("Partition key is not a string")
+                    .clone()
+            })
             .collect::<Vec<String>>();
 
         Ok(message_folders)
+    }
+
+    pub async fn set_message_folders_as_processed(
+        &self,
+        message_folders: Vec<String>,
+    ) -> Result<(), Box<dyn Error>> {
+        for folder in message_folders {
+            let folder_key = AttributeValue::S(folder.clone());
+            let status_value = AttributeValue::S(self.processed_status_value.to_string().clone());
+
+            let update_output = &self
+                .client
+                .update_item()
+                .table_name(&self.table_name)
+                .key("messageFolder", folder_key)
+                .update_expression("SET processingStatus = :expressionValue")
+                .expression_attribute_values(":expressionValue", status_value)
+                .send()
+                .await?;
+            println!("update output: {update_output:?}");
+        }
+        Ok(())
+    }
+    pub async fn set_message_folders_as_rejected(
+        &self,
+        message_folders: Vec<String>,
+    ) -> Result<(), Box<dyn Error>> {
+        for folder in message_folders {
+            let folder_key = AttributeValue::S(folder.clone());
+            let status_value = AttributeValue::S("rejected".to_string());
+
+            let update_output = &self
+                .client
+                .update_item()
+                .table_name(&self.table_name)
+                .key("messageFolder", folder_key)
+                .update_expression("SET processingStatus = :expressionValue")
+                .expression_attribute_values(":expressionValue", status_value)
+                .send()
+                .await?;
+            println!("update output: {update_output:?}");
+        }
+        Ok(())
     }
 }
