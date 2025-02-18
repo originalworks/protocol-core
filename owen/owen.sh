@@ -295,6 +295,16 @@ else
       install_python_pkg "$pkg" || true
     done
 
+ # After we attempt to install, let's source .bashrc so changes to $PATH (etc.) take effect now
+    if [ -f "$HOME/.bashrc" ]; then
+      echo "Sourcing $HOME/.bashrc to refresh the environment..."
+      # shellcheck source=/dev/null
+      source "$HOME/.bashrc"
+      echo "Environment refreshed for this session."
+    else
+      echo "No ~/.bashrc found; skipping source step."
+    fi
+
     echo ""
     echo "Re-run this script to verify if everything installed properly."
     echo "Exiting now..."
