@@ -2,7 +2,6 @@ mod message_queue;
 mod message_storage;
 mod secrets;
 
-// use anyhow::Ok;
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
@@ -15,6 +14,7 @@ use std::fs;
 async fn function_handler(
     event: LambdaEvent<CloudWatchEvent>,
 ) -> Result<(), lambda_runtime::Error> {
+    println!("Lambda execution enter");
     let payload = event.payload;
     tracing::info!("Payload: {:?}", payload);
 
@@ -24,7 +24,7 @@ async fn function_handler(
         .load()
         .await;
 
-    set_secret_envs(&aws_main_config).await.unwrap();
+    let owen_config = owen_cli::Config::build();
 
     let queue = MessageQueue::build(&aws_main_config);
     let storage = MessageStorage::build(&aws_main_config);
@@ -35,35 +35,46 @@ async fn function_handler(
         return Ok(());
     }
 
-    storage.sync_message_folders(message_folders).await.unwrap();
+    storage
+        .sync_message_folders(&message_folders)
+        .await
+        .unwrap();
 
-    let directories_tmp: Vec<String> = fs::read_dir("/tmp")
-        .unwrap()
-        .into_iter()
-        .map(|dir| dir.unwrap().path().to_string_lossy().to_string())
-        .collect();
+    println!("synced directories: {message_folders:?}");
 
-    println!("synced directories: {directories_tmp:?}");
-
-    // second owen_cli::Config declared here :(
-    let owen_config = owen_cli::Config::build();
-
-    owen_cli::run_with_sentry(&owen_config).await.unwrap();
-
+    match owen_cli::run_with_sentry(&owen_config).await {
+        Ok(_) => {
+            queue
+                .set_message_folders_as_processed(message_folders)
+                .await
+                .unwrap();
+        }
+        Err(_) => {
+            queue
+                .set_message_folders_as_rejected(message_folders)
+                .await
+                .unwrap();
+        }
+    };
+    println!("Lambda execution leave");
     Ok(())
 }
 
-fn main() -> Result<(), lambda_runtime::Error> {
+#[tokio::main]
+async fn main() -> Result<(), lambda_runtime::Error> {
+    println!("Lambda cold start");
+
+    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
+    let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
+        .region(region_provider)
+        .load()
+        .await;
+    set_secret_envs(&aws_main_config).await.unwrap();
+    let owen_config = owen_cli::Config::build();
+    let _guard = init_sentry(&owen_config);
+    init_logging()?;
+
     tracing::init_default_subscriber();
 
-    init_logging()?;
-    // first owen_cli::Config declared here :(
-    let config = owen_cli::Config::build();
-    let _guard = init_sentry(&config);
-
-    tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap()
-        .block_on(lambda_runtime::run(service_fn(function_handler)))
+    lambda_runtime::run(service_fn(function_handler)).await
 }
