@@ -219,7 +219,9 @@ install_dependency() {
       [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && \
       nvm install 22 && \
       nvm use 22 && \
-      nvm alias default 22"
+      nvm alias default 22" \
+      source \$HOME/.nvm/nvm.sh
+
       ;;
     zip)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y zip"
