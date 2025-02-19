@@ -34,6 +34,7 @@ async fn function_handler(
         tracing::info!("No message folders found, queue is empty. Terminating execution.");
         return Ok(());
     }
+    storage.clear_input_folder().unwrap();
 
     storage
         .sync_message_folders(&message_folders)

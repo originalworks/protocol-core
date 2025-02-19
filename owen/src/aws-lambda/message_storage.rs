@@ -78,4 +78,12 @@ impl MessageStorage {
 
         Ok(())
     }
+
+    pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
+        let input_files_path = Path::new(&self.input_files_dir);
+        if input_files_path.is_dir() {
+            fs::remove_dir_all(input_files_path).unwrap();
+        }
+        Ok(())
+    }
 }
