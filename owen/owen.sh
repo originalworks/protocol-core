@@ -291,8 +291,8 @@ check_command "pipx"
 if [ "${#missing_deps[@]}" -eq 0 ]; then
   check_iscc_python_package "iscc_sdk"
 else
-  # pipx might be missing, or something else
-  check_iscc_python_package "iscc_sdk"
+  echo "pipx is missing; skipping check for iscc_sdk."
+  # check_iscc_python_package "iscc_sdk"
 fi
 
 # Summarize missing items
