@@ -204,7 +204,7 @@ install_dependency() {
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y curl"
       ;;
     cargo)
-      install_cmd="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && source \$HOME/.cargo/env"
+      install_cmd="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env"
       ;;
     pkg-config)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y pkg-config"
