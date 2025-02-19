@@ -1,10 +1,10 @@
 # OWEN - Original Works Electronic Notifications
 
-This is still a prototype on v0.1
+This is still a beta on v0.3
 
-Current status is reported on issues [v0.1](https://github.com/originalworks/protocol/issues/73) and [v0.2](https://github.com/originalworks/protocol/issues/74)
+Current status is reported on issues [v0.1](https://github.com/originalworks/protocol/issues/73), [v0.2](https://github.com/originalworks/protocol/issues/74), [v0.3](https://github.com/originalworks/protocol-core/issues/85).
 
-You can currenlty use OWEN to send `.xml` files as a BLOB using [EIP4844](https://www.eip4844.com/) transaction.
+You can currenlty use OWEN to send DDEX packages (that include `.xml` files) as a BLOB using [EIP4844](https://www.eip4844.com/) transaction.
 
 # HOW TO USE OWEN WITH LIVE TESTNET (Holesky)
 
