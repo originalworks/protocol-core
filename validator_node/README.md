@@ -39,7 +39,7 @@ To run this project on a GPU, you'll need a graphics card with sufficient memory
 ## Steps to install the validator on a clean Debian system
 
 1.  Install dependencies: `apt install curl build-essential libssl-dev git pkg-config npm`
-2-  [Rust](https://www.rust-lang.org/tools/install) - Can be installed with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and shell refreshed with `. "$HOME/.cargo/env"`
+2.  [Rust](https://www.rust-lang.org/tools/install) - Can be installed with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and shell refreshed with `. "$HOME/.cargo/env"`
 3. [Foundry](https://book.getfoundry.sh/getting-started/installation) - Can be installed with:
 
 ```bash

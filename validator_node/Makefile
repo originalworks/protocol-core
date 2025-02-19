@@ -9,3 +9,6 @@ run-local-cpu:
 
 run-local-fake-cpu:
 	LOCAL=1 RISC0_DEV_MODE=1 cargo run
+
+run-gpu:
+	RUSTFLAGS="-C target-cpu=native" cargo run -F cuda -r

@@ -2,6 +2,7 @@ mod blob;
 mod constants;
 mod ddex_sequencer;
 mod ipfs;
+pub mod logger;
 mod output_generator;
 
 use alloy::network::EthereumWallet;
@@ -10,8 +11,13 @@ use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use anyhow::Context;
 use blob::BlobTransactionData;
+use ddex_schema::ParserError;
 use ddex_sequencer::DdexSequencerContext;
 pub use log;
+use log_macros::log_error;
+use output_generator::MessageDirProcessingContext;
+use sentry::User;
+use serde_json::json;
 use std::env;
 use std::str::FromStr;
 
@@ -62,7 +68,7 @@ impl Config {
 
         let folder_path = args
             .next()
-            .unwrap_or(Config::get_env_var("INPUT_FILES_DIR").to_string());
+            .unwrap_or_else(|| Config::get_env_var("INPUT_FILES_DIR").to_string());
 
         let rpc_url = Config::get_env_var("RPC_URL");
         let private_key = Config::get_env_var("PRIVATE_KEY");
@@ -102,8 +108,8 @@ impl Config {
     }
 }
 
-pub async fn run(config: &Config) -> anyhow::Result<()> {
-    output_generator::create_output_files(&config).await?;
+pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    let message_dir_processing_log = output_generator::create_output_files(&config).await?;
 
     let private_key_signer: PrivateKeySigner = config
         .private_key
@@ -122,5 +128,36 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     ddex_sequencer_context
         .send_blob(blob_transaction_data)
         .await?;
+    Ok(message_dir_processing_log)
+}
+
+pub async fn run_with_sentry(config: &Config) -> anyhow::Result<()> {
+    sentry::configure_scope(|scope| {
+        scope.set_user(Some(User {
+            username: Some(config.username.to_owned()),
+            ..Default::default()
+        }));
+
+        let mut cloned_config = config.clone();
+        cloned_config.pinata_jwt = "***".to_string();
+        cloned_config.private_key = "***".to_string();
+        scope.set_extra("config", json!(cloned_config));
+    });
+
+    run(&config).await.map_err(|e| {
+        sentry::configure_scope(|scope| {
+            scope.set_tag("error_type", {
+                if e.is::<ParserError>() {
+                    "parser"
+                } else {
+                    "other"
+                }
+            });
+            scope.set_extra("error_object", json!(format!("{e:#?}")));
+        });
+
+        log_error!("{e}")
+    })?;
+
     Ok(())
 }

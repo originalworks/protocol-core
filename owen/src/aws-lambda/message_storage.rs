@@ -57,14 +57,14 @@ impl MessageStorage {
 
     pub async fn sync_message_folders(
         &self,
-        message_folders: Vec<String>,
+        message_folders: &Vec<String>,
     ) -> Result<(), Box<dyn Error>> {
         for s3_message_folder in message_folders {
             let s3_message_folder_objects = self
                 .client
                 .list_objects_v2()
                 .bucket(&self.bucket_name)
-                .prefix(&s3_message_folder)
+                .prefix(s3_message_folder)
                 .send()
                 .await?;
 
@@ -76,6 +76,14 @@ impl MessageStorage {
             }
         }
 
+        Ok(())
+    }
+
+    pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
+        let input_files_path = Path::new(&self.input_files_dir);
+        if input_files_path.is_dir() {
+            fs::remove_dir_all(input_files_path).unwrap();
+        }
         Ok(())
     }
 }

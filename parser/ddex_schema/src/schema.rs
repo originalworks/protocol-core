@@ -12,10 +12,6 @@ use crate::validation::*;
     serde_valid::Validate,
 )]
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
-
-// Check 7 disabled until revelator starts sending messages that meet protocol requirements
-// #[validate(custom = |s| ProtocolValidator::music_licensing_companies(&s.resource_list, &s.party_list))]
-
 pub struct NewReleaseMessage {
     #[yaserde(rename = "MessageHeader", prefix = "ern")]
     #[validate]
@@ -519,7 +515,7 @@ pub struct SoundRecordingEdition {
 #[yaserde(prefix = "ern", namespace = "ern: http://ddex.net/xml/ern/43")]
 pub struct SoundRecordingId {
     #[yaserde(rename = "ISRC", prefix = "ern")]
-    #[validate(pattern = r"^[A-Za-z]{2}\w{3}\d{7}$")]
+    #[validate(custom = ISRCValidator::json_validate)]
     pub isrc: String,
     #[yaserde(rename = "CatalogNumber", prefix = "ern")]
     pub catalog_number: Option<CatalogNumber>,
@@ -1094,8 +1090,7 @@ pub struct ResourceRightsController {
         validation = "AvsRightsControllerRoleValidator"
     )]
     #[validate(custom = AvsRightsControllerRoleValidator::json_validate_vec)]
-    // TODO
-    // #[validate(custom = ProtocolValidator::rights_control_types)]
+    #[validate(custom = ProtocolValidator::rights_control_types)]
     #[validate(min_items = 1)]
     pub rights_control_types: Vec<String>,
     #[yaserde(rename = "RightSharePercentage", prefix = "ern")]
