@@ -47,6 +47,34 @@ check_command() {
   fi
 }
 
+# Check if Node.js v22 is installed and npx is available
+check_node_version() {
+  if command -v node &> /dev/null; then
+    NODE_VERSION=$(node -v | sed 's/v//')
+    REQUIRED_VERSION="22"
+    if [[ "$NODE_VERSION" == "$REQUIRED_VERSION"* ]]; then
+      printf "  ${GREEN}✔${RESET} Node.js v$REQUIRED_VERSION.x detected (current: v$NODE_VERSION)\\n"
+
+      # Check for npx
+      if command -v npx &> /dev/null; then
+        printf "  ${GREEN}✔${RESET} npx is available\\n"
+      else
+        printf "  ${RED}✘${RESET} npx is missing despite Node.js v$REQUIRED_VERSION.x installation\\n"
+        missing_deps+=("npx")
+      fi
+
+    else
+      printf "  ${RED}✘${RESET} Node.js v$REQUIRED_VERSION.x not found (current: v$NODE_VERSION)\\n"
+      missing_deps+=("nodejs_v$REQUIRED_VERSION")
+    fi
+  else
+    printf "  ${RED}✘${RESET} Node.js not installed\\n"
+    missing_deps+=("nodejs_v$REQUIRED_VERSION")
+  fi
+}
+
+
+
 # Check if a Debian package is installed by verifying with dpkg -s.
 check_debian_package() {
   # Temporarily turn off exit-on-error while checking,
@@ -105,9 +133,14 @@ print_install_instructions() {
       echo "    source \$HOME/.bashrc"
       echo "    foundryup"
       ;;
-    npm)
-      echo "  - Install Node.js (includes npm) with:"
-      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+    nodejs_v22)
+      echo "  - Install Node.js v22.x with nvm:"
+      echo "    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash"
+      echo "    export NVM_DIR=\"\$HOME/.nvm\""
+      echo "    [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\""
+      echo "    nvm install 22"
+      echo "    nvm use 22"
+      echo "    nvm alias default 22"
       ;;
     curl)
       echo "  - Install curl with:"
@@ -120,10 +153,6 @@ print_install_instructions() {
     openssl)
       echo "  - Install OpenSSL development headers with:"
       echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
-      ;;
-    npx)
-      echo "  - Install Node.js (includes npx) with:"
-      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
       ;;
     zip)
       echo "  - Install zip with:"
@@ -173,9 +202,6 @@ install_dependency() {
       # Foundry installation steps
       install_cmd="curl -L https://foundry.paradigm.xyz | bash && source \$HOME/.bashrc && foundryup"
       ;;
-    npm)
-      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
-      ;;
     curl)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y curl"
       ;;
@@ -188,8 +214,13 @@ install_dependency() {
     openssl)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
       ;;
-    npx)
-      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+    nodejs_v22)
+      install_cmd="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
+      export NVM_DIR=\"\$HOME/.nvm\" && \
+      [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && \
+      nvm install 22 && \
+      nvm use 22 && \
+      nvm alias default 22"
       ;;
     zip)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y zip"
@@ -236,8 +267,6 @@ required_commands=(
   python3
   curl
   cargo
-  npm
-  npx
   forge
   pkg-config
   openssl
