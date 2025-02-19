@@ -37,7 +37,7 @@ async fn function_handler(
     }
     storage.clear_input_folder().unwrap();
 
-    storage
+    let local_to_s3_folder_mapping = storage
         .sync_message_folders(&message_folders)
         .await
         .unwrap();
@@ -45,9 +45,13 @@ async fn function_handler(
     println!("synced directories: {message_folders:?}");
 
     match owen_cli::run_with_sentry(&owen_config).await {
-        Ok(_) => {
+        Ok(message_processing_context) => {
             queue
-                .set_message_folders_as_processed(message_folders)
+                .sync_message_folder_statuses(
+                    local_to_s3_folder_mapping,
+                    message_processing_context,
+                    message_folders,
+                )
                 .await
                 .unwrap();
         }

@@ -3,7 +3,7 @@ mod constants;
 mod ddex_sequencer;
 mod ipfs;
 pub mod logger;
-mod output_generator;
+pub mod output_generator;
 
 use alloy::network::EthereumWallet;
 use alloy::primitives::Address;
@@ -131,7 +131,7 @@ pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingCont
     Ok(message_dir_processing_log)
 }
 
-pub async fn run_with_sentry(config: &Config) -> anyhow::Result<()> {
+pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
     sentry::configure_scope(|scope| {
         scope.set_user(Some(User {
             username: Some(config.username.to_owned()),
@@ -144,7 +144,7 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<()> {
         scope.set_extra("config", json!(cloned_config));
     });
 
-    run(&config).await.map_err(|e| {
+    let message_dir_processing_context = run(&config).await.map_err(|e| {
         sentry::configure_scope(|scope| {
             scope.set_tag("error_type", {
                 if e.is::<ParserError>() {
@@ -159,5 +159,5 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<()> {
         log_error!("{e}")
     })?;
 
-    Ok(())
+    Ok(message_dir_processing_context)
 }

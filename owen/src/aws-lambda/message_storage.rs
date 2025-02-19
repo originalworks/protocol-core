@@ -1,4 +1,4 @@
-use std::{env, error::Error, fs, path::Path};
+use std::{collections::HashMap, env, error::Error, fs, path::Path};
 use tokio::fs::File;
 
 pub struct MessageStorage {
@@ -58,7 +58,8 @@ impl MessageStorage {
     pub async fn sync_message_folders(
         &self,
         message_folders: &Vec<String>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<HashMap<String, String>, Box<dyn Error>> {
+        let mut local_to_s3_folder_mapping = HashMap::<String, String>::new();
         for s3_message_folder in message_folders {
             let s3_message_folder_objects = self
                 .client
@@ -71,12 +72,13 @@ impl MessageStorage {
             for s3_folder_object in s3_message_folder_objects.contents.unwrap() {
                 let s3_key = s3_folder_object.key.unwrap();
                 let local_path = self.build_local_path(&s3_key, &s3_message_folder).unwrap();
+                local_to_s3_folder_mapping.insert(local_path.clone(), s3_key.clone());
 
                 self.copy_from_s3(s3_key, local_path).await?;
             }
         }
 
-        Ok(())
+        Ok(local_to_s3_folder_mapping)
     }
 
     pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
