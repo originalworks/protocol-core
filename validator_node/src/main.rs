@@ -1,3 +1,5 @@
+mod bee;
+
 use anyhow::Context;
 use log_macros::log_error; // your existing macro
 use regex::Regex;          // for replacing lines in .env
@@ -7,6 +9,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use validator_node::Config;
+use ctrlc;
 
 // Additional crates for key generation
 use rand::rngs::OsRng;
@@ -283,7 +286,31 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    // D) Log out START_BLOCK, SEGMENT_LIMIT_PO2, ENVIRONMENT
+    // D) Ensure Bee is installed if not present:
+    if !bee::is_bee_installed() {
+        match bee::install_bee() {
+            Ok(_) => log::info!("Bee installed successfully."),    
+            Err(e) => {
+                log::error!("Failed to install Bee: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    // E) Start Bee node
+    let mut bee_process = match bee::start_bee_node() {
+        Ok(proc) => {
+            log::info!("Bee node started successfully.");
+            proc
+        }
+        Err(e) => {
+            log::error!("Failed to start Bee node: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+
+    // F) Log out START_BLOCK, SEGMENT_LIMIT_PO2, ENVIRONMENT
     let start_block = std::env::var("START_BLOCK").unwrap_or_default();
     let segment_limit = std::env::var("SEGMENT_LIMIT_PO2").unwrap_or_default();
     let environment = std::env::var("ENVIRONMENT").unwrap_or_default();
@@ -298,12 +325,17 @@ fn main() -> anyhow::Result<()> {
         scope.set_extra("ENVIRONMENT", environment.clone().into());
     });
 
-    // E) Build & run your validator_node logic
+    // G) Build & run your validator_node logic
     let config = Config::build();
     let _guard = init_sentry(&config);
 
-    tokio::runtime::Builder::new_multi_thread()
+    let result = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?
-        .block_on(init(config))
+        .block_on(init(config));
+
+    // Stop the Bee node before exiting the application
+    bee::stop_bee_node(&mut bee_process);
+
+    result
 }
