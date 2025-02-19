@@ -276,6 +276,8 @@ for cmd in "${required_commands[@]}"; do
   check_command "$cmd"
 done
 
+check_node_version
+
 # Check Debian packages
 check_debian_package "libmagic-dev"
 check_debian_package "libtag1-dev"
