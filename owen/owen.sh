@@ -314,7 +314,11 @@ else
   echo ""
 
   # Ask user if we should install them automatically
-  read -r -p "Do you want me to try installing these dependencies for you? [y/N] " user_choice
+  read -r -p "Do you want me to try installing these dependencies for you? [Y/n] " user_choice
+
+  # If the user just presses Enter, default to 'Y':
+  user_choice=${user_choice:-Y}
+
   if [[ "$user_choice" =~ ^[Yy]$ ]]; then
     echo "Attempting to install missing dependencies..."
     for dep in "${missing_deps[@]}"; do
@@ -324,18 +328,25 @@ else
       install_python_pkg "$pkg" || true
     done
 
- # After we attempt to install, let's source .bashrc so changes to $PATH (etc.) take effect now
+  # Source Cargo environment if it was installed or updated
+    if [ -f "$HOME/.cargo/env" ]; then
+      echo "Sourcing $HOME/.cargo/env to refresh environment..."
+      # shellcheck source=/dev/null
+      source "$HOME/.cargo/env"
+    fi
+
+    # Source .bashrc so changes to PATH (etc.) take effect
     if [ -f "$HOME/.bashrc" ]; then
       echo "Sourcing $HOME/.bashrc to refresh the environment..."
       # shellcheck source=/dev/null
       source "$HOME/.bashrc"
-      echo "Environment refreshed for this session."
     else
       echo "No ~/.bashrc found; skipping source step."
     fi
 
     echo ""
-    echo "Re-run this script to verify if everything installed properly."
+    echo "Finished installing dependencies."
+    echo "Pleaser re-run this script to verify if everything installed properly."
     echo "Exiting now..."
     exit 0
   else
