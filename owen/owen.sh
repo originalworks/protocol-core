@@ -47,6 +47,33 @@ check_command() {
   fi
 }
 
+# Check if Node.js v22 is installed and npx is available
+check_node_version() {
+  REQUIRED_VERSION="22"  # Ensure this is set properly
+  if command -v node &> /dev/null; then
+    NODE_VERSION=$(node -v | sed 's/v//')
+    if [[ "$NODE_VERSION" == "$REQUIRED_VERSION"* ]]; then
+      printf "  ${GREEN}✔${RESET} Node.js v$REQUIRED_VERSION.x detected (current: v$NODE_VERSION)\n"
+
+      # Check for npx
+      if command -v npx &> /dev/null; then
+        printf "  ${GREEN}✔${RESET} npx is available\n"
+      else
+        printf "  ${RED}✘${RESET} npx is missing despite Node.js v$REQUIRED_VERSION.x installation\n"
+        missing_deps+=("npx")
+      fi
+
+    else
+      printf "  ${RED}✘${RESET} Node.js v$REQUIRED_VERSION.x not found (current: v$NODE_VERSION)\n"
+      missing_deps+=("nodejs_v$REQUIRED_VERSION")
+    fi
+  else
+    printf "  ${RED}✘${RESET} Node.js not installed\n"
+    missing_deps+=("nodejs_v$REQUIRED_VERSION")
+  fi
+}
+
+
 # Check if a Debian package is installed by verifying with dpkg -s.
 check_debian_package() {
   # Temporarily turn off exit-on-error while checking,
@@ -105,9 +132,14 @@ print_install_instructions() {
       echo "    source \$HOME/.bashrc"
       echo "    foundryup"
       ;;
-    npm)
-      echo "  - Install Node.js (includes npm) with:"
-      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+    nodejs_v22)
+      echo "  - Install Node.js v22.x with nvm:"
+      echo "    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash"
+      echo "    export NVM_DIR=\"\$HOME/.nvm\""
+      echo "    [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\""
+      echo "    nvm install 22"
+      echo "    nvm use 22"
+      echo "    nvm alias default 22"
       ;;
     curl)
       echo "  - Install curl with:"
@@ -120,10 +152,6 @@ print_install_instructions() {
     openssl)
       echo "  - Install OpenSSL development headers with:"
       echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
-      ;;
-    npx)
-      echo "  - Install Node.js (includes npx) with:"
-      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
       ;;
     zip)
       echo "  - Install zip with:"
@@ -173,14 +201,11 @@ install_dependency() {
       # Foundry installation steps
       install_cmd="curl -L https://foundry.paradigm.xyz | bash && source \$HOME/.bashrc && foundryup"
       ;;
-    npm)
-      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
-      ;;
     curl)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y curl"
       ;;
     cargo)
-      install_cmd="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && source \$HOME/.cargo/env"
+      install_cmd="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env"
       ;;
     pkg-config)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y pkg-config"
@@ -188,8 +213,15 @@ install_dependency() {
     openssl)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libssl-dev"
       ;;
-    npx)
-      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y nodejs npm"
+    nodejs_v22)
+      install_cmd="curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
+      export NVM_DIR=\"\$HOME/.nvm\" && \
+      [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\" && \
+      nvm install 22 && \
+      nvm use 22 && \
+      nvm alias default 22 && \
+      source \$HOME/.nvm/nvm.sh"
+
       ;;
     zip)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y zip"
@@ -236,8 +268,6 @@ required_commands=(
   python3
   curl
   cargo
-  npm
-  npx
   forge
   pkg-config
   openssl
@@ -248,6 +278,8 @@ required_commands=(
 for cmd in "${required_commands[@]}"; do
   check_command "$cmd"
 done
+
+check_node_version
 
 # Check Debian packages
 check_debian_package "libmagic-dev"
@@ -262,8 +294,8 @@ check_command "pipx"
 if [ "${#missing_deps[@]}" -eq 0 ]; then
   check_iscc_python_package "iscc_sdk"
 else
-  # pipx might be missing, or something else
-  check_iscc_python_package "iscc_sdk"
+  echo "pipx is missing; skipping check for iscc_sdk."
+  # check_iscc_python_package "iscc_sdk"
 fi
 
 # Summarize missing items
@@ -274,18 +306,12 @@ if [ $all_missing_count -eq 0 ]; then
   echo ""
 else
   echo ""
-  echo "Some dependencies are missing. Please see instructions below:"
-  # Print instructions
-  for dep in "${missing_deps[@]}"; do
-    print_install_instructions "$dep"
-  done
-  if [ "${#missing_python_packages[@]}" -ne 0 ]; then
-    print_python_package_instructions
-  fi
-  echo ""
-
+  echo "Some dependencies are missing."
   # Ask user if we should install them automatically
-  read -r -p "Do you want me to try installing these dependencies for you? [y/N] " user_choice
+  read -r -p "Do you want me to try installing these dependencies for you? [Y/n] " user_choice
+  # If the user just presses Enter, default to 'Y':
+  user_choice=${user_choice:-Y}
+
   if [[ "$user_choice" =~ ^[Yy]$ ]]; then
     echo "Attempting to install missing dependencies..."
     for dep in "${missing_deps[@]}"; do
@@ -295,22 +321,38 @@ else
       install_python_pkg "$pkg" || true
     done
 
- # After we attempt to install, let's source .bashrc so changes to $PATH (etc.) take effect now
+    # Source Cargo environment if it was installed or updated
+    if [ -f "$HOME/.cargo/env" ]; then
+      echo "Sourcing $HOME/.cargo/env to refresh environment..."
+      # shellcheck source=/dev/null
+      source "$HOME/.cargo/env"
+    fi
+
+    # Source .bashrc so changes to PATH (etc.) take effect
     if [ -f "$HOME/.bashrc" ]; then
       echo "Sourcing $HOME/.bashrc to refresh the environment..."
       # shellcheck source=/dev/null
       source "$HOME/.bashrc"
-      echo "Environment refreshed for this session."
     else
       echo "No ~/.bashrc found; skipping source step."
     fi
 
     echo ""
-    echo "Re-run this script to verify if everything installed properly."
+    echo "Finished installing dependencies."
+    echo "Please re-run this script to verify if everything installed properly."
     echo "Exiting now..."
     exit 0
   else
-    echo "Please install the missing dependencies manually and re-run. Exiting."
+    echo ""
+    echo "Please install the missing dependencies manually using the instructions below:"
+    # Print instructions
+    for dep in "${missing_deps[@]}"; do
+      print_install_instructions "$dep"
+    done
+    if [ "${#missing_python_packages[@]}" -ne 0 ]; then
+      print_python_package_instructions
+    fi
+    echo ""
     exit 1
   fi
 fi
