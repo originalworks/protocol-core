@@ -4,6 +4,7 @@ mod secrets;
 
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
+use blob_codec::errors::OwCodecError;
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
 use message_queue::MessageQueue;
 use message_storage::MessageStorage;
@@ -49,6 +50,29 @@ async fn function_handler(
                 .set_message_folders_as_processed(message_folders)
                 .await
                 .unwrap();
+        }
+        Err(e)
+            if e.to_string()
+                .to_lowercase()
+                .contains(&"blob already submitted".to_string().to_lowercase()) =>
+        {
+            queue
+                .set_message_folders_as_processed(message_folders)
+                .await
+                .unwrap();
+        }
+        Err(e) if e.is::<OwCodecError>() => {
+            if let Some(e) = e.downcast_ref::<OwCodecError>() {
+                match e {
+                    OwCodecError::BlobOverflow {
+                        path: _path,
+                        loc: _loc,
+                    } => {
+                        panic!("Not enough space in the blob to pack all messages. Lower the MESSAGES_PER_BLOB variable value")
+                    }
+                    _ => {}
+                }
+            }
         }
         Err(_) => {
             queue
