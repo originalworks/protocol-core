@@ -49,29 +49,30 @@ check_command() {
 
 # Check if Node.js v22 is installed and npx is available
 check_node_version() {
+  REQUIRED_VERSION="22"  # Ensure this is set properly
   if command -v node &> /dev/null; then
     NODE_VERSION=$(node -v | sed 's/v//')
-    REQUIRED_VERSION="22"
     if [[ "$NODE_VERSION" == "$REQUIRED_VERSION"* ]]; then
-      printf "  ${GREEN}✔${RESET} Node.js v$REQUIRED_VERSION.x detected (current: v$NODE_VERSION)\\n"
+      printf "  ${GREEN}✔${RESET} Node.js v$REQUIRED_VERSION.x detected (current: v$NODE_VERSION)\n"
 
       # Check for npx
       if command -v npx &> /dev/null; then
-        printf "  ${GREEN}✔${RESET} npx is available\\n"
+        printf "  ${GREEN}✔${RESET} npx is available\n"
       else
-        printf "  ${RED}✘${RESET} npx is missing despite Node.js v$REQUIRED_VERSION.x installation\\n"
+        printf "  ${RED}✘${RESET} npx is missing despite Node.js v$REQUIRED_VERSION.x installation\n"
         missing_deps+=("npx")
       fi
 
     else
-      printf "  ${RED}✘${RESET} Node.js v$REQUIRED_VERSION.x not found (current: v$NODE_VERSION)\\n"
+      printf "  ${RED}✘${RESET} Node.js v$REQUIRED_VERSION.x not found (current: v$NODE_VERSION)\n"
       missing_deps+=("nodejs_v$REQUIRED_VERSION")
     fi
   else
-    printf "  ${RED}✘${RESET} Node.js not installed\\n"
+    printf "  ${RED}✘${RESET} Node.js not installed\n"
     missing_deps+=("nodejs_v$REQUIRED_VERSION")
   fi
 }
+
 
 # Check if a Debian package is installed by verifying with dpkg -s.
 check_debian_package() {
