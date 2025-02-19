@@ -73,8 +73,6 @@ check_node_version() {
   fi
 }
 
-
-
 # Check if a Debian package is installed by verifying with dpkg -s.
 check_debian_package() {
   # Temporarily turn off exit-on-error while checking,
@@ -303,19 +301,9 @@ if [ $all_missing_count -eq 0 ]; then
   echo ""
 else
   echo ""
-  echo "Some dependencies are missing. Please see instructions below:"
-  # Print instructions
-  for dep in "${missing_deps[@]}"; do
-    print_install_instructions "$dep"
-  done
-  if [ "${#missing_python_packages[@]}" -ne 0 ]; then
-    print_python_package_instructions
-  fi
-  echo ""
-
+  echo "Some dependencies are missing."
   # Ask user if we should install them automatically
   read -r -p "Do you want me to try installing these dependencies for you? [Y/n] " user_choice
-
   # If the user just presses Enter, default to 'Y':
   user_choice=${user_choice:-Y}
 
@@ -328,7 +316,7 @@ else
       install_python_pkg "$pkg" || true
     done
 
-  # Source Cargo environment if it was installed or updated
+    # Source Cargo environment if it was installed or updated
     if [ -f "$HOME/.cargo/env" ]; then
       echo "Sourcing $HOME/.cargo/env to refresh environment..."
       # shellcheck source=/dev/null
@@ -346,11 +334,20 @@ else
 
     echo ""
     echo "Finished installing dependencies."
-    echo "Pleaser re-run this script to verify if everything installed properly."
+    echo "Please re-run this script to verify if everything installed properly."
     echo "Exiting now..."
     exit 0
   else
-    echo "Please install the missing dependencies manually and re-run. Exiting."
+    echo ""
+    echo "Please install the missing dependencies manually using the instructions below:"
+    # Print instructions
+    for dep in "${missing_deps[@]}"; do
+      print_install_instructions "$dep"
+    done
+    if [ "${#missing_python_packages[@]}" -ne 0 ]; then
+      print_python_package_instructions
+    fi
+    echo ""
     exit 1
   fi
 fi
