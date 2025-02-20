@@ -1,9 +1,9 @@
 {
     "Parameters": {
-        "MessagesBucketName": "test-messages-bucket",
-        "MessageStatusTableName": "MessageStatusTable",
+        "MessagesBucketName": "ddex-messages-prod",
+        "MessageStatusTableName": "DdexMessageStatusStage",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "10",
+        "OwenLambdaScheduleRateMin": "59",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
         "ProcessingStatusAttributeName": "processingStatus",
@@ -17,6 +17,6 @@
         "InputFilesDir": "/tmp/input_files",
         "Environment": "development",
         "OwenUsername": "owen_lambda",
-        "OwenLambdaSecretsName": "OwenLambdaSecrets"
+        "OwenLambdaSecretsName": "OwenLambdaSecretsStage"
     }
 }
