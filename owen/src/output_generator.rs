@@ -93,7 +93,7 @@ async fn process_message_folder(
         input_image_path: String::new(),
         output_json_path: String::new(),
         image_cid: String::new(),
-        message_dir_path: String::new(),
+        message_dir_path: message_folder_path.to_string_lossy().to_string(),
         excluded: true,
         reason: None,
     };
@@ -283,7 +283,10 @@ fn print_output(output: &Vec<MessageDirProcessingContext>) -> anyhow::Result<()>
                 entry.message_dir_path,
                 entry.input_xml_path
             );
-            log_warn!("!!! Rejection reason: {}", entry.reason.as_ref().unwrap());
+
+            if let Some(rejection_reason) = &entry.reason {
+                log_warn!("!!! Rejection reason: {}", rejection_reason);
+            }
         }
     }
     Ok(())
