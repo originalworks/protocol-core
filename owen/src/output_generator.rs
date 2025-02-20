@@ -147,6 +147,7 @@ async fn process_message_folder(
                     ) {
                         Ok(result) => result,
                         Err(err) => {
+                            log_warn!("XML parsing error");
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
@@ -159,6 +160,7 @@ async fn process_message_folder(
                     let mut json_output = match new_release_message.to_json_string_pretty() {
                         Ok(result) => result,
                         Err(err) => {
+                            log_warn!("JSON parsing error");
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
@@ -238,12 +240,10 @@ pub async fn create_output_files(
         })?;
 
         for message_folder in message_folders {
+            empty_root_folder = false;
             let message_folder_path = message_folder?.path();
             let message_dir_processing_context =
                 process_message_folder(message_folder_path, &config).await?;
-            if !message_dir_processing_context.excluded {
-                empty_root_folder = false;
-            }
             result.push(message_dir_processing_context);
         }
     } else {
