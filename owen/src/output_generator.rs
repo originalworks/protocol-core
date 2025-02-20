@@ -156,21 +156,27 @@ async fn process_message_folder(
                     };
 
                     log_info!("Parsing JSON");
-                    let mut json_output =
-                        new_release_message
-                            .to_json_string_pretty()
-                            .inspect_err(|_| {
-                                add_attachment(
-                                    &message_dir_processing_context.input_xml_path.to_string(),
-                                );
-                            })?;
-                    new_release_message =
-                        DdexParser::from_json_string(&json_output).inspect_err(|_| {
+                    let mut json_output = match new_release_message.to_json_string_pretty() {
+                        Ok(result) => result,
+                        Err(err) => {
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
-                        })?;
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                    };
 
+                    new_release_message = match DdexParser::from_json_string(&json_output) {
+                        Ok(result) => result,
+                        Err(err) => {
+                            add_attachment(
+                                &message_dir_processing_context.input_xml_path.to_string(),
+                            );
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                    };
                     pin_and_write_cid(
                         &mut message_dir_processing_context,
                         &mut new_release_message,
