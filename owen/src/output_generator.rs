@@ -12,12 +12,13 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
-    message_dir_path: String,
+    pub message_dir_path: String,
     input_xml_path: String,
     input_image_path: String,
     image_cid: String,
     output_json_path: String,
-    empty: bool,
+    pub excluded: bool,
+    reason: Option<String>,
 }
 
 async fn pin_and_write_cid(
@@ -92,8 +93,9 @@ async fn process_message_folder(
         input_image_path: String::new(),
         output_json_path: String::new(),
         image_cid: String::new(),
-        message_dir_path: String::new(),
-        empty: true,
+        message_dir_path: message_folder_path.to_string_lossy().to_string(),
+        excluded: true,
+        reason: None,
     };
     if message_folder_path.is_dir() {
         let message_files = fs::read_dir(&message_folder_path)?;
@@ -135,20 +137,23 @@ async fn process_message_folder(
                             ))?
                     );
 
-                    message_dir_processing_context.empty = false;
-
                     log_info!(
                         "Parsing XML at {}",
                         &message_dir_processing_context.input_xml_path.to_string()
                     );
 
-                    let mut new_release_message =
-                        DdexParser::from_xml_file(&message_dir_processing_context.input_xml_path)
-                            .inspect_err(|_| {
+                    let mut new_release_message = match DdexParser::from_xml_file(
+                        &message_dir_processing_context.input_xml_path,
+                    ) {
+                        Ok(result) => result,
+                        Err(err) => {
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
-                        })?;
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                    };
 
                     log_info!("Parsing JSON");
                     let mut json_output =
@@ -174,7 +179,7 @@ async fn process_message_folder(
                     .await?;
 
                     json_output = new_release_message.to_json_string_pretty()?;
-
+                    message_dir_processing_context.excluded = false;
                     log_info!("Media files URIs have been replaced with CIDs");
 
                     fs::write(
@@ -189,6 +194,9 @@ async fn process_message_folder(
                 }
             }
         }
+    } else {
+        message_dir_processing_context.reason =
+            Some("Message folder path is not a dir".to_string());
     }
     Ok(message_dir_processing_context)
 }
@@ -227,10 +235,10 @@ pub async fn create_output_files(
             let message_folder_path = message_folder?.path();
             let message_dir_processing_context =
                 process_message_folder(message_folder_path, &config).await?;
-            if !message_dir_processing_context.empty {
-                result.push(message_dir_processing_context);
+            if !message_dir_processing_context.excluded {
                 empty_root_folder = false;
             }
+            result.push(message_dir_processing_context);
         }
     } else {
         return Err(format_error!(
@@ -251,22 +259,35 @@ pub async fn create_output_files(
 
 fn print_output(output: &Vec<MessageDirProcessingContext>) -> anyhow::Result<()> {
     for entry in output {
-        log_info!("-- PROCESSED DDEX MESSAGE");
-        log_info!(
-            "-- Source files: image: {}; XML: {}",
-            entry.input_image_path,
-            entry.input_xml_path
-        );
-        log_info!(
-            "-- Image file {} was pinned to IPFS under CID: {}",
-            entry.input_image_path,
-            entry.image_cid
-        );
-        log_info!(
-            "-- CID: {} was included in the output file: {}",
-            entry.image_cid,
-            entry.output_json_path
-        );
+        if !entry.excluded {
+            log_info!("-- PROCESSED DDEX MESSAGE");
+            log_info!(
+                "-- Source files: image: {}; XML: {}",
+                entry.input_image_path,
+                entry.input_xml_path
+            );
+            log_info!(
+                "-- Image file {} was pinned to IPFS under CID: {}",
+                entry.input_image_path,
+                entry.image_cid
+            );
+            log_info!(
+                "-- CID: {} was included in the output file: {}",
+                entry.image_cid,
+                entry.output_json_path
+            );
+        } else {
+            log_warn!("!!! REJECTED DDEX MESSAGE");
+            log_warn!(
+                "!!! Rejected folder path: {}; Rejected XML file: {}",
+                entry.message_dir_path,
+                entry.input_xml_path
+            );
+
+            if let Some(rejection_reason) = &entry.reason {
+                log_warn!("!!! Rejection reason: {}", rejection_reason);
+            }
+        }
     }
     Ok(())
 }
