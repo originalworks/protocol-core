@@ -147,6 +147,7 @@ async fn process_message_folder(
                     ) {
                         Ok(result) => result,
                         Err(err) => {
+                            log_warn!("XML parsing error");
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
@@ -156,21 +157,28 @@ async fn process_message_folder(
                     };
 
                     log_info!("Parsing JSON");
-                    let mut json_output =
-                        new_release_message
-                            .to_json_string_pretty()
-                            .inspect_err(|_| {
-                                add_attachment(
-                                    &message_dir_processing_context.input_xml_path.to_string(),
-                                );
-                            })?;
-                    new_release_message =
-                        DdexParser::from_json_string(&json_output).inspect_err(|_| {
+                    let mut json_output = match new_release_message.to_json_string_pretty() {
+                        Ok(result) => result,
+                        Err(err) => {
+                            log_warn!("JSON parsing error");
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
-                        })?;
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                    };
 
+                    new_release_message = match DdexParser::from_json_string(&json_output) {
+                        Ok(result) => result,
+                        Err(err) => {
+                            add_attachment(
+                                &message_dir_processing_context.input_xml_path.to_string(),
+                            );
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                    };
                     pin_and_write_cid(
                         &mut message_dir_processing_context,
                         &mut new_release_message,
@@ -232,12 +240,10 @@ pub async fn create_output_files(
         })?;
 
         for message_folder in message_folders {
+            empty_root_folder = false;
             let message_folder_path = message_folder?.path();
             let message_dir_processing_context =
                 process_message_folder(message_folder_path, &config).await?;
-            if !message_dir_processing_context.excluded {
-                empty_root_folder = false;
-            }
             result.push(message_dir_processing_context);
         }
     } else {
