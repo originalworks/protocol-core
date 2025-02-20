@@ -18,7 +18,7 @@ pub struct MessageDirProcessingContext {
     image_cid: String,
     output_json_path: String,
     pub excluded: bool,
-    reason: String,
+    reason: Option<String>,
 }
 
 async fn pin_and_write_cid(
@@ -95,7 +95,7 @@ async fn process_message_folder(
         image_cid: String::new(),
         message_dir_path: String::new(),
         excluded: true,
-        reason: String::new(),
+        reason: None,
     };
     if message_folder_path.is_dir() {
         let message_files = fs::read_dir(&message_folder_path)?;
@@ -150,7 +150,7 @@ async fn process_message_folder(
                             add_attachment(
                                 &message_dir_processing_context.input_xml_path.to_string(),
                             );
-                            message_dir_processing_context.reason = err.to_string();
+                            message_dir_processing_context.reason = Some(err.to_string());
                             return Ok(message_dir_processing_context);
                         }
                     };
@@ -195,7 +195,8 @@ async fn process_message_folder(
             }
         }
     } else {
-        message_dir_processing_context.reason = "Message folder path is not a dir".to_string();
+        message_dir_processing_context.reason =
+            Some("Message folder path is not a dir".to_string());
     }
     Ok(message_dir_processing_context)
 }
@@ -282,8 +283,7 @@ fn print_output(output: &Vec<MessageDirProcessingContext>) -> anyhow::Result<()>
                 entry.message_dir_path,
                 entry.input_xml_path
             );
-
-            log_warn!("!!! Rejection reason: {}", entry.reason);
+            log_warn!("!!! Rejection reason: {}", entry.reason.as_ref().unwrap());
         }
     }
     Ok(())
