@@ -1,7 +1,7 @@
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
 use anyhow::Context;
-use ddex_schema::{DdexParser, NewReleaseMessage};
+use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
 use sentry::protocol::Attachment;
 use serde_json::json;

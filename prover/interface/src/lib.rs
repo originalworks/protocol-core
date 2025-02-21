@@ -1,4 +1,4 @@
-use ddex_schema::NewReleaseMessage;
+use ddex_parser::NewReleaseMessage;
 use serde::{Deserialize, Serialize};
 
 alloy_sol_types::sol!(

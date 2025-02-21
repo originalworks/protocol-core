@@ -1,6 +1,6 @@
 use std::fs;
 
-use ddex_schema::{
+use ddex_parser::{
     Affiliation, DelegatedUsageRights, NewReleaseMessage, Party, ResourceList,
     ResourceRightsController,
 };
