@@ -1949,7 +1949,7 @@ impl ProtocolValidator {
 
     pub fn rights_control_types(types: &Vec<String>) -> Result<(), Error> {
         let expected_types = [
-            "RoyaltyAdministrator".to_string(),
+            "RightsAdministrator".to_string(),
             "RightsController".to_string(),
         ];
 
