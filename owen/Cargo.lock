@@ -1743,7 +1743,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8566979429cf69b49a5c740c60791108e86440e8be149bbea4fe54d2c32d6e2"
 
 [[package]]
-name = "ddex_schema"
+name = "ddex_parser"
 version = "0.1.0"
 dependencies = [
  "log_macros",
@@ -3205,7 +3205,7 @@ dependencies = [
  "aws_lambda_events",
  "blob_codec",
  "c-kzg",
- "ddex_schema",
+ "ddex_parser",
  "dotenvy",
  "infer",
  "lambda_runtime",

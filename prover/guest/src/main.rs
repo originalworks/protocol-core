@@ -1,6 +1,6 @@
 use alloy_sol_types::SolValue;
 use blob_codec::BlobCodec;
-use ddex_schema::DdexParser;
+use ddex_parser::DdexParser;
 use prover_interface::{ProvedMessage, ProverPublicOutputs};
 use risc0_zkvm::guest::env;
 use std::io::{Cursor, Read};

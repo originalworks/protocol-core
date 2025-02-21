@@ -1,5 +1,5 @@
 [package]
-name = "ddex_schema"
+name = "ddex_parser"
 version = "0.1.0"
 authors = ["Daniel Cybulka <daniel.cybulka@rumblefish.com>"]
 edition = "2021"
@@ -11,7 +11,7 @@ regex = "1.10.6"
 serde = {version = "1.0.0", features = ["derive"]}
 serde_valid = "0.25.0"
 thiserror = "2"
-log_macros = { path = "../../log_macros" }
+log_macros = { path = "../log_macros" }
 once_cell = "1.20.3"
 
 [dev-dependencies]

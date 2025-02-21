@@ -1176,7 +1176,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ddex_schema"
+name = "ddex_parser"
 version = "0.1.0"
 dependencies = [
  "log_macros",
@@ -2551,7 +2551,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-contract",
  "alloy-sol-types",
- "ddex_schema",
+ "ddex_parser",
  "risc0-zkvm",
  "serde",
 ]
