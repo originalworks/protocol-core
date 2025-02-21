@@ -1,4 +1,4 @@
 .env
 .env.local
 /target/
-/tests/**/*.json
+/tests/resources/playground/**/*.json

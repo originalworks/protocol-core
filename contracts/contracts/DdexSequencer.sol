@@ -100,20 +100,6 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         _moveQueue();
     }
 
-    function submitProofForFraudulentBlob(
-        bool proof
-    ) external isWhitelistedOn(VALIDATORS_WHITELIST) {
-        require(blobQueueHead != bytes32(0), "Queue is empty");
-
-        bool isValid = proof; // TODO: implement actual logic of checking the proof for the blobQueueHead
-
-        require(isValid, "Invalid proof");
-
-        // stakeVault.slashStake(blobs[blobQueueHead].proposer);
-
-        _moveQueue();
-    }
-
     function _moveQueue() private {
         if (blobQueueHead == blobQueueTail) {
             _deleteBlobQueueHead();

@@ -70,7 +70,8 @@ struct Contributor {
 }
 
 struct ProverPublicOutputs {
-    bool is_valid;
+    bool valid;
     bytes32 digest;
     ProvedMessage[] messages;
+    string[] rejected_messages;
 }

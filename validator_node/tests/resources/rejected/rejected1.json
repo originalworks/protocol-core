@@ -1,0 +1,404 @@
+{
+  "message_header": {
+    "message_id": "225cd629-6e6e-4e24-a824-65879dd90cbf",
+    "message_sender": {
+      "party_id": "ADPIDA2014021302H",
+      "party_name": {
+        "full_name": "Revelator Ltd."
+      }
+    },
+    "message_recipients": [
+      {
+        "party_id": "PADPIDA2024072201A",
+        "party_name": {
+          "full_name": "Original Works"
+        }
+      }
+    ],
+    "message_created_date_time": "2024-12-05T15:44:46.1788941Z"
+  },
+  "release_admins": [],
+  "party_list": {
+    "partys": [
+      {
+        "party_reference": "P1409873",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Cheb Ali Sghir"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P700260",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "DJ ILyas"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0C1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "DJ ILyas"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0C2",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Faycel Melyaro"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0C3",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Faycel Melyaro"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0CC1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Copyright Control"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "PLabel1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Dj Ilyas"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "PLicensor1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Revelator Ltd."
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      }
+    ]
+  },
+  "resource_list": {
+    "sound_recordings": [
+      {
+        "resource_reference": "A1",
+        "kind": {
+          "content": "MusicalWorkSoundRecording",
+          "namespace": null,
+          "user_defined_value": null
+        },
+        "sound_recording_editions": [
+          {
+            "kind": null,
+            "resource_ids": [
+              {
+                "isrc": "DZA102402556",
+                "catalog_number": null,
+                "proprietary_ids": []
+              }
+            ],
+            "edition_contributors": [],
+            "p_lines": [
+              {
+                "year": 2024,
+                "p_line_text": "2024 DJ ILyas"
+              }
+            ],
+            "recording_mode": "Stereo",
+            "technical_details": [
+              {
+                "technical_resource_details_reference": "T1",
+                "delivery_files": [
+                  {
+                    "kind": "AudioFile",
+                    "file": {
+                      "uri": "f5d61e96-4fba-4319-8ef4-064edad42c98/file.flac"
+                    },
+                    "fingerprints": []
+                  }
+                ],
+                "applicable_territory_code": "Worldwide"
+              }
+            ]
+          }
+        ],
+        "recording_formats": [],
+        "work_ids": [],
+        "display_title_texts": [
+          {
+            "content": "تزوجتي ربي هنيك"
+          }
+        ],
+        "display_titles": [
+          {
+            "title_text": "تزوجتي ربي هنيك",
+            "sub_titles": [],
+            "applicable_territory_code": null,
+            "is_default": null
+          }
+        ],
+        "version_types": [],
+        "display_artist_names": [
+          {
+            "content": "Cheb Ali Sghir",
+            "language_and_script_code": null,
+            "applicable_territory_code": null,
+            "is_default": null
+          }
+        ],
+        "display_artists": [
+          {
+            "artist_party_reference": "P1409873",
+            "display_artist_role": {
+              "content": "MainArtist"
+            },
+            "artistic_roles": [],
+            "title_display_informations": [],
+            "sequence_number": null
+          }
+        ],
+        "contributors": [
+          {
+            "contributor_party_reference": "P700260",
+            "roles": [
+              {
+                "content": "AssociatedPerformer"
+              }
+            ],
+            "sequence_number": 1
+          },
+          {
+            "contributor_party_reference": "P700260",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 2
+          },
+          {
+            "contributor_party_reference": "P0C2",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 3
+          },
+          {
+            "contributor_party_reference": "P0C2",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 4
+          },
+          {
+            "contributor_party_reference": "P0CC1",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 5
+          }
+        ],
+        "characters": [],
+        "resource_rights_controllers": [
+          {
+            "rights_controller_party_reference": "PLicensor1",
+            "rights_control_types": [
+              "RoyaltyAdministrator"
+            ],
+            "right_share_percentage": "100.00",
+            "right_share_unknown": null,
+            "delegated_usage_rights": []
+          }
+        ],
+        "duration": "PT0S",
+        "creation_date": null,
+        "parental_warning_types": [
+          {
+            "content": "NoAdviceAvailable"
+          }
+        ],
+        "is_instrumental": null,
+        "language_of_performances": []
+      }
+    ],
+    "images": [
+      {
+        "resource_reference": "A2",
+        "kind": {
+          "content": "FrontCoverImage",
+          "namespace": null,
+          "user_defined_value": null
+        },
+        "resource_ids": [
+          {
+            "proprietary_ids": [
+              {
+                "content": "fc6c888d-4e36-4c43-ab20-78a9bef76db4",
+                "namespace": "PADPIDA2014021302H"
+              }
+            ]
+          }
+        ],
+        "parental_warning_types": [
+          {
+            "content": "NoAdviceAvailable"
+          }
+        ],
+        "technical_details": [
+          {
+            "technical_resource_details_reference": "T2",
+            "file": {
+              "uri": "fc6c888d-4e36-4c43-ab20-78a9bef76db4/file.jpg"
+            },
+            "fingerprints": []
+          }
+        ]
+      }
+    ]
+  },
+  "release_list": {
+    "release": {
+      "release_reference": "R0",
+      "release_types": [
+        {
+          "content": "SingleResourceRelease"
+        }
+      ],
+      "release_id": {
+        "g_rid": null,
+        "icpn": "7316479298965",
+        "proprietary_ids": []
+      },
+      "display_title_texts": [
+        {
+          "content": "تزوجتي ربي هنيك"
+        }
+      ],
+      "display_titles": [
+        {
+          "title_text": "تزوجتي ربي هنيك",
+          "sub_titles": [],
+          "applicable_territory_code": null,
+          "is_default": null
+        }
+      ],
+      "display_artist_names": [
+        {
+          "content": "Cheb Ali Sghir with DJ ILyas",
+          "language_and_script_code": null,
+          "applicable_territory_code": null,
+          "is_default": null
+        }
+      ],
+      "display_artists": [
+        {
+          "artist_party_reference": "P1409873",
+          "display_artist_role": {
+            "content": "MainArtist"
+          },
+          "artistic_roles": [],
+          "title_display_informations": [],
+          "sequence_number": 1
+        },
+        {
+          "artist_party_reference": "P700260",
+          "display_artist_role": {
+            "content": "Artist"
+          },
+          "artistic_roles": [],
+          "title_display_informations": [],
+          "sequence_number": 2
+        }
+      ],
+      "release_label_references": [
+        {
+          "content": "PLabel1",
+          "applicable_territory_code": null
+        }
+      ],
+      "duration": null,
+      "genres": [
+        {
+          "genre_text": "music style"
+        }
+      ],
+      "parental_warning_types": [
+        {
+          "content": "NoAdviceAvailable"
+        }
+      ],
+      "resource_group": {
+        "display_title_texts": [],
+        "display_titles": [],
+        "sequence_number": null,
+        "display_artists": [],
+        "resource_group_content_items": [
+          {
+            "sequence_number": 1,
+            "release_resource_reference": "A1"
+          },
+          {
+            "sequence_number": 2,
+            "release_resource_reference": "A2"
+          }
+        ],
+        "no_display_sequence": null
+      }
+    },
+    "track_releases": []
+  }
+}
