@@ -19,7 +19,7 @@ impl DdexParser {
                 loc: loc!(),
             },
             serde_valid::Error::ValidationError(err) => ParserError::JSONValidate {
-                msg: err.to_string(),
+                msg: err.compact_errors().join(",\n   - "),
                 loc: loc!(),
             },
         })
@@ -32,7 +32,7 @@ impl DdexParser {
                 loc: loc!(),
             },
             serde_valid::Error::ValidationError(err) => ParserError::JSONValidate {
-                msg: err.to_string(),
+                msg: err.compact_errors().join(",\n   - "),
                 loc: loc!(),
             },
         })

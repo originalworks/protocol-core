@@ -47,22 +47,22 @@ static LANGUAGE_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^[a-zA-Z]{2,3}(-[a-zA-Z]+){0,1}(-[a-zA-Z]{2}|-[0-9]{3}){0,1}(-[a-zA-Z][a-zA-Z0-9]{4}[a-zA-Z0-9]*){0,1}$").unwrap()
 });
 pub trait Validator {
-    fn regex() -> Option<&'static Regex> {
+    fn regex_check() -> Option<&'static Regex> {
         None
     }
 
     #[allow(unused_variables)]
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         None
     }
 
     #[allow(dead_code)]
     fn validate(value: &str) -> bool {
-        if let Some(re) = Self::regex() {
+        if let Some(re) = Self::regex_check() {
             return re.is_match(value);
         }
 
-        if let Some(result) = Self::enum_match(value) {
+        if let Some(result) = Self::bool_check(value) {
             return result;
         }
 
@@ -74,7 +74,7 @@ pub trait Validator {
         let opt_value: Option<&String> = value.into();
 
         if let Some(val) = opt_value {
-            match (Self::regex(), Self::enum_match(val)) {
+            match (Self::regex_check(), Self::bool_check(val)) {
                 (Some(re), None) => {
                     if re.is_match(val.as_str()) {
                         return Ok(());
@@ -89,10 +89,7 @@ pub trait Validator {
                     if result {
                         return Ok(());
                     } else {
-                        return Err(Error::Custom(format!(
-                            "Value {} is not allowed in this field",
-                            val
-                        )));
+                        return Err(Error::Custom(format!("Invalid value: {}", val)));
                     }
                 }
                 (None, None) => panic!("Validation not set"),
@@ -108,7 +105,7 @@ pub trait Validator {
         let mut errors: Vec<Error> = vec![];
 
         for val in values {
-            match (Self::regex(), Self::enum_match(val)) {
+            match (Self::regex_check(), Self::bool_check(val)) {
                 (Some(re), None) => {
                     if !re.is_match(val.as_str()) {
                         errors.push(Error::Pattern(Message::new(
@@ -119,10 +116,7 @@ pub trait Validator {
                 }
                 (None, Some(result)) => {
                     if !result {
-                        errors.push(Error::Custom(format!(
-                            "Value {} is not allowed in this field",
-                            val
-                        )));
+                        errors.push(Error::Custom(format!("Invalid value: {}", val)));
                     }
                 }
                 (None, None) => panic!("Validation not set"),
@@ -140,14 +134,14 @@ pub trait Validator {
 #[allow(dead_code)]
 pub struct ISRCValidator;
 impl Validator for ISRCValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_isrc(value))
     }
 }
 #[allow(dead_code)]
 pub struct PartyIdValidator;
 impl Validator for PartyIdValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_padpida(value))
     }
 }
@@ -155,7 +149,7 @@ impl Validator for PartyIdValidator {
 #[allow(dead_code)]
 pub struct PartyReferenceValidator;
 impl Validator for PartyReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -163,7 +157,7 @@ impl Validator for PartyReferenceValidator {
 #[allow(dead_code)]
 pub struct ContributorPartyReferenceValidator;
 impl Validator for ContributorPartyReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -171,7 +165,7 @@ impl Validator for ContributorPartyReferenceValidator {
 #[allow(dead_code)]
 pub struct AvsAffiliationTypeValidator;
 impl Validator for AvsAffiliationTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         match value {
             "MusicLicensingCompany"
             | "MusicPublisher"
@@ -186,7 +180,7 @@ impl Validator for AvsAffiliationTypeValidator {
 #[allow(dead_code)]
 pub struct PartyAffiliateReferenceValidator;
 impl Validator for PartyAffiliateReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -194,7 +188,7 @@ impl Validator for PartyAffiliateReferenceValidator {
 #[allow(dead_code)]
 pub struct AvsCurrentTerritoryCodeValidator;
 impl Validator for AvsCurrentTerritoryCodeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: Lazy<HashSet<&str>> = Lazy::new(|| {
             HashSet::from([
                 "AD",
@@ -710,7 +704,7 @@ impl Validator for AvsCurrentTerritoryCodeValidator {
 #[allow(dead_code)]
 pub struct DdexIsoDateValidator;
 impl Validator for DdexIsoDateValidator {
-    fn regex() -> Option<&'static Regex> {
+    fn regex_check() -> Option<&'static Regex> {
         Some(&DATE_RE)
     }
 }
@@ -718,7 +712,7 @@ impl Validator for DdexIsoDateValidator {
 #[allow(dead_code)]
 pub struct AvsAllTerritoryCodeValidator;
 impl Validator for AvsAllTerritoryCodeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: once_cell::sync::Lazy<HashSet<&'static str>> =
             once_cell::sync::Lazy::new(|| {
                 HashSet::from([
@@ -1019,7 +1013,7 @@ impl Validator for AvsAllTerritoryCodeValidator {
 #[allow(dead_code)]
 pub struct AvsRightsCoverageValidator;
 impl Validator for AvsRightsCoverageValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         match value {
             "MakeAvailableRight"
             | "MechanicalRight"
@@ -1036,7 +1030,7 @@ impl Validator for AvsRightsCoverageValidator {
 #[allow(dead_code)]
 pub struct DPIDValidator;
 impl Validator for DPIDValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_padpida(value))
     }
 }
@@ -1044,7 +1038,7 @@ impl Validator for DPIDValidator {
 #[allow(dead_code)]
 pub struct ResourceReferenceValidator;
 impl Validator for ResourceReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('A', value))
     }
 }
@@ -1052,7 +1046,7 @@ impl Validator for ResourceReferenceValidator {
 #[allow(dead_code)]
 pub struct AvsSoundRecordingTypeValidator;
 impl Validator for AvsSoundRecordingTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         match value {
             "AudioStem"
             | "Clip"
@@ -1071,7 +1065,7 @@ impl Validator for AvsSoundRecordingTypeValidator {
 #[allow(dead_code)]
 pub struct AvsEditionTypeValidator;
 impl Validator for AvsEditionTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "ImmersiveEdition" | "NonImmersiveEdition" => true,
             _ => false,
@@ -1082,7 +1076,7 @@ impl Validator for AvsEditionTypeValidator {
 #[allow(dead_code)]
 pub struct AvsRecordingModeValidator;
 impl Validator for AvsRecordingModeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "BinauralAudio" | "ImmersiveAudio" | "LCR" | "Mono" | "MultichannelAudio"
             | "MultiTrack" | "Quad" | "Stems" | "Stereo" | "SurroundSound" | "Unknown" => true,
@@ -1094,7 +1088,7 @@ impl Validator for AvsRecordingModeValidator {
 #[allow(dead_code)]
 pub struct AvsContributorRoleValidator;
 impl Validator for AvsContributorRoleValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
             HashSet::from([
                 "Adapter",
@@ -1416,7 +1410,7 @@ impl Validator for AvsContributorRoleValidator {
 #[allow(dead_code)]
 pub struct DisplayCreditPartyValidator;
 impl Validator for DisplayCreditPartyValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -1424,7 +1418,7 @@ impl Validator for DisplayCreditPartyValidator {
 #[allow(dead_code)]
 pub struct TechnicalResourceDetailsReferenceValidator;
 impl Validator for TechnicalResourceDetailsReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('T', value))
     }
 }
@@ -1432,7 +1426,7 @@ impl Validator for TechnicalResourceDetailsReferenceValidator {
 #[allow(dead_code)]
 pub struct TypeValidator;
 impl Validator for TypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(matches!(value, "AudioFile"))
     }
 }
@@ -1440,7 +1434,7 @@ impl Validator for TypeValidator {
 #[allow(dead_code)]
 pub struct AvsFingerprintAlgorithmTypeValidator;
 impl Validator for AvsFingerprintAlgorithmTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(matches!(value, "UserDefined"))
     }
 }
@@ -1448,7 +1442,7 @@ impl Validator for AvsFingerprintAlgorithmTypeValidator {
 #[allow(dead_code)]
 pub struct AvsRecordingFormatValidator;
 impl Validator for AvsRecordingFormatValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
             HashSet::from([
                 "360Video",
@@ -1550,7 +1544,7 @@ impl Validator for AvsRecordingFormatValidator {
 #[allow(dead_code)]
 pub struct AvsVersionTypeValidator;
 impl Validator for AvsVersionTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "ACappellaVersion"
             | "AlbumVersion"
@@ -1577,7 +1571,7 @@ impl Validator for AvsVersionTypeValidator {
 #[allow(dead_code)]
 pub struct AvsDisplayArtistRoleValidator;
 impl Validator for AvsDisplayArtistRoleValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "Artist" | "Brand" | "Composer" | "FeaturedArtist" | "MainArtist" | "UserDefined" => {
                 true
@@ -1590,7 +1584,7 @@ impl Validator for AvsDisplayArtistRoleValidator {
 #[allow(dead_code)]
 pub struct CharacterPartyReferenceValidator;
 impl Validator for CharacterPartyReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -1598,7 +1592,7 @@ impl Validator for CharacterPartyReferenceValidator {
 #[allow(dead_code)]
 pub struct RightsControllerPartyReferenceValidator;
 impl Validator for RightsControllerPartyReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -1606,7 +1600,7 @@ impl Validator for RightsControllerPartyReferenceValidator {
 #[allow(dead_code)]
 pub struct AvsRightsControllerRoleValidator;
 impl Validator for AvsRightsControllerRoleValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "AdministratingRecordCompany"
             | "LocalPayee"
@@ -1623,7 +1617,7 @@ impl Validator for AvsRightsControllerRoleValidator {
 #[allow(dead_code)]
 pub struct AvsUseTypeERNValidator;
 impl Validator for AvsUseTypeERNValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
             HashSet::from([
                 "Broadcast",
@@ -1690,7 +1684,7 @@ impl Validator for AvsUseTypeERNValidator {
 #[allow(dead_code)]
 pub struct AvsParentalWarningTypeValidator;
 impl Validator for AvsParentalWarningTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "Explicit"
             | "ExplicitContentEdited"
@@ -1706,7 +1700,7 @@ impl Validator for AvsParentalWarningTypeValidator {
 #[allow(dead_code)]
 pub struct DdexLanguageAndScriptCodeWithRestrictionValidator;
 impl Validator for DdexLanguageAndScriptCodeWithRestrictionValidator {
-    fn regex() -> Option<&'static Regex> {
+    fn regex_check() -> Option<&'static Regex> {
         Some(&LANGUAGE_RE)
     }
 }
@@ -1714,7 +1708,7 @@ impl Validator for DdexLanguageAndScriptCodeWithRestrictionValidator {
 #[allow(dead_code)]
 pub struct AvsImageTypeValidator;
 impl Validator for AvsImageTypeValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(match value {
             "BackCoverImage" | "BookletBackImage" | "BookletFrontImage" | "DocumentImage"
             | "FrontCoverImage" | "Icon" | "Logo" | "Photograph" | "Portrait" | "Poster"
@@ -1728,7 +1722,7 @@ impl Validator for AvsImageTypeValidator {
 #[allow(dead_code)]
 pub struct ReleaseReferenceValidator;
 impl Validator for ReleaseReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('R', value))
     }
 }
@@ -1736,7 +1730,7 @@ impl Validator for ReleaseReferenceValidator {
 #[allow(dead_code)]
 pub struct AvsReleaseTypeERN4Validator;
 impl Validator for AvsReleaseTypeERN4Validator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         static VALID_VALUES: Lazy<HashSet<&'static str>> = Lazy::new(|| {
             HashSet::from([
                 "Album",
@@ -1797,7 +1791,7 @@ impl Validator for AvsReleaseTypeERN4Validator {
 #[allow(dead_code)]
 pub struct DdexLocalPartyAnchorReferenceValidator;
 impl Validator for DdexLocalPartyAnchorReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
@@ -1805,7 +1799,7 @@ impl Validator for DdexLocalPartyAnchorReferenceValidator {
 #[allow(dead_code)]
 pub struct ReleaseResourceReferenceValidator;
 impl Validator for ReleaseResourceReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('A', value))
     }
 }
@@ -1813,7 +1807,7 @@ impl Validator for ReleaseResourceReferenceValidator {
 #[allow(dead_code)]
 pub struct ArtistPartyReferenceValidator;
 impl Validator for ArtistPartyReferenceValidator {
-    fn enum_match(value: &str) -> Option<bool> {
+    fn bool_check(value: &str) -> Option<bool> {
         Some(is_valid_reference('P', value))
     }
 }
