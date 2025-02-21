@@ -89,10 +89,7 @@ pub trait Validator {
                     if result {
                         return Ok(());
                     } else {
-                        return Err(Error::Custom(format!(
-                            "Value {} is not allowed in this field",
-                            val
-                        )));
+                        return Err(Error::Custom(format!("Invalid value: {}", val)));
                     }
                 }
                 (None, None) => panic!("Validation not set"),
@@ -119,10 +116,7 @@ pub trait Validator {
                 }
                 (None, Some(result)) => {
                     if !result {
-                        errors.push(Error::Custom(format!(
-                            "Value {} is not allowed in this field",
-                            val
-                        )));
+                        errors.push(Error::Custom(format!("Invalid value: {}", val)));
                     }
                 }
                 (None, None) => panic!("Validation not set"),
