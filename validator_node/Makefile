@@ -12,3 +12,6 @@ run-local-fake-cpu:
 
 run-gpu:
 	RUSTFLAGS="-C target-cpu=native" cargo run -F cuda -r
+
+test-prover:
+	RISC0_DEV_MODE=1 cargo test prover -- --nocapture

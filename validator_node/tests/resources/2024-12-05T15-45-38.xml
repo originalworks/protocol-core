@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ern:NewReleaseMessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" AvsVersionId="4.3" LanguageAndScriptCode="en" xsi:schemaLocation="http://service.ddex.net/xml/ern/43/release-notification.xsd" xmlns:ern="http://ddex.net/xml/ern/43">
+  <MessageHeader>
+    <MessageId>225cd629-6e6e-4e24-a824-65879dd90cbf</MessageId>
+    <MessageSender>
+      <PartyId>PADPIDA2014021302H</PartyId>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </MessageSender>
+    <MessageRecipient>
+      <PartyId>PADPIDA2024072201A</PartyId>
+      <PartyName>
+        <FullName>Original Works</FullName>
+      </PartyName>
+    </MessageRecipient>
+    <MessageCreatedDateTime>2024-12-05T15:44:46.1788941Z</MessageCreatedDateTime>
+  </MessageHeader>
+  <PartyList>
+    <Party>
+      <PartyReference>P1409873</PartyReference>
+      <PartyName>
+        <FullName>Cheb Ali Sghir</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P700260</PartyReference>
+      <PartyName>
+        <FullName>DJ ILyas</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C1</PartyReference>
+      <PartyName>
+        <FullName>DJ ILyas</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C2</PartyReference>
+      <PartyName>
+        <FullName>Faycel Melyaro</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C3</PartyReference>
+      <PartyName>
+        <FullName>Faycel Melyaro</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0CC1</PartyReference>
+      <PartyName>
+        <FullName>Copyright Control</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLabel1</PartyReference>
+      <PartyName>
+        <FullName>Dj Ilyas</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLicensor1</PartyReference>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </Party>
+  </PartyList>
+  <ResourceList>
+    <SoundRecording>
+      <ResourceReference>A1</ResourceReference>
+      <Type>MusicalWorkSoundRecording</Type>
+      <SoundRecordingEdition>
+        <ResourceId>
+          <ISRC>DZA102402556</ISRC>
+        </ResourceId>
+        <PLine>
+          <Year>2024</Year>
+          <PLineText>2024 DJ ILyas</PLineText>
+        </PLine>
+        <RecordingMode>Stereo</RecordingMode>
+        <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+          <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+          <DeliveryFile>
+            <Type>AudioFile</Type>
+            <ContainerFormat>Ogg</ContainerFormat>
+            <AudioCodecType>FLAC</AudioCodecType>
+            <BitRate UnitOfMeasure="kbps">690677</BitRate>
+            <SamplingRate UnitOfMeasure="Hz">44100</SamplingRate>
+            <BitDepth>16</BitDepth>
+            <File>
+              <URI>f5d61e96-4fba-4319-8ef4-064edad42c98/file.flac</URI>
+            </File>
+          </DeliveryFile>
+        </TechnicalDetails>
+      </SoundRecordingEdition>
+      <DisplayTitleText>تزوجتي ربي هنيك</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>تزوجتي ربي هنيك</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Cheb Ali Sghir</DisplayArtistName>
+      <DisplayArtist>
+        <ArtistPartyReference>P1409873</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <Contributor SequenceNumber="1">
+        <ContributorPartyReference>P700260</ContributorPartyReference>
+        <Role>AssociatedPerformer</Role>
+      </Contributor>
+      <Contributor SequenceNumber="2">
+        <ContributorPartyReference>P700260</ContributorPartyReference>
+        <Role UserDefinedValue="Income Participant">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="3">
+        <ContributorPartyReference>P0C2</ContributorPartyReference>
+        <Role UserDefinedValue="Arranger">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="4">
+        <ContributorPartyReference>P0C2</ContributorPartyReference>
+        <Role UserDefinedValue="Composer">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="5">
+        <ContributorPartyReference>P0CC1</ContributorPartyReference>
+        <Role UserDefinedValue="MusicPublisher">UserDefined</Role>
+      </Contributor>
+      <ResourceRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsController</RightsControlType>
+        <RightSharePercentage>100.00</RightSharePercentage>
+      </ResourceRightsController>
+      <WorkRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsController</RightsControlType>
+      </WorkRightsController>
+      <Duration>PT0S</Duration>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+    </SoundRecording>
+    <Image>
+      <ResourceReference>A2</ResourceReference>
+      <Type>FrontCoverImage</Type>
+      <ResourceId>
+        <ProprietaryId Namespace="PADPIDA2014021302H">fc6c888d-4e36-4c43-ab20-78a9bef76db4</ProprietaryId>
+      </ResourceId>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+        <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+        <ImageCodecType>JPEG</ImageCodecType>
+        <ImageHeight UnitOfMeasure="Pixel">3000</ImageHeight>
+        <ImageWidth UnitOfMeasure="Pixel">3000</ImageWidth>
+        <File>
+          <URI>fc6c888d-4e36-4c43-ab20-78a9bef76db4/file.jpg</URI>
+        </File>
+      </TechnicalDetails>
+    </Image>
+  </ResourceList>
+  <ReleaseList>
+    <Release>
+      <ReleaseReference>R0</ReleaseReference>
+      <ReleaseType>SingleResourceRelease</ReleaseType>
+      <ReleaseId>
+        <ICPN>7316479298965</ICPN>
+      </ReleaseId>
+      <DisplayTitleText>تزوجتي ربي هنيك</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>تزوجتي ربي هنيك</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Cheb Ali Sghir with DJ ILyas</DisplayArtistName>
+      <DisplayArtist SequenceNumber="1">
+        <ArtistPartyReference>P1409873</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <DisplayArtist SequenceNumber="2">
+        <ArtistPartyReference>P700260</ArtistPartyReference>
+        <DisplayArtistRole>Artist</DisplayArtistRole>
+      </DisplayArtist>
+      <ReleaseLabelReference>PLabel1</ReleaseLabelReference>
+      <PLine>
+        <Year>2024</Year>
+        <PLineText>2024 DJ ILyas</PLineText>
+      </PLine>
+      <CLine>
+        <Year>2024</Year>
+        <CLineText>2024 DJ ILyas</CLineText>
+      </CLine>
+      <Genre>
+        <GenreText>music style</GenreText>
+      </Genre>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <ResourceGroup>
+        <ResourceGroupContentItem>
+          <SequenceNumber>1</SequenceNumber>
+          <ReleaseResourceReference>A1</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+        <ResourceGroupContentItem>
+          <SequenceNumber>2</SequenceNumber>
+          <ReleaseResourceReference>A2</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+      </ResourceGroup>
+    </Release>
+  </ReleaseList>
+</ern:NewReleaseMessage>
