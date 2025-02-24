@@ -32,6 +32,10 @@ jobs:
           role-session-name: protocol-core-session-id-${{ github.run_id }}
           role-duration-seconds: 1200
 
-      - name: "Run Makefile test"
+      - name: "Deploy AWS Cloud Formation template"
+        working-directory: aws-queue-consumer
+        run: cargo build --release
+
+      - name: "Deploy AWS Cloud Formation template"
         working-directory: owen/aws/deploy-infra
         run: make deploy-infra-dev
