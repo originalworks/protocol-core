@@ -1,22 +1,5 @@
 {
     "Parameters": {
-        "MessagesBucketName": "test-remove-it-later",
-        "MessageStatusTableName": "DdexMessageStatusDev",
-        "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "5",
-        "ProcessingStatusIndexName": "ProcessingStatusIndex",
-        "MessageFolderAttributeName": "messageFolder",
-        "ProcessingStatusAttributeName": "processingStatus",
-        "CreatedTimestampAttributeName": "createdTimestamp",
-        "UpdatedTimestampAttributeName": "updatedTimestamp",
-        "UnprocessedStatusValue": "unprocessed",
-        "ProcessedStatusValue": "processed",
-        "MessagePerBlob": "5",
-        "DefaultIpfsInterface": "PINATA",
-        "OutputFilesDir": "/tmp/output_files",
-        "InputFilesDir": "/tmp/input_files",
-        "Environment": "development",
-        "OwenUsername": "owen_lambda",
-        "OwenLambdaSecretsName": "OwenLambdaSecretsStage"
+        "MessagesBucketName": "test-remove-it-later"
     }
 }
