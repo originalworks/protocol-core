@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: "Install cargo-lambda"
+        run: pip3 install cargo-lambda
+
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
@@ -32,9 +35,9 @@ jobs:
           role-session-name: protocol-core-session-id-${{ github.run_id }}
           role-duration-seconds: 1200
 
-      - name: "Deploy AWS Cloud Formation template"
+      - name: "Build aws-queue-consumer"
         working-directory: aws-queue-consumer
-        run: cargo build --release
+        run: cargo lambda build --release
 
       - name: "Deploy AWS Cloud Formation template"
         working-directory: owen/aws/deploy-infra
