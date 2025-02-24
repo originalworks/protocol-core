@@ -6,6 +6,6 @@ Parameters:
 
 Resources:
   MessagesBucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    BucketName: !Ref MessagesBucketName
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref MessagesBucketName
