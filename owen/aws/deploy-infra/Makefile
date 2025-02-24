@@ -9,3 +9,7 @@ deploy-infra: PARAMETERS=$(shell cat $(PARAMETERS_FILE) | jqn 'get("Parameters")
 deploy-infra: 
 	./build-aws-queue-consumer.sh
 	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
+
+
+deploy-infra-dev:
+	echo "cool"
