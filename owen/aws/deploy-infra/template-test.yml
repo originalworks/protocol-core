@@ -1,0 +1,11 @@
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  MessagesBucketName:
+    Type: String
+
+Resources:
+  MessagesBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: !Ref MessagesBucketName
