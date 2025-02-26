@@ -16,9 +16,19 @@ permissions:
 jobs:
   service-deploy:
     runs-on: ubuntu-latest
+    container: amazonlinux:latest
     timeout-minutes: 30
 
     steps:
+      - name: "Install rust and cargo"
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -y | sh
+          . "$HOME/.cargo/env"
+          exec /bin/bash
+
+      - name: "Install dependencies with dnf"
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel
+
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
 
