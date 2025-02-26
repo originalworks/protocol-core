@@ -23,7 +23,6 @@ jobs:
       - name: "Install rust and cargo"
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -y | sh
-          . "$HOME/.cargo/env"
           exec /bin/bash
 
       - name: "Install dependencies with dnf"
