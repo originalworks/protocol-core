@@ -12,3 +12,6 @@ run-local-fake-cpu:
 
 run-gpu:
 	RUSTFLAGS="-C target-cpu=native" cargo run -F cuda -r
+
+test-prover:
+	cargo test prover_playground -- --nocapture

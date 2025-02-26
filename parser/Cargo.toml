@@ -1,8 +1,0 @@
-[workspace]
-resolver= "2"
-members = [
-  "yaserde",
-  "yaserde_derive",
-  "ddex_schema",
-  "runner",
-]

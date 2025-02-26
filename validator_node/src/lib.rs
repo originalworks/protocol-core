@@ -2,7 +2,7 @@ mod beacon_chain;
 mod constants;
 mod ddex_sequencer;
 mod ipfs;
-mod prover_wrapper;
+pub mod prover_wrapper;
 
 use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::Address;

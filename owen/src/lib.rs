@@ -11,7 +11,7 @@ use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use anyhow::Context;
 use blob::BlobTransactionData;
-use ddex_schema::ParserError;
+use ddex_parser::ParserError;
 use ddex_sequencer::DdexSequencerContext;
 pub use log;
 use log_macros::log_error;

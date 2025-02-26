@@ -14,7 +14,7 @@ tokio = { version = "1.40.0", features = ["full"] }
 tokio-util = "0.7.12"
 serde = "1.0.210"
 infer = "0.16.0"
-ddex_schema = { path = "../parser/ddex_schema" }
+ddex_parser = { path = "../ddex_parser" }
 serde_valid = "0.25.0"
 serde_json = "1.0.133"
 anyhow = "1.0.95"
