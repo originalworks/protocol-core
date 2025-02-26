@@ -31,23 +31,23 @@ jobs:
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
 
-      - name: "Checkout"
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
+      # - name: "Checkout"
+      #   uses: actions/checkout@v3
+      #   with:
+      #     persist-credentials: false
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-east-1
-          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
-          role-session-name: protocol-core-session-id-${{ github.run_id }}
-          role-duration-seconds: 1200
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-region: us-east-1
+      #     role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+      #     role-session-name: protocol-core-session-id-${{ github.run_id }}
+      #     role-duration-seconds: 1200
 
       - name: "Build aws-queue-consumer"
         working-directory: aws-queue-consumer
         run: cargo lambda build --release
 
-      - name: "Deploy AWS Cloud Formation template"
-        working-directory: owen/aws/deploy-infra
-        run: make deploy-infra-dev
+      # - name: "Deploy AWS Cloud Formation template"
+      #   working-directory: owen/aws/deploy-infra
+      #   run: make deploy-infra-dev
