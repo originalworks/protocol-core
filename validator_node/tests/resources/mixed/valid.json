@@ -1,0 +1,360 @@
+{
+  "message_header": {
+    "message_id": "170e0b43-cca9-41a0-9091-b3e434b27f9f",
+    "message_sender": {
+      "party_id": "PADPIDA2014021302H",
+      "party_name": {
+        "full_name": "Revelator Ltd."
+      }
+    },
+    "message_recipients": [
+      {
+        "party_id": "PADPIDA2024072201A",
+        "party_name": {
+          "full_name": "Original Works"
+        }
+      }
+    ],
+    "message_created_date_time": "2024-12-05T21:34:31.6377454Z"
+  },
+  "release_admins": [],
+  "party_list": {
+    "partys": [
+      {
+        "party_reference": "P1410086",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Staar Watson"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P1410715",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Karmelo Prod"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0C1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Kemner Watson"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "P0CC1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Copyright Control"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "PLabel1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Staar Watson"
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      },
+      {
+        "party_reference": "PLicensor1",
+        "affiliations": [],
+        "parties_names": [
+          {
+            "full_name": {
+              "content": "Revelator Ltd."
+            },
+            "full_name_indexed": null
+          }
+        ],
+        "parties_ids": []
+      }
+    ]
+  },
+  "resource_list": {
+    "sound_recordings": [
+      {
+        "resource_reference": "A1",
+        "kind": {
+          "content": "MusicalWorkSoundRecording",
+          "namespace": null,
+          "user_defined_value": null
+        },
+        "sound_recording_editions": [
+          {
+            "kind": null,
+            "resource_ids": [
+              {
+                "isrc": "QZES72310220",
+                "catalog_number": null,
+                "proprietary_ids": []
+              }
+            ],
+            "edition_contributors": [],
+            "p_lines": [
+              {
+                "year": 2023,
+                "p_line_text": "2023 Staar Watson"
+              }
+            ],
+            "recording_mode": "Stereo",
+            "technical_details": [
+              {
+                "technical_resource_details_reference": "T1",
+                "delivery_files": [
+                  {
+                    "kind": "AudioFile",
+                    "file": {
+                      "uri": "b99d7a84-ee76-4e0d-94d7-8fff31be9273/file.flac"
+                    },
+                    "fingerprints": []
+                  }
+                ],
+                "applicable_territory_code": "Worldwide"
+              }
+            ]
+          }
+        ],
+        "recording_formats": [],
+        "work_ids": [],
+        "display_title_texts": [
+          {
+            "content": "KLK"
+          }
+        ],
+        "display_titles": [
+          {
+            "title_text": "KLK",
+            "sub_titles": [],
+            "applicable_territory_code": null,
+            "is_default": null
+          }
+        ],
+        "version_types": [],
+        "display_artist_names": [
+          {
+            "content": "Staar Watson",
+            "language_and_script_code": null,
+            "applicable_territory_code": null,
+            "is_default": null
+          }
+        ],
+        "display_artists": [
+          {
+            "artist_party_reference": "P1410086",
+            "display_artist_role": {
+              "content": "MainArtist"
+            },
+            "artistic_roles": [],
+            "title_display_informations": [],
+            "sequence_number": null
+          }
+        ],
+        "contributors": [
+          {
+            "contributor_party_reference": "P1410715",
+            "roles": [
+              {
+                "content": "StudioProducer"
+              }
+            ],
+            "sequence_number": 1
+          },
+          {
+            "contributor_party_reference": "P0C1",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 2
+          },
+          {
+            "contributor_party_reference": "P0CC1",
+            "roles": [
+              {
+                "content": "UserDefined"
+              }
+            ],
+            "sequence_number": 3
+          }
+        ],
+        "characters": [],
+        "resource_rights_controllers": [
+          {
+            "rights_controller_party_reference": "PLicensor1",
+            "rights_control_types": [
+              "RightsController"
+            ],
+            "right_share_percentage": "100.00",
+            "right_share_unknown": null,
+            "delegated_usage_rights": []
+          }
+        ],
+        "duration": "PT0S",
+        "creation_date": null,
+        "parental_warning_types": [
+          {
+            "content": "NoAdviceAvailable"
+          }
+        ],
+        "is_instrumental": null,
+        "language_of_performances": []
+      }
+    ],
+    "images": [
+      {
+        "resource_reference": "A2",
+        "kind": {
+          "content": "FrontCoverImage",
+          "namespace": null,
+          "user_defined_value": null
+        },
+        "resource_ids": [
+          {
+            "proprietary_ids": [
+              {
+                "content": "ecb027d7-d035-441a-86ce-43ccd9cc69ec",
+                "namespace": "PADPIDA2014021302H"
+              }
+            ]
+          }
+        ],
+        "parental_warning_types": [
+          {
+            "content": "NoAdviceAvailable"
+          }
+        ],
+        "technical_details": [
+          {
+            "technical_resource_details_reference": "T2",
+            "file": {
+              "uri": "ecb027d7-d035-441a-86ce-43ccd9cc69ec/file.jpg"
+            },
+            "fingerprints": []
+          }
+        ]
+      }
+    ]
+  },
+  "release_list": {
+    "release": {
+      "release_reference": "R0",
+      "release_types": [
+        {
+          "content": "SingleResourceRelease"
+        }
+      ],
+      "release_id": {
+        "g_rid": null,
+        "icpn": "197629077633",
+        "proprietary_ids": []
+      },
+      "display_title_texts": [
+        {
+          "content": "KLK"
+        }
+      ],
+      "display_titles": [
+        {
+          "title_text": "KLK",
+          "sub_titles": [],
+          "applicable_territory_code": null,
+          "is_default": null
+        }
+      ],
+      "display_artist_names": [
+        {
+          "content": "Staar Watson",
+          "language_and_script_code": null,
+          "applicable_territory_code": null,
+          "is_default": null
+        }
+      ],
+      "display_artists": [
+        {
+          "artist_party_reference": "P1410086",
+          "display_artist_role": {
+            "content": "MainArtist"
+          },
+          "artistic_roles": [],
+          "title_display_informations": [],
+          "sequence_number": 1
+        },
+        {
+          "artist_party_reference": "P1410715",
+          "display_artist_role": {
+            "content": "MainArtist"
+          },
+          "artistic_roles": [],
+          "title_display_informations": [],
+          "sequence_number": 2
+        }
+      ],
+      "release_label_references": [
+        {
+          "content": "PLabel1",
+          "applicable_territory_code": null
+        }
+      ],
+      "duration": null,
+      "genres": [
+        {
+          "genre_text": "music style"
+        }
+      ],
+      "parental_warning_types": [
+        {
+          "content": "NoAdviceAvailable"
+        }
+      ],
+      "resource_group": {
+        "display_title_texts": [],
+        "display_titles": [],
+        "sequence_number": null,
+        "display_artists": [],
+        "resource_group_content_items": [
+          {
+            "sequence_number": 1,
+            "release_resource_reference": "A1"
+          },
+          {
+            "sequence_number": 2,
+            "release_resource_reference": "A2"
+          }
+        ],
+        "no_display_sequence": null
+      }
+    },
+    "track_releases": []
+  }
+}
