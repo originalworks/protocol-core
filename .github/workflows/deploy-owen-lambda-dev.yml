@@ -45,8 +45,8 @@ jobs:
       #     role-duration-seconds: 1200
 
       - name: "Build aws-queue-consumer"
-        working-directory: aws-queue-consumer
-        run: cargo lambda build --release
+        # working-directory: aws-queue-consumer
+        run: cargo --version
 
       # - name: "Deploy AWS Cloud Formation template"
       #   working-directory: owen/aws/deploy-infra
