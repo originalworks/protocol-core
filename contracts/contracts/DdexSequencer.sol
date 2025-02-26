@@ -112,6 +112,10 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         }
     }
 
+    function moveQueue() external onlyOwner {
+        _moveQueue();
+    }
+
     function _deleteBlobQueueHead() private {
         blobs[blobQueueHead].submitted = false;
         blobs[blobQueueHead].nextBlob = bytes32(0);
