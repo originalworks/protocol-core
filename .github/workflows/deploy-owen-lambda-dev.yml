@@ -32,10 +32,8 @@ jobs:
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
 
-      # - name: "Checkout"
-      #   uses: actions/checkout@v3
-      #   with:
-      #     persist-credentials: false
+      - name: "Checkout"
+        uses: actions/checkout@v4
 
       # - name: Configure AWS Credentials
       #   uses: aws-actions/configure-aws-credentials@v2
@@ -51,6 +49,9 @@ jobs:
           source $HOME/.cargo/env
           cargo --version
 
+      - name: "See files"
+        working-directory: aws-queue-consumer
+        run: ls
       # - name: "Deploy AWS Cloud Formation template"
       #   working-directory: owen/aws/deploy-infra
       #   run: make deploy-infra-dev
