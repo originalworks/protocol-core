@@ -165,6 +165,10 @@ print_install_instructions() {
       echo "  - Install libtag1-dev with:"
       echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libtag1-dev"
       ;;
+    imagemagick)
+      echo "  - Install ImageMagick with:"
+      echo "    ${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y imagemagick"
+      ;;
     *)
       echo "  - Install $1 using your package manager."
       ;;
@@ -232,6 +236,9 @@ install_dependency() {
     libtag1-dev)
       install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y libtag1-dev"
       ;;
+    imagemagick)
+      install_cmd="${SUDO_PREFIX} apt update && ${SUDO_PREFIX} apt install -y imagemagick"
+      ;;
     *)
       echo "  * Sorry, I don't know how to automatically install '$dep'. Please install it manually."
       return
@@ -284,6 +291,7 @@ check_node_version
 # Check Debian packages
 check_debian_package "libmagic-dev"
 check_debian_package "libtag1-dev"
+check_debian_package "imagemagick"
 
 echo ""
 echo "Checking Python packages..."
