@@ -22,8 +22,9 @@ jobs:
     steps:
       - name: "Install rust and cargo"
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -y | sh
-          exec /bin/bash
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo 'source $HOME/.cargo/env' >> ~/.bashrc
+          source $HOME/.cargo/env
 
       - name: "Install dependencies with dnf"
         run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel
@@ -46,7 +47,9 @@ jobs:
 
       - name: "Build aws-queue-consumer"
         # working-directory: aws-queue-consumer
-        run: cargo --version
+        run: |
+          source $HOME/.cargo/env
+          cargo --version
 
       # - name: "Deploy AWS Cloud Formation template"
       #   working-directory: owen/aws/deploy-infra
