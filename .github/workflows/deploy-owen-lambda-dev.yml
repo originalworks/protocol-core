@@ -27,7 +27,7 @@ jobs:
           source $HOME/.cargo/env
 
       - name: "Install dependencies with dnf"
-        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs jq
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
@@ -101,6 +101,19 @@ jobs:
           name: owen-lambda-binaries
           path: owen-lambda-binaries/
 
-      - name: "See binaries files"
-        working-directory: owen-lambda-binaries
-        run: ls
+      - name: "Copy binaries"
+        run: |
+          cp owen-lambda-binaries/owen/target/lambda/owen_lambda/bootstrap owen/target/lambda/owen_lambda/bootstrap
+          cp owen-lambda-binaries/aws-queue-consumer/target/lambda/queue-consumer/bootstrap aws-queue-consumer/target/lambda/queue-consumer/bootstrap
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+          role-session-name: protocol-core-session-id-${{ github.run_id }}
+          role-duration-seconds: 1200
+
+      - name: "Deploy AWS Cloud Formation template"
+        working-directory: owen/aws/deploy-infra
+        run: make deploy-infra-dev
