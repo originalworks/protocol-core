@@ -59,6 +59,9 @@ RUN rustup default stable
 WORKDIR /protocol-core/contracts
 RUN npm install && npx hardhat compile
 
+# Install w3cli
+RUN npm install @web3-storage/w3cli
+
 # Ensure the build runs inside `/protocol-core/owen`
 WORKDIR /protocol-core/owen
 
