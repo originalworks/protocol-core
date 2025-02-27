@@ -47,11 +47,20 @@ jobs:
         working-directory: aws-queue-consumer
         run: |
           source $HOME/.cargo/env
-          cargo --version
           cargo lambda build --release
 
-      - name: "See files"
+      - name: "Build owen_lambda"
+        working-directory: owen
+        run: |
+          source $HOME/.cargo/env
+          cargo lambda build --release --bin owen_lambda --features aws-integration --compiler cargo
+
+      - name: "See queue consumer files"
         working-directory: aws-queue-consumer
+        run: ls
+
+      - name: "See owen files"
+        working-directory: owen
         run: ls
       # - name: "Deploy AWS Cloud Formation template"
       #   working-directory: owen/aws/deploy-infra
