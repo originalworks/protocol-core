@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 risc0-zkvm = { version = "1.2.0", default-features = false, features = ['std'] }
 prover_interface = { path = "../interface" }
-ddex_schema = { path = "../../parser/ddex_schema" }
+ddex_parser = { path = "../../ddex_parser" }
 blob_codec = { path = "../../blob_codec" }
 alloy-sol-types = "0.8.18"
+anyhow = "1.0.95"

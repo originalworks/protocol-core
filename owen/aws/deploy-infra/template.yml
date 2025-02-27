@@ -2,7 +2,12 @@ Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   MessagesBucketName:
+    Description: "Bucket must have EventBridge enabled!"
     Type: String
+  CreateNewBucket:
+    Default: "false"
+    Type: String
+    AllowedValues: ["true", "false"]
   MessageStatusTableName:
     Type: String
   TriggerFilePattern:
@@ -38,6 +43,9 @@ Parameters:
   OwenLambdaSecretsName:
     Type: String
 
+Conditions:
+  ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
+
 Resources:
   NewUploadsQueue:
     Type: AWS::SQS::Queue
@@ -55,6 +63,7 @@ Resources:
   MessagesBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
+    Condition: ShouldCreateNewBucket
     Properties:
       BucketName: !Ref MessagesBucketName
       NotificationConfiguration:
@@ -70,7 +79,7 @@ Resources:
         detail-type:
           - Object Created
         resources:
-          - !GetAtt MessagesBucket.Arn
+          - !Sub "arn:aws:s3:::${MessagesBucketName}"
         detail:
           object:
             key:
@@ -97,6 +106,26 @@ Resources:
               ArnEquals:
                 "aws:SourceArn": !GetAtt NewUploadEventRule.Arn
 
+  OwenLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OwenLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OwenLambdaScheduledRule.Arn
+
+  OwenLambdaScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      # Name: "OwenLambdaScheduledRuleStage"
+      ScheduleExpression: !Sub "rate(${OwenLambdaScheduleRateMin} minutes)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt OwenLambda.Arn
+          Id: "OwenLambdaTarget"
+          RetryPolicy:
+            MaximumRetryAttempts: 0 # Disable automatic retries
+
   OwenLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -106,7 +135,10 @@ Resources:
         - x86_64
       Handler: bootstrap
       MemorySize: 128
-      Timeout: 20
+      Timeout: 120
+      AutoPublishAlias: OwenLambdaAlias
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Environment:
         Variables:
           MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
@@ -129,6 +161,7 @@ Resources:
               Action:
                 - dynamodb:PutItem
                 - dynamodb:Query
+                - dynamodb:UpdateItem
               Resource:
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
                 - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}/index/*"
@@ -137,17 +170,12 @@ Resources:
                 - s3:GetObject
                 - s3:ListBucket
               Resource:
-                - !GetAtt MessagesBucket.Arn
-                - !Sub "${MessagesBucket.Arn}/*"
+                - !Sub "arn:aws:s3:::${MessagesBucketName}"
+                - !Sub "arn:aws:s3:::${MessagesBucketName}/*"
             - Effect: Allow
               Action:
                 - secretsmanager:GetSecretValue
               Resource: !Ref OwenLambdaSecrets
-      Events:
-        Schedule:
-          Type: Schedule
-          Properties:
-            Schedule: !Sub "rate(${OwenLambdaScheduleRateMin} minutes)"
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret

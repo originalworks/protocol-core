@@ -1,4 +1,4 @@
-use std::{env, error::Error, fs, path::Path};
+use std::{collections::HashMap, env, error::Error, fs, path::Path};
 use tokio::fs::File;
 
 pub struct MessageStorage {
@@ -19,23 +19,15 @@ impl MessageStorage {
         }
     }
 
-    fn build_local_path(
+    fn build_local_object_path(
         &self,
-        s3_key: &String,
-        message_folder: &String,
+        s3_folder_object_key: &String,
+        s3_message_folder: &String,
+        local_message_folder: &String,
     ) -> Result<String, Box<dyn Error>> {
-        let s3_message_folder_parent_dir = Path::new(&message_folder)
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap();
-
-        let local_message_folder =
-            format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
-        let (_, s3_parent_dir_file) = s3_key.split_once(message_folder).unwrap();
-        let local_path = format!("{local_message_folder}{s3_parent_dir_file}");
-
-        Ok(local_path)
+        let (_, s3_parent_dir_file) = s3_folder_object_key.split_once(s3_message_folder).unwrap();
+        let local_object_path = format!("{local_message_folder}{s3_parent_dir_file}");
+        Ok(local_object_path)
     }
 
     async fn copy_from_s3(&self, key: String, local_path: String) -> Result<(), Box<dyn Error>> {
@@ -57,25 +49,53 @@ impl MessageStorage {
 
     pub async fn sync_message_folders(
         &self,
-        message_folders: Vec<String>,
-    ) -> Result<(), Box<dyn Error>> {
+        message_folders: &Vec<String>,
+    ) -> Result<HashMap<String, String>, Box<dyn Error>> {
+        let mut local_to_s3_folder_mapping = HashMap::<String, String>::new();
         for s3_message_folder in message_folders {
+            let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap();
+
+            let local_message_folder =
+                format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
+
+            local_to_s3_folder_mapping
+                .insert(local_message_folder.clone(), s3_message_folder.clone());
+
             let s3_message_folder_objects = self
                 .client
                 .list_objects_v2()
                 .bucket(&self.bucket_name)
-                .prefix(&s3_message_folder)
+                .prefix(s3_message_folder)
                 .send()
                 .await?;
 
             for s3_folder_object in s3_message_folder_objects.contents.unwrap() {
-                let s3_key = s3_folder_object.key.unwrap();
-                let local_path = self.build_local_path(&s3_key, &s3_message_folder).unwrap();
+                let s3_folder_object_key = s3_folder_object.key.unwrap();
+                let local_object_path = self
+                    .build_local_object_path(
+                        &s3_folder_object_key,
+                        &s3_message_folder,
+                        &local_message_folder,
+                    )
+                    .unwrap();
 
-                self.copy_from_s3(s3_key, local_path).await?;
+                self.copy_from_s3(s3_folder_object_key, local_object_path)
+                    .await?;
             }
         }
 
+        Ok(local_to_s3_folder_mapping)
+    }
+
+    pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
+        let input_files_path = Path::new(&self.input_files_dir);
+        if input_files_path.is_dir() {
+            fs::remove_dir_all(input_files_path).unwrap();
+        }
         Ok(())
     }
 }

@@ -2,7 +2,8 @@ mod blob;
 mod constants;
 mod ddex_sequencer;
 mod ipfs;
-mod output_generator;
+pub mod logger;
+pub mod output_generator;
 
 use alloy::network::EthereumWallet;
 use alloy::primitives::Address;
@@ -10,9 +11,13 @@ use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use anyhow::Context;
 use blob::BlobTransactionData;
+use ddex_parser::ParserError;
 use ddex_sequencer::DdexSequencerContext;
 pub use log;
+use log_macros::log_error;
 use output_generator::MessageDirProcessingContext;
+use sentry::User;
+use serde_json::json;
 use std::env;
 use std::str::FromStr;
 
@@ -124,4 +129,35 @@ pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingCont
         .send_blob(blob_transaction_data)
         .await?;
     Ok(message_dir_processing_log)
+}
+
+pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    sentry::configure_scope(|scope| {
+        scope.set_user(Some(User {
+            username: Some(config.username.to_owned()),
+            ..Default::default()
+        }));
+
+        let mut cloned_config = config.clone();
+        cloned_config.pinata_jwt = "***".to_string();
+        cloned_config.private_key = "***".to_string();
+        scope.set_extra("config", json!(cloned_config));
+    });
+
+    let message_dir_processing_context = run(&config).await.map_err(|e| {
+        sentry::configure_scope(|scope| {
+            scope.set_tag("error_type", {
+                if e.is::<ParserError>() {
+                    "parser"
+                } else {
+                    "other"
+                }
+            });
+            scope.set_extra("error_object", json!(format!("{e:#?}")));
+        });
+
+        log_error!("{e}")
+    })?;
+
+    Ok(message_dir_processing_context)
 }

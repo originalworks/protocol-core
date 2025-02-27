@@ -5,6 +5,7 @@ import "./IProverPublicOutputs.sol";
 
 interface IDdexEmitter {
     event BlobProcessed(ProverPublicOutputs proverPublicOutputs);
+    event BlobRejected(ProverPublicOutputs proverPublicOutputs);
 
     function verifyAndEmit(
         bytes memory journal,
