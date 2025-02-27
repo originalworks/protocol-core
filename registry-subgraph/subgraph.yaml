@@ -1,8 +1,10 @@
 specVersion: 0.0.5
-description: "example of a subgraph"
-repository: https://github.com/graphprotocol/graph-tooling.git
+description: "Example of a subgraph indexing JSON from IPFS"
+repository: "https://github.com/graphprotocol/graph-tooling.git"
+
 schema:
   file: ./schema.graphql
+
 dataSources:
   - kind: ethereum/contract
     name: DdexEmitter
@@ -22,18 +24,23 @@ dataSources:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))
+        - event: "BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))"
           handler: handleBlobProcessed
+
 templates:
   - kind: file/ipfs
     name: AssetMetadataTemplate
+    network: holesky
+    # Note: 'source.file' is overridden by the 'AssetMetadataTemplate.create(...)' calls in the mapping
+    source:
+      file: ""
     mapping:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
+      file: ./src/assetMetadata.ts
       entities:
         - AssetMetadata
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       handler: handleAssetMetadata
-      file: ./src/assetMetadata.ts
