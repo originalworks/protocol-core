@@ -46,6 +46,7 @@ jobs:
       - name: "Build aws-queue-consumer"
         working-directory: aws-queue-consumer
         run: |
+          source $HOME/.cargo/env
           cargo --version
           cargo lambda build --release
 
