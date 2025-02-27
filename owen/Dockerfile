@@ -1,14 +1,36 @@
-# Use Debian 12 as the base
-FROM debian:12-slim
+# Base stage: Python dependencies
+FROM python:3.11-slim AS python-base
+RUN pip install --no-cache-dir pipx && pipx install iscc_sdk
 
-# Prevent interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
+# Base stage: Rust & Cargo
+FROM rust:latest AS rust-base
+RUN rustup default stable  # Explicitly set Rust stable version
 
-# 1) Install system packages
+# Base stage: Foundry (Solidity development)
+FROM debian:12 AS foundry-base
+RUN apt-get update && apt-get install -y curl git
+RUN curl -L https://foundry.paradigm.xyz | bash
+RUN /root/.foundry/bin/foundryup
+ENV PATH="/root/.foundry/bin:${PATH}"
+
+# Base stage: Node.js & Hardhat
+FROM node:22 AS node-base
+RUN npm install -g hardhat
+
+# Base stage: Clone GitHub Repository (protocol-core)
+FROM debian:12 AS clone-repo
+RUN apt-get update && apt-get install -y git
+WORKDIR /protocol-core
+RUN git clone --recursive --depth 1 https://github.com/originalworks/protocol-core . \
+    && git submodule update --init --recursive  # Ensure submodules are initialized immediately
+
+# Final image: Only what’s needed
+FROM debian:12-slim AS final
+WORKDIR /owen
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
-    python3.11 python3.11-venv python3.11-dev python3-distutils python3-pip \
-    pipx \
     curl \
     pkg-config \
     libssl-dev \
@@ -20,42 +42,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# 2) Ensure pipx is in PATH and install the Python package iscc_sdk
-RUN pipx ensurepath && \
-    pipx install iscc_sdk
+# Copy dependencies from previous stages
+COPY --from=python-base /root/.local /root/.local
+COPY --from=rust-base /usr/local/cargo /usr/local/cargo
+COPY --from=foundry-base /root/.foundry /root/.foundry
+COPY --from=node-base /usr/local /usr/local
+COPY --from=clone-repo /protocol-core /protocol-core
 
-# 3) Install Rust & Cargo
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-  | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+# Ensure paths are set correctly
+ENV PATH="/root/.local/bin:/usr/local/cargo/bin:/root/.foundry/bin:/usr/local/bin:${PATH}"
 
-# 4) Install Foundry (forge)
-RUN curl -L https://foundry.paradigm.xyz | bash
-ENV PATH="/root/.foundry/bin:${PATH}"
-RUN foundryup
+# Set default Rust toolchain in the final image
+RUN rustup default stable
 
-# 5) Install NVM & Node.js v22
-ENV NVM_DIR=/root/.nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
-    && . "$NVM_DIR/nvm.sh" \
-    && nvm install 22 \
-    && nvm alias default 22
+# Run Hardhat compile inside /protocol-core/contracts
+WORKDIR /protocol-core/contracts
+RUN npm install && npx hardhat compile
 
-# Ensure node and npm are on PATH
-ENV PATH="${NVM_DIR}/versions/node/v22.0.0/bin:${PATH}"
+# Ensure the build runs inside `/protocol-core/owen`
+WORKDIR /protocol-core/owen
 
-# 6) Create a working directory and copy your project
-WORKDIR /owen
-COPY . /owen
-
-# (Optional) Build your Rust project (owen_cli binary) in release mode
+# Build Rust project
 RUN cargo build --release --bin main
-
-# (Optional) If you also want to compile with Hardhat during build:
-# WORKDIR /owen/../contracts
-# RUN npm install --save-dev hardhat && npx hardhat compile
-# WORKDIR /owen
 
 # Default entrypoint/command
 CMD ["/bin/bash"]
-
