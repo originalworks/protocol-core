@@ -23,8 +23,48 @@ pub struct MessageDirProcessingContext {
     reason: Option<String>,
 }
 
-use std::process::Command;
-use serde_json::Value;
+/// Converts `input_path` into a resized AVIF image using ImageMagick.
+/// Returns the path to the newly created file.
+fn convert_and_resize_image(input_path: &str) -> anyhow::Result<String> {
+    // Construct a Path from input_path
+    let input_path_obj = Path::new(input_path);
+
+    // Retrieve the parent directory or fallback to "."
+    let parent_dir = input_path_obj
+        .parent()
+        .unwrap_or_else(|| Path::new("."));
+
+    // Extract the file stem (base name, without extension).
+    // If the file stem is missing or empty for some reason, use "image" as a fallback.
+    let base_name = input_path_obj
+        .file_stem()
+        .unwrap_or_else(|| std::ffi::OsStr::new("image"));
+
+    // Construct the output file name, e.g. `<base_name>.avif`
+    // So if your source is `/some/folder/photo.jpg`, output will be `/some/folder/photo.avif`.
+    let output_file = parent_dir.join(format!("{}.avif", base_name.to_string_lossy()));
+
+    // Use the "convert" tool:
+    let status = Command::new("convert")
+        .arg(input_path)
+        .arg("-resize")
+        .arg("720x")
+        .arg("-quality")
+        .arg("50")
+        .arg(output_file.as_os_str())
+        .status()
+        .with_context(|| format!("Failed to run ImageMagick convert on {}", input_path))?;
+
+    if status.success() {
+        // Convert the output file PathBuf back into a String
+        Ok(output_file
+            .to_string_lossy()
+            .to_string())
+    } else {
+        // If the command completed but had a non-zero exit code
+        Err(anyhow::anyhow!("Image conversion failed for {}", input_path))
+          }
+}
 
 fn generate_iscc_code_for_file(file_path: &str) -> anyhow::Result<String> {
     // Call `idk create file_path`
@@ -54,7 +94,6 @@ fn generate_iscc_code_for_file(file_path: &str) -> anyhow::Result<String> {
     }
 }
 
-
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
@@ -64,14 +103,22 @@ async fn pin_and_write_cid(
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
             if let Some(file) = &mut technical_details.file {
+                // 1. Build the full path to the original file
                 let input_image_file = format!(
                     "{}/{}",
                     message_dir_processing_context.message_dir_path, file.uri
                 );
-                message_dir_processing_context.input_image_path = input_image_file;
-                let file_uri =
-                    pin_file(&message_dir_processing_context.input_image_path, &config).await?;
 
+                // 2. Convert & resize the image, producing an AVIF
+                let resized_image_path = convert_and_resize_image(&input_image_file)?;
+
+                // Optionally store the resized path so we can log or debug it:
+                message_dir_processing_context.input_image_path = resized_image_path.clone();
+
+                // 3. Pin the newly created AVIF file
+                let file_uri = pin_file(&resized_image_path, &config).await?;
+
+                // 4. Save the CID back in the context and in the DDEX message
                 message_dir_processing_context.image_cid = file_uri.clone();
                 file.uri = file_uri;
             }
