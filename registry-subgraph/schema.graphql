@@ -4,3 +4,8 @@ type ProvedMessage @entity {
   timestamp: BigInt!
   validator: Bytes!
 }
+
+type AssetMetadata @entity {
+  id: ID!
+  rawContent: String!
+}

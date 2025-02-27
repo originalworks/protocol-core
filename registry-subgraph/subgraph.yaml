@@ -24,3 +24,16 @@ dataSources:
       eventHandlers:
         - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))
           handler: handleBlobProcessed
+templates:
+  - kind: file/ipfs
+    name: AssetMetadataTemplate
+    mapping:
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AssetMetadata
+      abis:
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
+      handler: handleAssetMetadata
+      file: ./src/assetMetadata.ts
