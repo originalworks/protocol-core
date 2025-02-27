@@ -44,10 +44,10 @@ jobs:
       #     role-duration-seconds: 1200
 
       - name: "Build aws-queue-consumer"
-        # working-directory: aws-queue-consumer
+        working-directory: aws-queue-consumer
         run: |
-          source $HOME/.cargo/env
           cargo --version
+          cargo lambda build --release
 
       - name: "See files"
         working-directory: aws-queue-consumer
