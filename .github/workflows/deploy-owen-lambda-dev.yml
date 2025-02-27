@@ -58,22 +58,49 @@ jobs:
           source $HOME/.cargo/env
           cargo lambda build --release --bin owen_lambda --features aws-integration --compiler cargo
 
-      - name: "See queue consumer files"
-        working-directory: aws-queue-consumer
-        run: ls
-
-      - name: "See owen files"
-        working-directory: owen
-        run: ls
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
         with:
-          aws-region: us-east-1
-          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
-          role-session-name: protocol-core-session-id-${{ github.run_id }}
-          role-duration-seconds: 1200
+          name: owen-lambda-binaries
+          path: |
+            owen/target/lambda/owen_lambda
+            aws-queue-consumer/target/lambda/queue-consumer
 
-      - name: "Deploy AWS Cloud Formation template"
-        working-directory: owen/aws/deploy-infra
-        run: make deploy-infra-dev
+      # - name: "See queue consumer files"
+      #   working-directory: aws-queue-consumer
+      #   run: ls
+
+      # - name: "See owen files"
+      #   working-directory: owen
+      #   run: ls
+
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-region: us-east-1
+      #     role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+      #     role-session-name: protocol-core-session-id-${{ github.run_id }}
+      #     role-duration-seconds: 1200
+
+      # - name: "Deploy AWS Cloud Formation template"
+      #   working-directory: owen/aws/deploy-infra
+      #   run: make deploy-infra-dev
+
+  deploy-changes:
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    timeout-minutes: 30
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: owen-lambda-binaries
+          path: owen-lambda-binaries/
+
+      - name: "See binaries files"
+        working-directory: owen-lambda-binaries
+        run: ls
