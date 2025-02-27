@@ -27,7 +27,7 @@ jobs:
           source $HOME/.cargo/env
 
       - name: "Install dependencies with dnf"
-        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
@@ -43,6 +43,12 @@ jobs:
       - name: "Is there a node?"
         working-directory: owen
         run: node -v
+
+      - name: "Is there a node?"
+        working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
 
       - name: "Build aws-queue-consumer"
         working-directory: aws-queue-consumer
