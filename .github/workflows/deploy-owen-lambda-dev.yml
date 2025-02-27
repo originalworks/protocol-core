@@ -32,16 +32,17 @@ jobs:
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: "Checkout"
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v2
-      #   with:
-      #     aws-region: us-east-1
-      #     role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
-      #     role-session-name: protocol-core-session-id-${{ github.run_id }}
-      #     role-duration-seconds: 1200
+      - name: "Is there a node?"
+        working-directory: owen
+        run: node -v
 
       - name: "Build aws-queue-consumer"
         working-directory: aws-queue-consumer
