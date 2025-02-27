@@ -1,17 +1,16 @@
 use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
 use crate::{Config, IpfsInterface};
 use anyhow::Context;
-use ddex_schema::{DdexParser, NewReleaseMessage};
+use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
 use sentry::protocol::Attachment;
 use serde_json::json;
+use serde_json::Value;
 use serde_valid::json::ToJsonString;
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use anyhow::Context;
-
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
@@ -23,10 +22,6 @@ pub struct MessageDirProcessingContext {
     pub excluded: bool,
     reason: Option<String>,
 }
-
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use anyhow::Context;
 
 /// Converts `input_path` into a resized AVIF image using ImageMagick.
 /// Returns the path to the newly created file.
@@ -68,15 +63,43 @@ fn convert_and_resize_image(input_path: &str) -> anyhow::Result<String> {
     } else {
         // If the command completed but had a non-zero exit code
         Err(anyhow::anyhow!("Image conversion failed for {}", input_path))
-    }
+          }
 }
 
+fn generate_iscc_code_for_file(file_path: &str) -> anyhow::Result<String> {
+    // Call `idk create file_path`
+    let output = Command::new("idk")
+        .arg("create")
+        .arg(file_path)
+        .output()?;
+
+    // Check exit status
+    if !output.status.success() {
+        return Err(anyhow::anyhow!(
+            "idk create failed with status: {:?}",
+            output.status.code()
+        ));
+    }
+
+    // Convert stdout to String and parse as JSON
+    let stdout_str = String::from_utf8(output.stdout)?;
+    let parsed_json: Value = serde_json::from_str(&stdout_str)
+        .map_err(|e| anyhow::anyhow!("Failed to parse idk create output as JSON: {}", e))?;
+
+    // Extract the "iscc" field
+    if let Some(iscc_code) = parsed_json.get("iscc").and_then(|val| val.as_str()) {
+        Ok(iscc_code.to_string())
+    } else {
+        Err(anyhow::anyhow!("No 'iscc' field found in idk create output"))
+    }
+}
 
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
     config: &Config,
 ) -> anyhow::Result<()> {
+    // 1) PIN IMAGES
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
             if let Some(file) = &mut technical_details.file {
@@ -101,6 +124,36 @@ async fn pin_and_write_cid(
             }
         }
     }
+
+    // 2) HANDLE AUDIO FILES
+    //    For example, loop over `resource_list.audio` if your DDEX schema provides it.
+    for audio_resource in &new_release_message.resource_list.audio {
+        if let Some(technical_details) = audio_resource.technical_details.get(0) {
+            if let Some(file) = &technical_details.file {
+                // Build the full path
+                let input_audio_file = format!(
+                    "{}/{}",
+                    message_dir_processing_context.message_dir_path,
+                    file.uri
+                );
+                // Use our helper to extract the ISCC code
+                match generate_iscc_code_for_file(&input_audio_file) {
+                    Ok(iscc_code) => {
+                        // Log the code (or store it in the resource if desired)
+                        log_info!("ISCC code for {} is {}", input_audio_file, iscc_code);
+                    }
+                    Err(e) => {
+                        log_warn!(
+                            "Failed to generate ISCC code for {}: {}",
+                            input_audio_file,
+                            e
+                        );
+                    }
+                }
+            }
+        }
+    }
+
 
     Ok(())
 }

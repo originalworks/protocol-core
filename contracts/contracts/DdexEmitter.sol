@@ -52,7 +52,11 @@ contract DdexEmitter is
         );
         riscZeroGroth16Verifier.verify(seal, imageId, sha256(journal));
 
-        emit BlobProcessed(proverPublicOutputs);
+        if (proverPublicOutputs.valid) {
+            emit BlobProcessed(proverPublicOutputs);
+        } else {
+            emit BlobRejected(proverPublicOutputs);
+        }
 
         return proverPublicOutputs.digest;
     }
