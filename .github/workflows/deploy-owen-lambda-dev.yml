@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  service-deploy:
+  build-binaries:
     runs-on: ubuntu-latest
     container: amazonlinux:latest
     timeout-minutes: 30
@@ -40,11 +40,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: "Is there a node?"
-        working-directory: owen
-        run: node -v
-
-      - name: "Is there a node?"
+      - name: "Compile conracts"
         working-directory: contracts
         run: |
           npm i
@@ -69,6 +65,15 @@ jobs:
       - name: "See owen files"
         working-directory: owen
         run: ls
-      # - name: "Deploy AWS Cloud Formation template"
-      #   working-directory: owen/aws/deploy-infra
-      #   run: make deploy-infra-dev
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+          role-session-name: protocol-core-session-id-${{ github.run_id }}
+          role-duration-seconds: 1200
+
+      - name: "Deploy AWS Cloud Formation template"
+        working-directory: owen/aws/deploy-infra
+        run: make deploy-infra-dev
