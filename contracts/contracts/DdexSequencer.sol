@@ -54,26 +54,40 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         require(
             whitelistsDisabled ||
                 IWhitelist(whitelists[whitelistId]).isWhitelisted(msg.sender),
-            "Sender is not whitelisted"
+            "DdexSequencer: Sender is not whitelisted"
         );
 
         _;
     }
 
     function submitNewBlob(
-        bytes memory commitment,
-        bytes32 blobSha2
+        bytes32 _imageId,
+        bytes memory _commitment,
+        bytes32 _blobSha2
     ) public _isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
+        require(_imageId != bytes32(0), "DdexSequencer: ImageId cannot be 0");
+
+        (bytes32 currentImageId, bytes32 previousImageId) = ddexEmitter
+            .getSupportedBlobImageIds();
+
+        require(
+            currentImageId == _imageId || previousImageId == _imageId,
+            "DdexSequencer: Unsupported imageId"
+        );
+
         bytes32 newBlobhash;
         assembly {
             newBlobhash := blobhash(0)
         }
-        require(newBlobhash != bytes32(0), "Blob not found in tx");
+        require(
+            newBlobhash != bytes32(0),
+            "DdexSequencer: Blob not found in tx"
+        );
 
-        bytes32 blobId = sha256(abi.encodePacked(newBlobhash, blobSha2));
+        bytes32 blobId = sha256(abi.encodePacked(newBlobhash, _blobSha2));
         require(
             blobs[newBlobhash].submitted == false,
-            "Blob already submitted"
+            "DdexSequencer: Blob already submitted"
         );
         blobs[newBlobhash].submitted = true;
         blobs[newBlobhash].proposer = msg.sender;
@@ -86,16 +100,17 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
             blobs[blobQueueTail].nextBlob = newBlobhash;
             blobQueueTail = newBlobhash;
         }
-        emit NewBlobSubmitted(commitment);
+        emit NewBlobSubmitted(_commitment);
     }
 
     function submitProof(
-        bytes memory journal,
-        bytes calldata seal
+        bytes32 _imageId,
+        bytes memory _journal,
+        bytes calldata _seal
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
-        require(blobQueueHead != bytes32(0), "Queue is empty");
+        require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
 
-        ddexEmitter.verifyAndEmit(journal, seal);
+        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal);
 
         _moveQueue();
     }

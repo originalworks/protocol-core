@@ -13,7 +13,7 @@ export async function deployDdexSequencer(
     input.stakeVaultAddress
   );
   await ddexSequencer.waitForDeployment();
-
+  
   return {
     contract: ddexSequencer,
     contractVerificationInput: {

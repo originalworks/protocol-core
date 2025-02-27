@@ -16,7 +16,13 @@ contract DdexEmitter is
 {
     IRiscZeroVerifier riscZeroGroth16Verifier;
     address ddexSequencerAddress;
-    bytes32 public imageId;
+
+    bytes1 public constant BLOB_CURRENT_IMAGE_ID = 0x01;
+    bytes1 public constant BLOB_PREVIOUS_IMAGE_ID = 0x02;
+    bytes1 public constant VERIFIER_CURRENT_IMAGE_ID = 0x03;
+    bytes1 public constant VERIFIER_PREVIOUS_IMAGE_ID = 0x04;
+
+    mapping(bytes1 => bytes32) imageIds;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -27,30 +33,68 @@ contract DdexEmitter is
         IRiscZeroVerifier _riscZeroGroth16Verifier,
         address _ddexSequencerAddress
     ) public initializer {
-        imageId = ImageID.DDEX_GUEST_ID;
+        imageIds[BLOB_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
+        imageIds[VERIFIER_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
         riscZeroGroth16Verifier = _riscZeroGroth16Verifier;
         ddexSequencerAddress = _ddexSequencerAddress;
         __Ownable_init(msg.sender);
     }
 
-    function setImageId(bytes32 newImage) public onlyOwner {
-        imageId = newImage;
+    function setImageId(bytes1 _target, bytes32 _newImageId) public onlyOwner {
+        require(
+            _target > bytes1(0) && _target < 0x05,
+            "DdexEmitter: Invalid target"
+        );
+
+        bytes32 previousImageId = imageIds[_target];
+        imageIds[_target] = _newImageId;
+
+        emit ImageIdChanged(_target, previousImageId, _newImageId);
+    }
+
+    function getSupportedBlobImageIds()
+        external
+        view
+        returns (bytes32, bytes32)
+    {
+        return (
+            imageIds[BLOB_CURRENT_IMAGE_ID],
+            imageIds[BLOB_PREVIOUS_IMAGE_ID]
+        );
+    }
+
+    function getSupportedVerifierImageIds()
+        external
+        view
+        returns (bytes32, bytes32)
+    {
+        return (
+            imageIds[VERIFIER_CURRENT_IMAGE_ID],
+            imageIds[VERIFIER_PREVIOUS_IMAGE_ID]
+        );
     }
 
     function verifyAndEmit(
-        bytes memory journal,
-        bytes calldata seal
+        bytes32 _imageId,
+        bytes memory _journal,
+        bytes calldata _seal
     ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
             "msg.sender is not DdexSequencer"
         );
+        require(_imageId != bytes32(0), "DdexEmitter: ImageId cannot be 0");
+        require(
+            imageIds[VERIFIER_CURRENT_IMAGE_ID] == _imageId ||
+                imageIds[VERIFIER_PREVIOUS_IMAGE_ID] == _imageId,
+            "DdexEmitter: Unsupported imageId"
+        );
 
         ProverPublicOutputs memory proverPublicOutputs = abi.decode(
-            journal,
+            _journal,
             (ProverPublicOutputs)
         );
-        riscZeroGroth16Verifier.verify(seal, imageId, sha256(journal));
+        riscZeroGroth16Verifier.verify(_seal, _imageId, sha256(_journal));
 
         if (proverPublicOutputs.valid) {
             emit BlobProcessed(proverPublicOutputs);

@@ -1,4 +1,4 @@
-import { Signer } from "ethers";
+import { BytesLike, Signer } from "ethers";
 import {
   DdexEmitter,
   DdexSequencer,
@@ -22,7 +22,9 @@ export interface FixtureOutput {
   ownToken: DeploymentOutput<OwnToken>;
   stakeVault: DeploymentOutput<StakeVault>;
   ddexSequencer: DeploymentOutput<DdexSequencer>;
-  ddexEmitter: DeploymentOutput<DdexEmitter>;
+  ddexEmitter: DeploymentOutput<DdexEmitter> & {
+    imageId: BytesLike
+  };
   dataProvidersWhitelist: DeploymentOutput<Whitelist>;
   validatorsWhitelist: DeploymentOutput<Whitelist>;
   dataProviders: string[];
