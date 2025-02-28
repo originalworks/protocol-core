@@ -6,6 +6,8 @@ on:
   #   paths:
   #     - "owen/**"
   pull_request:
+    branches:
+      - main
     paths:
       - "owen/**"
 
