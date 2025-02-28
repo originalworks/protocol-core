@@ -39,9 +39,9 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@v4
-        ref: main
         with:
           submodules: recursive
+          ref: main
 
       - name: "Compile conracts"
         working-directory: contracts
@@ -97,7 +97,8 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-        ref: main
+        with:
+          ref: main
 
       - name: Download binaries
         uses: actions/download-artifact@v4
