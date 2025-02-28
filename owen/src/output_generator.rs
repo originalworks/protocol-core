@@ -126,33 +126,46 @@ async fn pin_and_write_cid(
     }
 
     // 2) HANDLE AUDIO FILES
-    //    For example, loop over `resource_list.audio` if your DDEX schema provides it.
-    for audio_resource in &new_release_message.resource_list.audio {
-        if let Some(technical_details) = audio_resource.technical_details.get(0) {
-            if let Some(file) = &technical_details.file {
-                // Build the full path
-                let input_audio_file = format!(
-                    "{}/{}",
-                    message_dir_processing_context.message_dir_path,
-                    file.uri
-                );
-                // Use our helper to extract the ISCC code
-                match generate_iscc_code_for_file(&input_audio_file) {
-                    Ok(iscc_code) => {
-                        // Log the code (or store it in the resource if desired)
-                        log_info!("ISCC code for {} is {}", input_audio_file, iscc_code);
-                    }
-                    Err(e) => {
-                        log_warn!(
-                            "Failed to generate ISCC code for {}: {}",
-                            input_audio_file,
-                            e
-                        );
+    // Within pin_and_write_cid or wherever you need to handle audio:
+    /*
+// Iterate over all SoundRecordings in the ResourceList
+for sound_recording in &mut new_release_message.resource_list.sound_recordings {
+    // If there's a SoundRecordingEdition (or iterate if it's a Vec)
+    if let Some(edition) = &mut sound_recording.sound_recording_edition {
+        // Go through each TechnicalDetails
+        for tech_detail in &mut edition.technical_details {
+            // If DeliveryFile is present
+            if let Some(delivery_file) = &mut tech_detail.delivery_file {
+                // If there's a File node
+                if let Some(file_details) = &mut delivery_file.file {
+                    // Finally, get the URI string
+                    let audio_uri = &file_details.uri;
+
+                    // Build the local path from folder + URI
+                    let full_path = format!(
+                        "{}/{}",
+                        message_dir_processing_context.message_dir_path,
+                        audio_uri
+                    );
+
+                    // Now do your processing:
+                    // e.g., generate ISCC code or pin the file to IPFS
+                    match generate_iscc_code_for_file(&full_path) {
+                        Ok(iscc_code) => {
+                            log_info!("ISCC code for {} is {}", full_path, iscc_code);
+                            // do whatever you need with `iscc_code`
+                        }
+                        Err(e) => {
+                            log_warn!("Failed to generate ISCC code for {}: {}", full_path, e);
+                        }
                     }
                 }
             }
         }
     }
+}
+*/
+
 
 
     Ok(())
