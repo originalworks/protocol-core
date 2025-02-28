@@ -28,6 +28,8 @@ export async function deployDdexEmitter(
     }
   );
 
+  await ddexEmitter.waitForDeployment()
+
   const implementationAddress = await getImplementationAddressFromProxy(
     ethers.provider,
     await ddexEmitter.getAddress()
