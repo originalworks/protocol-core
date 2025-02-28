@@ -82,7 +82,7 @@ impl ContractsManager {
         let emitter = DdexEmitter::new(emitter_address, provider);
 
         let image_id_parsed = alloy::primitives::FixedBytes::<32>::from_slice(
-            &prover::DDEX_GUEST_ID
+            &prover::CURRENT_DDEX_GUEST_ID
                 .map(|word| word.to_le_bytes())
                 .concat(),
         );
