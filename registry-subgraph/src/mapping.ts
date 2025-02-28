@@ -1,6 +1,6 @@
-import { log } from "@graphprotocol/graph-ts";
+import { BigInt, log } from '@graphprotocol/graph-ts';
 
-import { ProvedMessage } from "./types/schema";
+import { Blobs, ProvedMessage } from './types/schema';
 import { AssetMetadataTemplate } from "./types/templates";
 import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
 
@@ -9,6 +9,8 @@ import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
 const ipfsFolderCID = "bafybeid5l3yfspemqdmwhw4sal5r4fd2odtsuvuc2jt4teq42v3a4lloy4/jsons";
 // Just an example: we create a data source up to 70 files.
 const maxFiles = 70
+
+const BlobProcessedEventId = "BlobProcessed";
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
@@ -36,12 +38,25 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     ])
   }
 
-  // Now spin up sub‑dataSources for each JSON file in IPFS
-  for (let i = 1; i <= maxFiles; i++) {
-    let ipfsPath = ipfsFolderCID + "/" + i.toString() + ".json";
-    log.info("Creating IPFS data source for file: {}", [ipfsPath]);
+  let blobs = Blobs.load(BlobProcessedEventId);
 
-    // This will invoke the handleAssetMetadata() in 'assetMetadata.ts'
-    AssetMetadataTemplate.create(ipfsPath);
+  if (blobs == null) {
+    blobs = new Blobs(BlobProcessedEventId);
+    blobs.amount = BigInt.zero();
   }
+
+  log.info("handleBlobProcessed, before amount: {}", [blobs.amount.toString()]);
+  blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
+  log.info("handleBlobProcessed, after amount: {}", [blobs.amount.toString()]);
+
+  blobs.save();
+
+  // Now spin up sub‑dataSources for each JSON file in IPFS
+  // for (let i = 1; i <= maxFiles; i++) {
+  //   let ipfsPath = ipfsFolderCID + "/" + i.toString() + ".json";
+  //   log.info("Creating IPFS data source for file: {}", [ipfsPath]);
+  //
+  //   // This will invoke the handleAssetMetadata() in 'assetMetadata.ts'
+  //   AssetMetadataTemplate.create(ipfsPath);
+  // }
 }

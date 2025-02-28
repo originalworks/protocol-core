@@ -5,12 +5,36 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: DdexSequencer
+    network: holesky
+    source:
+      address: "0xdF83A1529C73CA77b1fc6323C103B9F84b57f687"
+      abi: DdexSequencer
+      startBlock: 3397385
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ddexSequencer.ts
+      entities:
+        - Blobs
+        - BlobCall
+      abis:
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      callHandlers:
+        - function: submitNewBlob(bytes,bytes32)
+          handler: handleSubmitNewBlob
+      eventHandlers:
+        - event: NewBlobSubmitted(bytes)
+          handler: handleNewBlobSubmitted
+  - kind: ethereum/contract
     name: DdexEmitter
     network: holesky
     source:
       address: "0xe6443E75e713Ec31225B30bb2BFD1744a241E389"
       abi: DdexEmitter
-      startBlock: 3164428
+      startBlock: 3397388
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -18,6 +42,7 @@ dataSources:
       file: ./src/mapping.ts
       entities:
         - ProvedMessage
+        - Blobs
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
