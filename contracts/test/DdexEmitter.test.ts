@@ -42,6 +42,7 @@ describe("DdexEmitter", () => {
       ],
       disableWhitelist: false,
       fakeRisc0Groth16Verifier: true,
+      fakeImageId: true
     });
   });
 

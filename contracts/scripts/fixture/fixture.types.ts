@@ -15,6 +15,7 @@ export interface FixtureInput {
   disableWhitelist: boolean;
   printLogs?: boolean;
   fakeRisc0Groth16Verifier?: boolean;
+  fakeImageId?: boolean;
 }
 
 export interface FixtureOutput {

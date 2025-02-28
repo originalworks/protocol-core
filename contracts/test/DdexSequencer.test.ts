@@ -15,7 +15,6 @@ const ZERO_BYTES32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 describe("DdexSequencer", () => {
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
   let fixture: FixtureOutput;
   let dataProviders: Signer[];
   let validators: Signer[];
@@ -47,6 +46,7 @@ describe("DdexSequencer", () => {
       ],
       disableWhitelist: false,
       fakeRisc0Groth16Verifier: true,
+      fakeImageId: true
     });
   });
 

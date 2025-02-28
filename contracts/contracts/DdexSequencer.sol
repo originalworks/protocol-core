@@ -24,7 +24,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     bytes32 public blobQueueTail;
 
     IStakeVault stakeVault;
-    IDdexEmitter ddexEmitter;
+    IDdexEmitter public ddexEmitter;
 
     // temporary solution for open alpha tests
     bool whitelistsDisabled;
