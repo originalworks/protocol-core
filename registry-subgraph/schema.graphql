@@ -3,6 +3,14 @@ type Blobs @entity {
   amount: BigInt!
 }
 
+type MessagesProcessedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
 type ProvedMessage @entity {
   id: ID!
   message_id: String!

@@ -39,6 +39,7 @@ dataSources:
       entities:
         - Blobs
         - ProvedMessage
+        - MessagesProcessedPerDay
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json

@@ -1,6 +1,6 @@
-import { BigInt, log } from '@graphprotocol/graph-ts';
+import { BigInt, log } from "@graphprotocol/graph-ts";
 
-import { Blobs, ProvedMessage } from './types/schema';
+import { Blobs, MessagesProcessedPerDay, ProvedMessage } from './types/schema';
 import { AssetMetadataTemplate } from "./types/templates";
 import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
 
@@ -36,6 +36,22 @@ export function handleBlobProcessed(event: BlobProcessed): void {
       message.release.release_id.icpn.toString(),
       message.release.title_text.toString(),
     ])
+
+    let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+    let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+    let messagesProcessed = MessagesProcessedPerDay.load(id);
+
+    if (messagesProcessed == null) {
+      messagesProcessed = new MessagesProcessedPerDay(id);
+      messagesProcessed.amount = BigInt.zero();
+    }
+
+    messagesProcessed.month = (date.getUTCMonth() + 1).toString();
+    messagesProcessed.day = date.getUTCDate().toString();
+    messagesProcessed.year = date.getUTCFullYear().toString();
+    messagesProcessed.amount = messagesProcessed.amount.plus(BigInt.fromI32(1));
+
+    messagesProcessed.save();
   }
 
   let blobs = Blobs.load(BlobProcessedEventId);
@@ -56,7 +72,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   //   let ipfsPath = ipfsFolderCID + "/" + i.toString() + ".json";
   //   log.info("Creating IPFS data source for file: {}", [ipfsPath]);
   //
-  //   // This will invoke the handleAssetMetadata() in 'assetMetadata.ts'
+  //   // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
   //   AssetMetadataTemplate.create(ipfsPath);
   // }
 }
