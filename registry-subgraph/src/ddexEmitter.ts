@@ -1,6 +1,11 @@
 import { BigInt, log } from "@graphprotocol/graph-ts";
 
-import { Blobs, MessagesProcessedPerDay, ProvedMessage } from './types/schema';
+import {
+  BlobsStatus,
+  ProvedMessage,
+  BlobsProcessedPerDay,
+  MessagesProcessedPerDay
+} from "./types/schema";
 import { AssetMetadataTemplate } from "./types/templates";
 import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
 
@@ -10,15 +15,11 @@ const ipfsFolderCID = "bafybeid5l3yfspemqdmwhw4sal5r4fd2odtsuvuc2jt4teq42v3a4llo
 // Just an example: we create a data source up to 70 files.
 const maxFiles = 70
 
-const BlobProcessedEventId = "BlobProcessed";
+const BlobProcessedEventId = "processed";
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
   const messages = proverPublicOutputs.messages;
-
-  const isValid = proverPublicOutputs.is_valid;
-
-  log.info("isValid: {}", [isValid.toString()])
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
@@ -54,18 +55,32 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     messagesProcessed.save();
   }
 
-  let blobs = Blobs.load(BlobProcessedEventId);
+  let blobs = BlobsStatus.load(BlobProcessedEventId);
 
   if (blobs == null) {
-    blobs = new Blobs(BlobProcessedEventId);
+    blobs = new BlobsStatus(BlobProcessedEventId);
     blobs.amount = BigInt.zero();
   }
 
-  log.info("handleBlobProcessed, before amount: {}", [blobs.amount.toString()]);
   blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
-  log.info("handleBlobProcessed, after amount: {}", [blobs.amount.toString()]);
 
   blobs.save();
+
+  let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  let blobsProcessed = BlobsProcessedPerDay.load(id);
+
+  if (blobsProcessed == null) {
+    blobsProcessed = new BlobsProcessedPerDay(id);
+    blobsProcessed.amount = BigInt.zero();
+  }
+
+  blobsProcessed.month = (date.getUTCMonth() + 1).toString();
+  blobsProcessed.day = date.getUTCDate().toString();
+  blobsProcessed.year = date.getUTCFullYear().toString();
+  blobsProcessed.amount = blobsProcessed.amount.plus(BigInt.fromI32(1));
+
+  blobsProcessed.save();
 
   // Now spin up sub‑dataSources for each JSON file in IPFS
   // for (let i = 1; i <= maxFiles; i++) {

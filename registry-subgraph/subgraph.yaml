@@ -17,7 +17,8 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexSequencer.ts
       entities:
-        - Blobs
+        - BlobsStatus
+        - BlobsSubmittedPerDay
       abis:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
@@ -37,7 +38,8 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexEmitter.ts
       entities:
-        - Blobs
+        - BlobsStatus
+        - BlobsProcessedPerDay
         - ProvedMessage
         - MessagesProcessedPerDay
       abis:

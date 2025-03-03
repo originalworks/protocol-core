@@ -1,5 +1,21 @@
-type Blobs @entity {
-  id: String!
+type BlobsStatus @entity {
+  id: String! # status
+  amount: BigInt!
+}
+
+type BlobsSubmittedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsProcessedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
   amount: BigInt!
 }
 
