@@ -18,13 +18,9 @@ dataSources:
       file: ./src/ddexSequencer.ts
       entities:
         - Blobs
-        - BlobCall
       abis:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
-      callHandlers:
-        - function: submitNewBlob(bytes,bytes32)
-          handler: handleSubmitNewBlob
       eventHandlers:
         - event: NewBlobSubmitted(bytes)
           handler: handleNewBlobSubmitted
@@ -39,10 +35,10 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mapping.ts
+      file: ./src/ddexEmitter.ts
       entities:
-        - ProvedMessage
         - Blobs
+        - ProvedMessage
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
