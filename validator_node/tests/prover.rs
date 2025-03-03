@@ -3,7 +3,7 @@ use validator_node::prover_wrapper::ProverRunResults;
 fn produce_proof(dir: &str) -> Result<ProverRunResults, anyhow::Error> {
     std::env::set_var("RISC0_DEV_MODE", "1");
     let blob = blob_codec::BlobCodec::from_dir(dir).unwrap();
-    validator_node::prover_wrapper::run(&blob.to_bytes().into(), 18)
+    validator_node::prover_wrapper::run(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
 }
 
 #[test]
@@ -49,7 +49,12 @@ fn prover_mixed() {
 #[test]
 fn prover_faulty_blob() {
     std::env::set_var("RISC0_DEV_MODE", "1");
-    let output = validator_node::prover_wrapper::run(&[1; 131072].into(), 18).unwrap();
+    let output = validator_node::prover_wrapper::run(
+        &[1; 131072].into(),
+        prover::CURRENT_DDEX_GUEST_ELF,
+        18,
+    )
+    .unwrap();
 
     assert_eq!(output.public_outputs.valid, false);
     assert_eq!(output.public_outputs.rejected_messages.len(), 0);

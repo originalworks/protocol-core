@@ -8,13 +8,14 @@ import "./interfaces/IProverPublicOutputs.sol";
 pragma solidity ^0.8.24;
 
 contract DdexSequencer is WhitelistConsumer, Ownable {
-    event NewBlobSubmitted(bytes commitment);
+    event NewBlobSubmitted(bytes commitment, bytes32 image_id);
 
     struct Blob {
         bytes32 nextBlob;
         bool submitted;
         address proposer;
         bytes32 blobId;
+        bytes32 imageId;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -92,6 +93,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         blobs[newBlobhash].submitted = true;
         blobs[newBlobhash].proposer = msg.sender;
         blobs[newBlobhash].blobId = blobId;
+        blobs[newBlobhash].imageId = _imageId;
 
         if (blobQueueHead == bytes32(0)) {
             blobQueueHead = newBlobhash;
@@ -100,7 +102,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
             blobs[blobQueueTail].nextBlob = newBlobhash;
             blobQueueTail = newBlobhash;
         }
-        emit NewBlobSubmitted(_commitment);
+        emit NewBlobSubmitted(_commitment, _imageId);
     }
 
     function submitProof(

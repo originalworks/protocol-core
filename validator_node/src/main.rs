@@ -1,6 +1,6 @@
 use anyhow::Context;
 use log_macros::log_error; // your existing macro
-use regex::Regex;          // for replacing lines in .env
+use regex::Regex; // for replacing lines in .env
 use sentry::{ClientInitGuard, User};
 use serde_json::json;
 use std::fs;
@@ -10,7 +10,7 @@ use validator_node::Config;
 
 // Additional crates for key generation
 use rand::rngs::OsRng;
-use secp256k1::{Secp256k1, SecretKey, PublicKey};
+use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use tiny_keccak::{Hasher, Keccak};
 
 fn init_sentry(config: &Config) -> ClientInitGuard {
@@ -32,8 +32,7 @@ fn init_logging() -> anyhow::Result<()> {
     log_builder.parse_filters("info");
 
     let logger = sentry_log::SentryLogger::with_dest(log_builder.build());
-    log::set_boxed_logger(Box::new(logger))
-        .with_context(|| "Failed to set boxed logger")?;
+    log::set_boxed_logger(Box::new(logger)).with_context(|| "Failed to set boxed logger")?;
     log::set_max_level(log::LevelFilter::Info);
 
     Ok(())
@@ -44,7 +43,10 @@ fn init_logging() -> anyhow::Result<()> {
 /// Returns `None` if `nvidia-smi` is unavailable or no GPUs are found.
 fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
     let output = Command::new("nvidia-smi")
-        .args(["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=name,memory.total",
+            "--format=csv,noheader,nounits",
+        ])
         .output()
         .ok()?; // If the command fails, return None
 
@@ -67,7 +69,11 @@ fn detect_nvidia_gpu_memory_mib() -> Option<u64> {
         if parts.len() == 2 {
             let gpu_name = parts[0];
             if let Ok(mem) = parts[1].parse::<u64>() {
-                log::info!("Found NVIDIA GPU: Model=\"{}\", Memory={} MiB", gpu_name, mem);
+                log::info!(
+                    "Found NVIDIA GPU: Model=\"{}\", Memory={} MiB",
+                    gpu_name,
+                    mem
+                );
                 if mem > max_mem {
                     max_mem = mem;
                 }
@@ -160,7 +166,10 @@ fn update_env_if_created(mut env_contents: String) -> anyhow::Result<String> {
     // 4) Detect GPU memory & set SEGMENT_LIMIT_PO2
     let limit = match detect_nvidia_gpu_memory_mib() {
         Some(mib) => {
-            log::info!("Detected 1 or more NVIDIA GPU(s). Maximum memory of them is: {} MiB", mib);
+            log::info!(
+                "Detected 1 or more NVIDIA GPU(s). Maximum memory of them is: {} MiB",
+                mib
+            );
             let limit = decide_segment_limit_po2(mib);
             log::info!(
                 "Set SEGMENT_LIMIT_PO2={} for newly created .env (GPU has {} MiB)",
@@ -291,12 +300,6 @@ fn main() -> anyhow::Result<()> {
     log::info!("START_BLOCK={}", start_block);
     log::info!("SEGMENT_LIMIT_PO2={}", segment_limit);
     log::info!("ENVIRONMENT={}", environment);
-
-    sentry::configure_scope(|scope| {
-        scope.set_extra("START_BLOCK", start_block.clone().into());
-        scope.set_extra("SEGMENT_LIMIT_PO2", segment_limit.clone().into());
-        scope.set_extra("ENVIRONMENT", environment.clone().into());
-    });
 
     // E) Build & run your validator_node logic
     let config = Config::build();
