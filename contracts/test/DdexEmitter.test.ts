@@ -51,8 +51,10 @@ describe("DdexEmitter", () => {
     const initialImageId = ethers.hexlify(ddexEmitter.imageId)
     
     // accepted targets are 0x01 to 0x04
-    await expect(ddexEmitter.contract.setImageId("0x00", ethers.randomBytes(32))).to.be.rejectedWith("DdexEmitter: Invalid target")
-    await expect(ddexEmitter.contract.setImageId("0x05", ethers.randomBytes(32))).to.be.rejectedWith("DdexEmitter: Invalid target")
+    await expect(ddexEmitter.contract.setImageIds(["0x00"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Invalid target")
+    await expect(ddexEmitter.contract.setImageIds(["0x05"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Invalid target")
+    await expect(ddexEmitter.contract.setImageIds(["0x01", "0x02"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Mismatched array lengths")
+
 
     let [currentBlobImageId, previousBlobImageId] = await ddexEmitter.contract.getSupportedBlobImageIds();
     
@@ -74,10 +76,14 @@ describe("DdexEmitter", () => {
     const newCurrVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
     const newPrevVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
     
-    await (await ddexEmitter.contract.setImageId(currBlobTarget, newCurrBlobImageId)).wait()
-    await (await ddexEmitter.contract.setImageId(prevBlobTarget, newPrevBlobImageId)).wait()
-    await (await ddexEmitter.contract.setImageId(currVerifierTarget, newCurrVerifierImageId)).wait()
-    await (await ddexEmitter.contract.setImageId(prevVerifierTarget, newPrevVerifierImageId)).wait()
+    await (
+      await ddexEmitter.contract.setImageIds(
+        [currBlobTarget, prevBlobTarget, currVerifierTarget, prevVerifierTarget], 
+        [newCurrBlobImageId, newPrevBlobImageId, newCurrVerifierImageId, newPrevVerifierImageId]
+      )
+    ).wait()
+
+
 
     ;[currentBlobImageId, previousBlobImageId] = await ddexEmitter.contract.getSupportedBlobImageIds();
     ;[currentVerifierImageId, previousVerifierImageId] = await ddexEmitter.contract.getSupportedVerifierImageIds();

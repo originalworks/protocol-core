@@ -398,15 +398,13 @@ describe("DdexSequencer", () => {
     const prevTarget = await ddexEmitter.contract.BLOB_PREVIOUS_IMAGE_ID()
 
     // previous = current, current = new one
-    await(await ddexEmitter.contract.setImageId(currTarget, ethers.randomBytes(32))).wait();
-    await(await ddexEmitter.contract.setImageId(prevTarget, ddexEmitter.imageId)).wait();
+    await(await ddexEmitter.contract.setImageIds([currTarget,prevTarget], [ethers.randomBytes(32), ddexEmitter.imageId])).wait();
 
     // success: imageId == currentBlobImageId
     await expect(submitBlob(ddexEmitter.imageId, kzgInput2)).not.to.be.rejected;
   })
 
   it("Rejects on incompatible verifier imageId", async () => {
-    const dataProvider = dataProviders[0];
     const { ddexSequencer, ddexEmitter } = fixture;
 
     await sendBlob(
@@ -442,8 +440,10 @@ describe("DdexSequencer", () => {
     const prevTarget = await ddexEmitter.contract.VERIFIER_PREVIOUS_IMAGE_ID()
 
     // previous = current, current = new one
-    await(await ddexEmitter.contract.setImageId(currTarget, ethers.randomBytes(32))).wait();
-    await(await ddexEmitter.contract.setImageId(prevTarget, ddexEmitter.imageId)).wait();
+    await(await ddexEmitter.contract.setImageIds(
+      [currTarget, prevTarget], 
+      [ethers.randomBytes(32), ddexEmitter.imageId]
+    )).wait();
 
     // success: imageId == currentBlobImageId
     await expect(ddexSequencer.contract

@@ -48,8 +48,7 @@ export async function deployDdexEmitter(
     let blob_current_image_id_target = await contract.BLOB_CURRENT_IMAGE_ID()
     let verifier_current_image_id_target = await contract.VERIFIER_CURRENT_IMAGE_ID()
 
-    await(await contract.setImageId(blob_current_image_id_target, imageId)).wait();
-    await(await contract.setImageId(verifier_current_image_id_target, imageId)).wait();
+    await(await contract.setImageIds([blob_current_image_id_target, verifier_current_image_id_target], [imageId, imageId])).wait()
   }
 
   return {

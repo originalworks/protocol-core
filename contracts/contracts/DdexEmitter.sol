@@ -40,16 +40,29 @@ contract DdexEmitter is
         __Ownable_init(msg.sender);
     }
 
-    function setImageId(bytes1 _target, bytes32 _newImageId) public onlyOwner {
+    function setImageIds(
+        bytes1[] memory _targets,
+        bytes32[] memory _newImageIds
+    ) public onlyOwner {
         require(
-            _target > bytes1(0) && _target < 0x05,
-            "DdexEmitter: Invalid target"
+            _targets.length == _newImageIds.length,
+            "DdexEmitter: Mismatched array lengths"
         );
 
-        bytes32 previousImageId = imageIds[_target];
-        imageIds[_target] = _newImageId;
+        for (uint256 i = 0; i < _targets.length; i++) {
+            bytes1 target = _targets[i];
+            bytes32 newImageId = _newImageIds[i];
 
-        emit ImageIdChanged(_target, previousImageId, _newImageId);
+            require(
+                target > bytes1(0) && target < 0x05,
+                "DdexEmitter: Invalid target"
+            );
+
+            bytes32 previousImageId = imageIds[target];
+            imageIds[target] = newImageId;
+
+            emit ImageIdChanged(target, previousImageId, newImageId);
+        }
     }
 
     function getSupportedBlobImageIds()
