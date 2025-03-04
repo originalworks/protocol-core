@@ -74,7 +74,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY .env .env
 
 # Make sure the mountpoint directory exists
-RUN mkdir -p /protocol-core/owen/input
+RUN mkdir -p /protocol-core/owen/my_messages
 
 # Make the script executable
 RUN chmod +x /protocol-core/owen/mount-s3.sh
