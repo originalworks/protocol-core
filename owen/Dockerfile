@@ -65,8 +65,25 @@ RUN npm install @web3-storage/w3cli
 # Ensure the build runs inside `/protocol-core/owen`
 WORKDIR /protocol-core/owen
 
+# Install s3fs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    s3fs \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy .env file
+COPY .env .env
+
+# Make sure the mountpoint directory exists
+RUN mkdir -p /protocol-core/owen/input
+
+# Make the script executable
+RUN chmod +x /protocol-core/owen/mount-s3.sh
+
+# Set as entrypoint (assuming your script is in /protocol-core/owen)
+ENTRYPOINT ["/protocol-core/owen/mount-s3.sh"]
+
 # Build Rust project
 RUN cargo build --release --bin main
 
 # Default entrypoint/command
-CMD ["/bin/bash"]
+# CMD ["/bin/bash"]
