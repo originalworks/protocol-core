@@ -86,4 +86,4 @@ ENTRYPOINT ["/protocol-core/owen/mount-s3.sh"]
 RUN cargo build --release --bin main
 
 # Default entrypoint/command
-# CMD ["/bin/bash"]
+CMD ["/bin/bash"]

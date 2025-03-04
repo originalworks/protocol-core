@@ -19,6 +19,32 @@ You can currenlty use OWEN to send DDEX packages (that include `.xml` files) as 
 3. **Private key of your wallet** with funds on Holesky testnet
 4. **Folder with your DDEX messages in xml format**: Each message should be in a separate subfolder and include an image file. You can use our test files from the `owen/tests/msg_one` and `owen/tests/msg_two` folders, but remember to change some values because the Protocol prevents sending identical BLOBs twice.
 
+## Steps to run OWEN on Docker (recommended approach)
+
+Copy the sample of the enviorment file and edit accordigly
+```bash
+cp .env.sample .env
+```
+
+Build container
+```bash
+docker build --no-cache -t owen .
+```
+
+Run container
+```bash
+docker run 
+  --privileged \
+  --env-file .env \
+  -it \
+  --rm \
+  --name owen-container \
+  owen
+```
+
+You only need to run it with under the tab `priviliged` if you plan to mount an S3 AWS bucket in OWEN.
+
+
 ## Steps to install OWEN on a clean Debian system
 
 1. Install dependencies:
