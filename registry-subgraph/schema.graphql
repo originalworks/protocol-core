@@ -19,6 +19,14 @@ type BlobsProcessedPerDay @entity {
   amount: BigInt!
 }
 
+type BlobsRejectedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
 type MessagesProcessedPerDay @entity {
   id: String! # date
   month: String!

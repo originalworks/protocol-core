@@ -23,7 +23,7 @@ dataSources:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
       eventHandlers:
-        - event: NewBlobSubmitted(bytes)
+        - event: NewBlobSubmitted(bytes,bytes32)
           handler: handleNewBlobSubmitted
   - kind: ethereum/contract
     name: DdexEmitter
@@ -40,14 +40,17 @@ dataSources:
       entities:
         - BlobsStatus
         - BlobsProcessedPerDay
+        - BlobsRejectedPerDay
         - ProvedMessage
         - MessagesProcessedPerDay
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]))
           handler: handleBlobProcessed
+        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]))
+          handler: handleBlobRejected
 templates:
   - kind: file/ipfs
     name: AssetMetadataTemplate
