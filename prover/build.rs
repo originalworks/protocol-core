@@ -84,7 +84,11 @@ fn main() {
     lib_content.push(format!(
         "#[rustfmt::skip]\npub const {}_ID: [u32; 8] = {};",
         PREVIOUS_BIN_NAME.to_uppercase(),
-        current_image_id_backup
+        if format!("{:?}", &entry.image_id).to_string() == current_image_id_backup {
+            "[0; 8]".to_string()
+        } else {
+            current_image_id_backup
+        }
     ));
 
     lib_content.push(format!(
