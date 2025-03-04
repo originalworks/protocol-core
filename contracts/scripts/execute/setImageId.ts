@@ -5,9 +5,9 @@ import { ethers } from "hardhat";
 // CURRENT_VERIFIER = "0x03",
 // PREVIOUS_VERIFIER = "0x04"
 
-const NEW_IMAGE_ID = "";
+const NEW_IMAGE_IDS: string[] = [];
+const TARGETS: string[] = []
 const DDEX_EMITTER_ADDRESS = "";
-const TARGET = ""
 
 
 async function main() {
@@ -16,12 +16,13 @@ async function main() {
     DDEX_EMITTER_ADDRESS
   );
 
-  const tx = await ddexEmitter.setImageId(ethers.getBytes(TARGET), NEW_IMAGE_ID);
+  const tx = await ddexEmitter.setImageIds(TARGETS.map((target) => ethers.getBytes(target)), NEW_IMAGE_IDS);
 
   await tx.wait();
 
   console.log(
-    `New ImageID: ${NEW_IMAGE_ID} on target ${TARGET} was set for DdexEmitter contract: ${DDEX_EMITTER_ADDRESS}. Transaction hash: ${tx.hash}`
+    `DdexEmitter contract: ${DDEX_EMITTER_ADDRESS}. Transaction hash: ${tx.hash}`
   );
+  console.log(`Changes:\n${TARGETS.map((target, index) => `${target} -> ${NEW_IMAGE_IDS[index]}\n`)}`)
 }
 main();
