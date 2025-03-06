@@ -2,3 +2,4 @@
 .env.local
 /target/
 /tests/resources/playground/**/*.json
+/temp/

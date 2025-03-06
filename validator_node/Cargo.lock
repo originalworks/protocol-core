@@ -5950,6 +5950,7 @@ dependencies = [
  "sentry-log",
  "serde",
  "serde_json",
+ "serde_valid",
  "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "tiny-keccak",
  "tokio",
