@@ -155,8 +155,8 @@ async fn validate_blobs(
 
     let blob = beacon_chain::find_blob(
         &config.beacon_rpc_url,
-        queue_head_data.commitment,
-        queue_head_data.parent_beacon_block_root,
+        &queue_head_data.commitment,
+        &queue_head_data.parent_beacon_block_root,
     )
     .await?;
 
@@ -167,7 +167,7 @@ async fn validate_blobs(
         "Pinning message JSON files to IPFS",
     );
 
-    ipfs::prepare_blob_folder(blob).await?;
+    ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
 
     span.finish();
 
