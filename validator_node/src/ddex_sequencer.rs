@@ -53,6 +53,10 @@ pub struct DdexSequencerContext<'a> {
 pub struct QueueHeadData {
     pub commitment: Bytes,
     pub parent_beacon_block_root: FixedBytes<32>,
+    pub versioned_blobhash: FixedBytes<32>,
+    pub transaction_hash: FixedBytes<32>,
+    pub block_number: u64,
+    pub timestamp: u64,
 }
 
 impl DdexSequencerContext<'_> {
@@ -167,21 +171,34 @@ impl DdexSequencerContext<'_> {
 
         let mut queue_head_commitment = Bytes::new();
         let mut parent_beacon_block_root = FixedBytes::<32>::new([0u8; 32]);
+        let mut transaction_hash = FixedBytes::<32>::new([0u8; 32]);
+        let mut block_number: u64 = 0;
+        let mut timestamp: u64 = 0;
 
         while let Some(log) = stream.next().await {
             println!("New blob detected!");
             let DdexSequencer::NewBlobSubmitted { commitment } = log.log_decode()?.inner.data;
-            let block_number = log
+            block_number = log
                 .block_number
                 .ok_or_else(|| format_error!("Block not found in log"))?;
             parent_beacon_block_root = self.get_parent_beacon_block_root(block_number).await?;
             queue_head_commitment = commitment;
             *config.start_block.borrow_mut() = block_number;
+            transaction_hash = log
+                .transaction_hash
+                .ok_or_else(|| format_error!("Transaction hash not found in log"))?;
+            timestamp = log
+                .block_timestamp
+                .ok_or_else(|| format_error!("Block timestamp not found in log"))?;
             break;
         }
         Ok(QueueHeadData {
             parent_beacon_block_root,
+            versioned_blobhash: Self::commitment_to_blobhash(&queue_head_commitment),
             commitment: queue_head_commitment,
+            transaction_hash,
+            block_number,
+            timestamp,
         })
     }
 
@@ -199,21 +216,30 @@ impl DdexSequencerContext<'_> {
 
         let mut queue_head_commitment = Bytes::new();
         let mut parent_beacon_block_root = FixedBytes::<32>::new([0u8; 32]);
+        let mut transaction_hash = FixedBytes::<32>::new([0u8; 32]);
+        let mut block_number: u64 = 0;
+        let mut timestamp: u64 = 0;
 
         for log in logs {
             match log.topic0() {
                 Some(&DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH) => {
                     let DdexSequencer::NewBlobSubmitted { commitment } =
                         log.log_decode()?.inner.data;
+                    transaction_hash = log
+                        .transaction_hash
+                        .ok_or_else(|| format_error!("Transaction hash not found in log"))?;
                     let current_blobhash = Self::commitment_to_blobhash(&commitment);
                     if queue_head == current_blobhash {
-                        let block_number = log
+                        block_number = log
                             .block_number
                             .ok_or_else(|| format_error!("Block not found in log"))?;
                         parent_beacon_block_root =
                             self.get_parent_beacon_block_root(block_number).await?;
                         queue_head_commitment = commitment;
                         *config.start_block.borrow_mut() = block_number;
+                        timestamp = log
+                            .block_timestamp
+                            .ok_or_else(|| format_error!("Block timestamp not found in log"))?;
                         break;
                     }
                 }
@@ -229,7 +255,11 @@ impl DdexSequencerContext<'_> {
 
         Ok(QueueHeadData {
             parent_beacon_block_root,
+            versioned_blobhash: Self::commitment_to_blobhash(&queue_head_commitment),
             commitment: queue_head_commitment,
+            transaction_hash,
+            block_number,
+            timestamp,
         })
     }
 }
