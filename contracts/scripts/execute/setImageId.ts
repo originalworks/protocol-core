@@ -6,7 +6,7 @@ import { ethers } from "hardhat";
 // PREVIOUS_VERIFIER = "0x04"
 
 const NEW_IMAGE_IDS: string[] = [];
-const TARGETS: string[] = []
+const TARGETS: string[] = [];
 const DDEX_EMITTER_ADDRESS = "";
 
 
@@ -23,6 +23,6 @@ async function main() {
   console.log(
     `DdexEmitter contract: ${DDEX_EMITTER_ADDRESS}. Transaction hash: ${tx.hash}`
   );
-  console.log(`Changes:\n${TARGETS.map((target, index) => `${target} -> ${NEW_IMAGE_IDS[index]}\n`)}`)
+  console.log(`Changes:\n${TARGETS.map((target, index) => `${target} -> ${NEW_IMAGE_IDS[index]}`).join(",\n")}`)
 }
 main();
