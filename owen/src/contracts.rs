@@ -99,10 +99,6 @@ impl ContractsManager {
             _0: current_image_id,
             _1: previous_image_id,
         } = self.emitter.getSupportedBlobImageIds().call().await?;
-        println!(
-            "Current: {}, Previous: {}",
-            current_image_id, previous_image_id
-        );
         if self.image_id == current_image_id {
             log_info!("Using current version of image id");
             return Ok(());
@@ -110,6 +106,15 @@ impl ContractsManager {
             log_warn!("Using previous version of image id. Remember to update Owen to latest version before previous version sunsets");
             return Ok(());
         } else {
+            log_warn!(
+                "Current sequencer blob image id: {}",
+                current_image_id.to_string()
+            );
+            log_warn!(
+                "Previous sequencer blob image id: {}",
+                previous_image_id.to_string()
+            );
+            log_warn!("Owen image id: {}", self.image_id.to_string());
             return Err(format_error!(
                 "ImageId: {} is not supported by Sequencer/Emitter",
                 &self.image_id

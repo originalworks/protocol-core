@@ -118,15 +118,19 @@ impl ContractsManager {
 
     pub async fn select_image_elf(&self, blob_image_id: &FixedBytes<32>) -> anyhow::Result<&[u8]> {
         let selected_elf;
-        let is_local_current;
+        let blob_is_local_current;
 
         if blob_image_id == &self.current_image_id {
             selected_elf = CURRENT_DDEX_GUEST_ELF;
-            is_local_current = true;
+            blob_is_local_current = true;
         } else if blob_image_id == &self.previous_image_id {
             selected_elf = PREVIOUS_DDEX_GUEST_ELF;
-            is_local_current = false;
+            blob_is_local_current = false;
         } else {
+            log_warn!("Current image id: {}", self.current_image_id.to_string());
+            log_warn!("Previous image id: {}", self.previous_image_id.to_string());
+            log_warn!("Blob image id: {}", blob_image_id.to_string());
+
             self
                 .emitter
                 .getSupportedBlobImageIds()
@@ -134,6 +138,9 @@ impl ContractsManager {
                 .await
                 .ok()
                 .and_then(|res| -> Option<()> {
+                    log_warn!("Current sequencer blob image id: {}", &res._0.to_string());
+                    log_warn!("Previous sequencer blob image id: {}", &res._1.to_string());
+
                     if blob_image_id == &res._0 || blob_image_id == &res._1 {
                         panic!("Blob ImageId is supported by DdexSequencer and unknown to validator. It means that validator is outdated. Please update it.");
                     } else {
@@ -149,23 +156,45 @@ impl ContractsManager {
             _1: previous_verifier_image_id,
         } = self.emitter.getSupportedVerifierImageIds().call().await?;
 
-        if self.current_image_id == current_verifier_image_id
-            && self.previous_image_id == previous_verifier_image_id
-        {
-            // Validator in sync
-            return Ok(selected_elf);
-        } else if self.current_image_id == previous_verifier_image_id {
-            if is_local_current {
-                // Validator current == sequencer previous && blob_image_id == validator current, will pass
-                log_warn!("Validator uses imageId that will soon become outdated. Please update validator ASAP!");
+        if previous_verifier_image_id.is_zero() {
+            if current_verifier_image_id == self.current_image_id && blob_is_local_current {
                 return Ok(selected_elf);
             } else {
-                // Validator previous == blob_image_id && validator previous is unknown to sequencer, will reject
-                panic!("Proving aborted. DdexSequencer will reject prove generated with this imageId as it became outdated. Please update validator ASAP!");
+                log_warn!("Current image id: {}", self.current_image_id.to_string());
+                log_warn!("Previous image id: {}", self.previous_image_id.to_string());
+                log_warn!("Blob image id: {}", blob_image_id.to_string());
+                log_warn!(
+                    "Current sequencer verifier image id: {}",
+                    &current_verifier_image_id.to_string()
+                );
+                log_warn!(
+                    "Previous sequencer verifier image id: {}",
+                    &previous_verifier_image_id.to_string()
+                );
+                panic!("Proving aborted. DdexSequencer will reject prove generated with this imageId as it became outdated. Please update validator ASAP!")
             }
         } else {
-            // Validator is out of sync with sequencer versions, will reject
-            panic!("Proving aborted. Validator has no common verifier image ids with DdexSequencer. Please update validator.");
+            if self.current_image_id == current_verifier_image_id && blob_is_local_current
+                || self.previous_image_id == previous_verifier_image_id && !blob_is_local_current
+            {
+                return Ok(selected_elf);
+            } else if self.current_image_id == previous_verifier_image_id && blob_is_local_current {
+                log_warn!("Validator supports imageId that will soon become outdated. Please update validator ASAP!");
+                return Ok(selected_elf);
+            } else {
+                log_warn!("Current image id: {}", self.current_image_id.to_string());
+                log_warn!("Previous image id: {}", self.previous_image_id.to_string());
+                log_warn!("Blob image id: {}", blob_image_id.to_string());
+                log_warn!(
+                    "Current sequencer verifier image id: {}",
+                    &current_verifier_image_id.to_string()
+                );
+                log_warn!(
+                    "Previous sequencer verifier image id: {}",
+                    &previous_verifier_image_id.to_string()
+                );
+                panic!("Proving aborted. DdexSequencer will reject prove generated with this imageId as it became outdated. Please update validator ASAP!");
+            }
         }
     }
 
