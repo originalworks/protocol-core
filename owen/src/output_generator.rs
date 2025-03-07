@@ -5,10 +5,12 @@ use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
 use sentry::protocol::Attachment;
 use serde_json::json;
+use serde_json::Value;
 use serde_valid::json::ToJsonString;
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Debug)]
 pub struct MessageDirProcessingContext {
@@ -21,27 +23,150 @@ pub struct MessageDirProcessingContext {
     reason: Option<String>,
 }
 
+/// Converts `input_path` into a resized AVIF image using ImageMagick.
+/// Returns the path to the newly created file.
+fn convert_and_resize_image(input_path: &str) -> anyhow::Result<String> {
+    // Construct a Path from input_path
+    let input_path_obj = Path::new(input_path);
+
+    // Retrieve the parent directory or fallback to "."
+    let parent_dir = input_path_obj
+        .parent()
+        .unwrap_or_else(|| Path::new("."));
+
+    // Extract the file stem (base name, without extension).
+    // If the file stem is missing or empty for some reason, use "image" as a fallback.
+    let base_name = input_path_obj
+        .file_stem()
+        .unwrap_or_else(|| std::ffi::OsStr::new("image"));
+
+    // Construct the output file name, e.g. `<base_name>.avif`
+    // So if your source is `/some/folder/photo.jpg`, output will be `/some/folder/photo.avif`.
+    let output_file = parent_dir.join(format!("{}.avif", base_name.to_string_lossy()));
+
+    // Use the "convert" tool:
+    let status = Command::new("convert")
+        .arg(input_path)
+        .arg("-resize")
+        .arg("720x")
+        .arg("-quality")
+        .arg("50")
+        .arg(output_file.as_os_str())
+        .status()
+        .with_context(|| format!("Failed to run ImageMagick convert on {}", input_path))?;
+
+    if status.success() {
+        // Convert the output file PathBuf back into a String
+        Ok(output_file
+            .to_string_lossy()
+            .to_string())
+    } else {
+        // If the command completed but had a non-zero exit code
+        Err(anyhow::anyhow!("Image conversion failed for {}", input_path))
+          }
+}
+
+fn generate_iscc_code_for_file(file_path: &str) -> anyhow::Result<String> {
+    // Call `idk create file_path`
+    let output = Command::new("idk")
+        .arg("create")
+        .arg(file_path)
+        .output()?;
+
+    // Check exit status
+    if !output.status.success() {
+        return Err(anyhow::anyhow!(
+            "idk create failed with status: {:?}",
+            output.status.code()
+        ));
+    }
+
+    // Convert stdout to String and parse as JSON
+    let stdout_str = String::from_utf8(output.stdout)?;
+    let parsed_json: Value = serde_json::from_str(&stdout_str)
+        .map_err(|e| anyhow::anyhow!("Failed to parse idk create output as JSON: {}", e))?;
+
+    // Extract the "iscc" field
+    if let Some(iscc_code) = parsed_json.get("iscc").and_then(|val| val.as_str()) {
+        Ok(iscc_code.to_string())
+    } else {
+        Err(anyhow::anyhow!("No 'iscc' field found in idk create output"))
+    }
+}
+
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
     config: &Config,
 ) -> anyhow::Result<()> {
+    // 1) PIN IMAGES
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
             if let Some(file) = &mut technical_details.file {
+                // 1. Build the full path to the original file
                 let input_image_file = format!(
                     "{}/{}",
                     message_dir_processing_context.message_dir_path, file.uri
                 );
-                message_dir_processing_context.input_image_path = input_image_file;
-                let file_uri =
-                    pin_file(&message_dir_processing_context.input_image_path, &config).await?;
 
+                // 2. Convert & resize the image, producing an AVIF
+                let resized_image_path = convert_and_resize_image(&input_image_file)?;
+
+                // Optionally store the resized path so we can log or debug it:
+                message_dir_processing_context.input_image_path = resized_image_path.clone();
+
+                // 3. Pin the newly created AVIF file
+                let file_uri = pin_file(&resized_image_path, &config).await?;
+
+                // 4. Save the CID back in the context and in the DDEX message
                 message_dir_processing_context.image_cid = file_uri.clone();
                 file.uri = file_uri;
             }
         }
     }
+
+    // 2) HANDLE AUDIO FILES
+    // Within pin_and_write_cid or wherever you need to handle audio:
+    /*
+// Iterate over all SoundRecordings in the ResourceList
+for sound_recording in &mut new_release_message.resource_list.sound_recordings {
+    // If there's a SoundRecordingEdition (or iterate if it's a Vec)
+    if let Some(edition) = &mut sound_recording.sound_recording_edition {
+        // Go through each TechnicalDetails
+        for tech_detail in &mut edition.technical_details {
+            // If DeliveryFile is present
+            if let Some(delivery_file) = &mut tech_detail.delivery_file {
+                // If there's a File node
+                if let Some(file_details) = &mut delivery_file.file {
+                    // Finally, get the URI string
+                    let audio_uri = &file_details.uri;
+
+                    // Build the local path from folder + URI
+                    let full_path = format!(
+                        "{}/{}",
+                        message_dir_processing_context.message_dir_path,
+                        audio_uri
+                    );
+
+                    // Now do your processing:
+                    // e.g., generate ISCC code or pin the file to IPFS
+                    match generate_iscc_code_for_file(&full_path) {
+                        Ok(iscc_code) => {
+                            log_info!("ISCC code for {} is {}", full_path, iscc_code);
+                            // do whatever you need with `iscc_code`
+                        }
+                        Err(e) => {
+                            log_warn!("Failed to generate ISCC code for {}: {}", full_path, e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+*/
+
+
 
     Ok(())
 }

@@ -118,18 +118,21 @@ async fn validate_blobs(
 
     let blob = beacon_chain::find_blob(
         &config.beacon_rpc_url,
-        queue_head_data.commitment,
-        queue_head_data.parent_beacon_block_root,
+        &queue_head_data.commitment,
+        &queue_head_data.parent_beacon_block_root,
     )
     .await?;
 
     span.finish();
-    // let ipfs_cids = ddex_messages_data
-    //     .iter()
-    //     .map(|emittable_values| emittable_values.image_ipfs_cid.clone())
-    //     .collect();
 
-    // ipfs::check_file_accessibility(ipfs_cids).await?;
+    span = tx.start_child(
+        "message_jsons_ipfs_pin",
+        "Pinning message JSON files to IPFS",
+    );
+
+    ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
+
+    span.finish();
 
     span = tx.start_child("proving", "Proving");
 
