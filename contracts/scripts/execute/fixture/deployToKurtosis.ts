@@ -31,7 +31,8 @@ async function main() {
     dataProviders: [dataProvider.address, dataProvider2.address],
     disableWhitelist: true,
     printLogs: true,
-    fakeRisc0Groth16Verifier: process.env.PROVING_SETUP == "false"
+    fakeRisc0Groth16Verifier: process.env.PROVING_SETUP == "false",
+    fakeImageId: false
   });
 
   console.log("deployment data:", fixtureOutput.fixtureAddresses);

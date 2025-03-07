@@ -5,6 +5,7 @@ import "@openzeppelin/hardhat-upgrades";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
+import "@rumblefishdev/hardhat-kms-signer";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -14,10 +15,7 @@ const config: HardhatUserConfig = {
   networks: {
     holesky: {
       url: `${process.env.RPC_URL}`,
-      accounts: [
-        process.env.PRIVATE_KEY ||
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
+      kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`,
     },
     kurtosis_testnet: {
       url: `${process.env.RPC_URL}`,

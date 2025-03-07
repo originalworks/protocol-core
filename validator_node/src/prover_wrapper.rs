@@ -1,7 +1,7 @@
 use alloy_sol_types::SolValue;
 use core::str;
 use log_macros::log_info;
-use prover::{ProverPublicOutputs, DDEX_GUEST_ELF};
+use prover::ProverPublicOutputs;
 use risc0_ethereum_contracts::encode_seal;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 use std::time::Instant;
@@ -36,7 +36,11 @@ pub struct ProverRunResults {
     pub public_outputs: ProverPublicOutputs,
 }
 
-pub fn run(blob: &Vec<u8>, segment_limit_po2: u32) -> anyhow::Result<ProverRunResults> {
+pub fn run(
+    blob: &Vec<u8>,
+    image_elf: &[u8],
+    segment_limit_po2: u32,
+) -> anyhow::Result<ProverRunResults> {
     log_info!("Proving...");
     let timer = StopWatch::start();
 
@@ -54,7 +58,7 @@ pub fn run(blob: &Vec<u8>, segment_limit_po2: u32) -> anyhow::Result<ProverRunRe
         .prove_with_ctx(
             env,
             &VerifierContext::default(),
-            DDEX_GUEST_ELF,
+            image_elf,
             &ProverOpts::groth16(),
         )?
         .receipt;

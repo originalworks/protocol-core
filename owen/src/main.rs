@@ -6,6 +6,7 @@ use owen_cli::{
 
 async fn run(config: &Config) -> Result<()> {
     run_with_sentry(&config).await?;
+
     anyhow::Ok(())
 }
 

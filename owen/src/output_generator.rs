@@ -184,29 +184,48 @@ async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
     }
 }
 
-fn add_attachment(xml_input_path: &String) -> () {
-    let mut buffer: Vec<u8> = Vec::new();
-    let attachment_added = std::fs::File::open(xml_input_path)
-        .ok()
-        .and_then(|mut f| f.read_to_end(&mut buffer).ok())
-        .and_then(|_| {
-            sentry::configure_scope(|scope| {
-                scope.add_attachment(Attachment {
-                    filename: xml_input_path
-                        .split("/")
-                        .last()
-                        .unwrap_or_else(|| "unknown")
-                        .to_string(),
-                    buffer,
-                    content_type: Some("text/xml".to_string()),
-                    ..Default::default()
+fn report_validation_error<E: std::error::Error>(
+    err: &E,
+    attachment_path: &String,
+    raw_err_object: bool,
+) {
+    sentry::with_scope(
+        |scope| {
+            let mut buffer: Vec<u8> = Vec::new();
+            let attachment_added = std::fs::File::open(attachment_path)
+                .ok()
+                .and_then(|mut f| f.read_to_end(&mut buffer).ok())
+                .and_then(|_| {
+                    scope.add_attachment(Attachment {
+                        filename: attachment_path
+                            .split("/")
+                            .last()
+                            .unwrap_or_else(|| "unknown")
+                            .to_string(),
+                        buffer,
+                        content_type: Some("text/xml".to_string()),
+                        ..Default::default()
+                    });
+                    Some(())
                 });
+            if attachment_added.is_none() {
+                log_warn!("Failed to add attachment");
+            }
+
+            scope.set_tag("error_type", "parser");
+            scope.set_extra("error_object", {
+                if raw_err_object {
+                    json!(format!("{err:#?}"))
+                } else {
+                    json!(err.to_string())
+                }
             });
-            Some(())
-        });
-    if attachment_added.is_none() {
-        log_warn!("Failed to add attachment");
-    }
+            scope.clear_breadcrumbs();
+        },
+        || {
+            sentry::capture_message("Validation error", sentry::Level::Warning);
+        },
+    );
 }
 
 async fn process_message_folder(
@@ -273,8 +292,10 @@ async fn process_message_folder(
                         Ok(result) => result,
                         Err(err) => {
                             log_warn!("XML parsing error");
-                            add_attachment(
+                            report_validation_error(
+                                &err,
                                 &message_dir_processing_context.input_xml_path.to_string(),
+                                true,
                             );
                             message_dir_processing_context.reason = Some(err.to_string());
                             return Ok(message_dir_processing_context);
@@ -286,8 +307,10 @@ async fn process_message_folder(
                         Ok(result) => result,
                         Err(err) => {
                             log_warn!("JSON parsing error");
-                            add_attachment(
+                            report_validation_error(
+                                &err,
                                 &message_dir_processing_context.input_xml_path.to_string(),
+                                true,
                             );
                             message_dir_processing_context.reason = Some(err.to_string());
                             return Ok(message_dir_processing_context);
@@ -297,8 +320,10 @@ async fn process_message_folder(
                     new_release_message = match DdexParser::from_json_string(&json_output) {
                         Ok(result) => result,
                         Err(err) => {
-                            add_attachment(
+                            report_validation_error(
+                                &err,
                                 &message_dir_processing_context.input_xml_path.to_string(),
+                                false,
                             );
                             message_dir_processing_context.reason = Some(err.to_string());
                             return Ok(message_dir_processing_context);

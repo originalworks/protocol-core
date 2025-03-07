@@ -8,6 +8,7 @@
     "@openzeppelin/hardhat-upgrades": "^3.5.0",
     "dotenv": "16.4.5",
     "hardhat": "^2.22.18",
-    "kzg-wasm": "^0.4.0"
+    "kzg-wasm": "^0.4.0",
+    "@rumblefishdev/hardhat-kms-signer": "2.0.0"
   }
 }

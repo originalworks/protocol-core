@@ -76,6 +76,7 @@ export async function deployFixture(
     deployer: input.deployer,
     ddexSequencerAddress: await ddexSequencerOutput.contract.getAddress(),
     _riscZeroGroth16VerifierAddress: riscZeroGroth16VerifierAddress,
+    fakeImageId: !!input.fakeImageId
   });
   await ddexSequencerOutput.contract.setDdexEmitter(
     await ddexEmitterOutput.contract.getAddress()

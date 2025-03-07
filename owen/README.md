@@ -151,6 +151,9 @@ TransactionReceipt { inner: Eip4844(ReceiptWithBloom { receipt: Receipt { status
 
 # HOW TO USE OWEN WITH LOCAL TESTNET
 
+### TL;DR
+Run `make local-up` in the root of this repo.
+
 ### 1. Install and run kurtosis testnet:
 
 1. Install `kurtosis` by following the instruction from [HERE](https://docs.kurtosis.com/install)

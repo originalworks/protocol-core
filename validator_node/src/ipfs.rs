@@ -1,10 +1,10 @@
 use crate::constants::{self, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
-use crate::ddex_sequencer::QueueHeadData;
+use crate::contracts::QueueHeadData;
 use anyhow::Ok;
 use blob_codec::BlobCodec;
 use cid::Cid;
 use ddex_parser::{DdexParser, NewReleaseMessage};
-use log_macros::format_error;
+use log_macros::{format_error, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
@@ -68,9 +68,10 @@ pub async fn prepare_blob_folder(
         let parsed = match DdexParser::from_json_reader(reader) {
             std::result::Result::Ok(p) => p,
             Err(e) => {
-                eprintln!(
+                log_warn!(
                     "Skipping message upload {} due to parsing error: {:?}",
-                    i, e
+                    i,
+                    e
                 );
                 continue;
             }
@@ -78,9 +79,10 @@ pub async fn prepare_blob_folder(
         let json_output = match parsed.to_json_string_pretty() {
             std::result::Result::Ok(json) => json,
             Err(e) => {
-                eprintln!(
+                log_warn!(
                     "Skipping message upload {} due to JSON serialization error: {:?}",
-                    i, e
+                    i,
+                    e
                 );
                 continue;
             }
