@@ -1,5 +1,5 @@
 use crate::constants::{self, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
-use crate::ddex_sequencer::QueueHeadData;
+use crate::contracts::QueueHeadData;
 use anyhow::Ok;
 use blob_codec::BlobCodec;
 use cid::Cid;
