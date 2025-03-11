@@ -132,6 +132,9 @@ async fn validate_blobs(
 
     ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
 
+    let cid = ipfs::upload_blob_folder_and_cleanup()?;
+    log_info!("Folder successfully uploaded to IPFS with CID: {}", cid);
+
     span.finish();
 
     span = tx.start_child("proving", "Proving");

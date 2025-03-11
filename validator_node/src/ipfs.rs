@@ -1,16 +1,20 @@
 use crate::constants::{self, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
 use crate::contracts::QueueHeadData;
-use anyhow::Ok;
+use anyhow::{anyhow, Context};
 use blob_codec::BlobCodec;
 use cid::Cid;
 use ddex_parser::{DdexParser, NewReleaseMessage};
-use log_macros::{format_error, log_warn};
+use log_macros::{format_error, log_warn, log_error, log_info};
 use multihash_codetable::{Code, MultihashDigest};
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
-use std::fs::File;
-use std::io::Write;
-use std::{fs, io::Cursor, path::Path};
+use std::{
+    fs::{self, File},
+    io::{Write, Cursor},
+    path::Path,
+    process::Command,
+};
+
 
 #[derive(Serialize, Deserialize)]
 struct BlobMetadata {
@@ -123,3 +127,88 @@ fn calculate_blob_data_cid() -> anyhow::Result<String> {
     let cid = Cid::new_v1(RAW, h);
     Ok(cid.to_string())
 }
+
+///
+/// Uploads the contents of the `TEMP_FOLDER` directory to IPFS via `w3 up <folder>`,
+/// extracts and returns the CID, logs it, and then removes everything **inside** `TEMP_FOLDER`
+/// (but not the folder itself).
+///
+/// If anything fails (command error, parse error, etc.), logs an error and returns `Err(...)`.
+///
+pub fn upload_blob_folder_and_cleanup() -> anyhow::Result<String> {
+    // This is your top-level folder (e.g. "tmp" or "temp" or similar).
+    let folder_path = Path::new(crate::constants::TEMP_FOLDER);
+
+    // --- 1) Invoke `w3 up <folder>` synchronously ---
+    let output = Command::new("w3")
+        .args(["up", folder_path.to_str().unwrap()])
+        .output()
+        .with_context(|| format!("Failed to run `w3 up {}`", folder_path.display()))?;
+
+    // If `w3` returned a non-zero exit code, treat that as failure
+    if !output.status.success() {
+        let msg = format!(
+            "`w3 up` command failed with status: {:?}\nStdout: {}\nStderr: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        log_error!("{}", msg);
+        return Err(anyhow!(msg));
+    }
+
+    let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+    // --- 2) Parse the CID from the lines like:
+    //     "⁂ https://w3s.link/ipfs/bafy...something..."
+    //
+    //     We want to extract only the part after the last '/'
+    //     e.g. "bafybeibtetuqfs3xwr7makqdh6yebiuwkuxrerkjx5f6swmauzv6ivpevi"
+    //
+    let mut cid: Option<String> = None;
+    for line in stdout_str.lines() {
+        if line.starts_with("⁂ https://") {
+            // "⁂ https://w3s.link/ipfs/bafybeibtetuqfs3x..."
+            let tokens: Vec<_> = line.split_whitespace().collect();
+            if tokens.len() >= 2 {
+                // tokens[0] = "⁂"
+                // tokens[1] = "https://w3s.link/ipfs/bafy..."
+                if let Some(url) = tokens.get(1) {
+                    // isolate the string after the final slash
+                    if let Some(pos) = url.rfind('/') {
+                        cid = Some(url[(pos + 1)..].to_string());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    let cid = match cid {
+        Some(c) => c,
+        None => {
+            let msg = format!(
+                "Could not parse the CID from w3 output.\nFull output:\n{}",
+                stdout_str
+            );
+            log_error!("{}", msg);
+            return Err(anyhow!(msg));
+        }
+    };
+
+    log_info!("Successfully uploaded folder to IPFS. CID: {}", cid);
+
+    // --- 3) Remove the *contents* of `TEMP_FOLDER`, but leave the folder itself ---
+    for entry in fs::read_dir(folder_path)? {
+        let path = entry?.path();
+        if path.is_dir() {
+            fs::remove_dir_all(&path)?;
+        } else {
+            fs::remove_file(&path)?;
+        }
+    }
+
+    // Return the parsed CID
+    Ok(cid)
+}
+
