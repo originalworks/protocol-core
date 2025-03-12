@@ -8,4 +8,4 @@ pub const TEMP_FOLDER: &str = "./temp";
 #[allow(dead_code)]
 pub const IPFS_API_BASE_URL: &str = "https://ipfs.original.works";
 #[allow(dead_code)]
-pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
+pub const IPFS_API_CAT_FILE: &str = "/ipfs/";
