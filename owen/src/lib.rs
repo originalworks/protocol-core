@@ -1,6 +1,7 @@
 mod blob;
 mod constants;
 mod contracts;
+mod image_processor;
 mod ipfs;
 pub mod logger;
 pub mod output_generator;
