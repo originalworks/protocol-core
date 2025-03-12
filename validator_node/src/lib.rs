@@ -152,6 +152,7 @@ async fn validate_blobs(
             queue_head_data.image_id,
             prover_run_results.journal.into(),
             prover_run_results.seal.into(),
+            //cid pending
         )
         .await?;
 
