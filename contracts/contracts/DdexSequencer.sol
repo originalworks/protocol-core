@@ -48,10 +48,10 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     }
 
     // temporary solution for open alpha tests
-    function setWhitelistingStatus(bool _active) public onlyOwner {
-        if (whitelistsDisabled != _active) {
-            whitelistsDisabled = _active;
-            emit WhitelistingStatusChanged(_active);
+    function setWhitelistingStatus(bool _disabled) public onlyOwner {
+        if (whitelistsDisabled != _disabled) {
+            whitelistsDisabled = _disabled;
+            emit WhitelistingStatusChanged(_disabled);
         }
     }
 
