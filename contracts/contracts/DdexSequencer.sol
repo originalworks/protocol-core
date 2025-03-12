@@ -9,6 +9,7 @@ pragma solidity ^0.8.24;
 
 contract DdexSequencer is WhitelistConsumer, Ownable {
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
+    event WhitelistingStatusChanged(bool current_status);
 
     struct Blob {
         bytes32 nextBlob;
@@ -47,8 +48,11 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     }
 
     // temporary solution for open alpha tests
-    function disableWhitelist() public onlyOwner {
-        whitelistsDisabled = true;
+    function setWhitelistingStatus(bool _active) public onlyOwner {
+        if (whitelistsDisabled != _active) {
+            whitelistsDisabled = _active;
+            emit WhitelistingStatusChanged(_active);
+        }
     }
 
     modifier _isWhitelistedOn(bytes1 whitelistId) {
