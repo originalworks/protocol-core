@@ -8,13 +8,15 @@ import "./interfaces/IProverPublicOutputs.sol";
 pragma solidity ^0.8.24;
 
 contract DdexSequencer is WhitelistConsumer, Ownable {
-    event NewBlobSubmitted(bytes commitment);
+    event NewBlobSubmitted(bytes commitment, bytes32 image_id);
+    event WhitelistingStatusChanged(bool current_status);
 
     struct Blob {
         bytes32 nextBlob;
         bool submitted;
         address proposer;
         bytes32 blobId;
+        bytes32 imageId;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -24,7 +26,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     bytes32 public blobQueueTail;
 
     IStakeVault stakeVault;
-    IDdexEmitter ddexEmitter;
+    IDdexEmitter public ddexEmitter;
 
     // temporary solution for open alpha tests
     bool whitelistsDisabled;
@@ -46,38 +48,56 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     }
 
     // temporary solution for open alpha tests
-    function disableWhitelist() public onlyOwner {
-        whitelistsDisabled = true;
+    function setWhitelistingStatus(bool _disabled) public onlyOwner {
+        if (whitelistsDisabled != _disabled) {
+            whitelistsDisabled = _disabled;
+            emit WhitelistingStatusChanged(_disabled);
+        }
     }
 
     modifier _isWhitelistedOn(bytes1 whitelistId) {
         require(
             whitelistsDisabled ||
                 IWhitelist(whitelists[whitelistId]).isWhitelisted(msg.sender),
-            "Sender is not whitelisted"
+            "DdexSequencer: Sender is not whitelisted"
         );
 
         _;
     }
 
     function submitNewBlob(
-        bytes memory commitment,
-        bytes32 blobSha2
+        bytes32 _imageId,
+        bytes memory _commitment,
+        bytes32 _blobSha2
     ) public _isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
+        require(_imageId != bytes32(0), "DdexSequencer: ImageId cannot be 0");
+
+        (bytes32 currentImageId, bytes32 previousImageId) = ddexEmitter
+            .getSupportedBlobImageIds();
+
+        require(
+            currentImageId == _imageId || previousImageId == _imageId,
+            "DdexSequencer: Unsupported imageId"
+        );
+
         bytes32 newBlobhash;
         assembly {
             newBlobhash := blobhash(0)
         }
-        require(newBlobhash != bytes32(0), "Blob not found in tx");
+        require(
+            newBlobhash != bytes32(0),
+            "DdexSequencer: Blob not found in tx"
+        );
 
-        bytes32 blobId = sha256(abi.encodePacked(newBlobhash, blobSha2));
+        bytes32 blobId = sha256(abi.encodePacked(newBlobhash, _blobSha2));
         require(
             blobs[newBlobhash].submitted == false,
-            "Blob already submitted"
+            "DdexSequencer: Blob already submitted"
         );
         blobs[newBlobhash].submitted = true;
         blobs[newBlobhash].proposer = msg.sender;
         blobs[newBlobhash].blobId = blobId;
+        blobs[newBlobhash].imageId = _imageId;
 
         if (blobQueueHead == bytes32(0)) {
             blobQueueHead = newBlobhash;
@@ -86,16 +106,17 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
             blobs[blobQueueTail].nextBlob = newBlobhash;
             blobQueueTail = newBlobhash;
         }
-        emit NewBlobSubmitted(commitment);
+        emit NewBlobSubmitted(_commitment, _imageId);
     }
 
     function submitProof(
-        bytes memory journal,
-        bytes calldata seal
+        bytes32 _imageId,
+        bytes memory _journal,
+        bytes calldata _seal
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
-        require(blobQueueHead != bytes32(0), "Queue is empty");
+        require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
 
-        ddexEmitter.verifyAndEmit(journal, seal);
+        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal);
 
         _moveQueue();
     }

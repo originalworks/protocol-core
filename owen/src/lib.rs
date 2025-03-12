@@ -1,18 +1,14 @@
 mod blob;
 mod constants;
-mod ddex_sequencer;
+mod contracts;
+mod image_processor;
 mod ipfs;
 pub mod logger;
 pub mod output_generator;
-
-use alloy::network::EthereumWallet;
 use alloy::primitives::Address;
-use alloy::providers::ProviderBuilder;
-use alloy::signers::local::PrivateKeySigner;
-use anyhow::Context;
 use blob::BlobTransactionData;
+use contracts::ContractsManager;
 use ddex_parser::ParserError;
-use ddex_sequencer::DdexSequencerContext;
 pub use log;
 use log_macros::log_error;
 use output_generator::MessageDirProcessingContext;
@@ -108,26 +104,18 @@ impl Config {
     }
 }
 
-pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+pub async fn run(
+    config: &Config,
+    contracts_manager: &ContractsManager,
+) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    contracts_manager.check_image_compatibility().await?;
+
     let message_dir_processing_log = output_generator::create_output_files(&config).await?;
 
-    let private_key_signer: PrivateKeySigner = config
-        .private_key
-        .parse()
-        .with_context(|| "Failed to parse PRIVATE_KEY")?;
-    let wallet = EthereumWallet::from(private_key_signer);
-
-    let provider = ProviderBuilder::new()
-        .with_recommended_fillers()
-        .wallet(wallet)
-        .on_http(config.rpc_url.parse()?);
-
-    let ddex_sequencer_context =
-        DdexSequencerContext::build(&provider, config.ddex_sequencer_address).await?;
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
-    ddex_sequencer_context
-        .send_blob(blob_transaction_data)
-        .await?;
+
+    contracts_manager.send_blob(blob_transaction_data).await?;
+
     Ok(message_dir_processing_log)
 }
 
@@ -144,7 +132,14 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         scope.set_extra("config", json!(cloned_config));
     });
 
-    let message_dir_processing_context = run(&config).await.map_err(|e| {
+    let contracts_manager = ContractsManager::build(
+        config.ddex_sequencer_address,
+        &config.private_key,
+        &config.rpc_url,
+    )
+    .await?;
+
+    let message_dir_processing_context = run(&config, &contracts_manager).await.map_err(|e| {
         sentry::configure_scope(|scope| {
             scope.set_tag("error_type", {
                 if e.is::<ParserError>() {

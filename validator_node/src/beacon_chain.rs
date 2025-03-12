@@ -35,7 +35,7 @@ struct BlobSidecars {
 
 async fn get_parent_beacon_block_slot(
     beacon_rpc_url: &String,
-    parent_beacon_block_root: FixedBytes<32>,
+    parent_beacon_block_root: &FixedBytes<32>,
 ) -> anyhow::Result<u64> {
     let url = format!(
         "{}{}{}",
@@ -106,8 +106,8 @@ fn blob_vec_from_string(prefixed_blob: String) -> anyhow::Result<[u8; BYTES_PER_
 
 pub async fn find_blob(
     beacon_rpc_url: &String,
-    commitment: Bytes,
-    parent_beacon_block_root: FixedBytes<32>,
+    commitment: &Bytes,
+    parent_beacon_block_root: &FixedBytes<32>,
 ) -> anyhow::Result<[u8; BYTES_PER_BLOB]> {
     log_info!("Finding a blob...");
     let mut slot = get_parent_beacon_block_slot(beacon_rpc_url, parent_beacon_block_root).await?;
