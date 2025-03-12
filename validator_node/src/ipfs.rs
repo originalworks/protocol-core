@@ -60,6 +60,7 @@ pub async fn prepare_blob_folder(
     }
     fs::create_dir_all(blob_folder_path.join("json"))?;
     fs::create_dir_all(blob_folder_path.join("blob"))?;
+    fs::create_dir_all(blob_folder_path.join("images"))?;
 
     let blob_codec = BlobCodec::from_vec(blob.into())?;
     let message_vecs = blob_codec.decode()?;
@@ -197,6 +198,11 @@ pub fn upload_blob_folder_and_cleanup() -> anyhow::Result<String> {
     };
 
     log_info!("Successfully uploaded folder to IPFS. CID: {}", cid);
+    log_info!(
+        "URL: https://{}.ipfs.w3s.link/",
+        cid
+    );
+    
 
     // --- 3) Remove the *contents* of `TEMP_FOLDER`, but leave the folder itself ---
     for entry in fs::read_dir(folder_path)? {

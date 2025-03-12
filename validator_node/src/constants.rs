@@ -6,6 +6,6 @@ pub const GET_SIDECARS_API_PATH: &str = "/eth/v1/beacon/blob_sidecars/";
 pub const EMPTY_QUEUE_HEAD: FixedBytes<32> = FixedBytes::repeat_byte(0);
 pub const TEMP_FOLDER: &str = "./temp";
 #[allow(dead_code)]
-pub const IPFS_API_BASE_URL: &str = "http://localhost:5001";
+pub const IPFS_API_BASE_URL: &str = "https://ipfs.original.works";
 #[allow(dead_code)]
 pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
