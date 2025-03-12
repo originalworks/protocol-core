@@ -8,7 +8,7 @@ RUN rustup default stable  # Explicitly set Rust stable version
 
 # Base stage: Foundry (Solidity development)
 FROM debian:12 AS foundry-base
-RUN apt-get update && apt-get install -y curl git
+RUN apt-get update && apt-get install -y curl git 
 RUN curl -L https://foundry.paradigm.xyz | bash
 RUN /root/.foundry/bin/foundryup
 ENV PATH="/root/.foundry/bin:${PATH}"
@@ -37,10 +37,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     libmagic-dev \
     libtag1-dev \
-    imagemagick \
+    nasm \
     build-essential \
     ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy dependencies from previous stages
 COPY --from=python-base /root/.local /root/.local
@@ -68,7 +68,7 @@ WORKDIR /protocol-core/owen
 # Install s3fs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     s3fs \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy .env file
 COPY .env .env

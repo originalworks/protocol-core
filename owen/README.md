@@ -50,7 +50,7 @@ You only need to run it with under the tab `priviliged` if you plan to mount an 
 1. Install dependencies:
 
 ```bash
-apt install curl build-essential libssl-dev git pkg-config npm
+apt install curl build-essential libssl-dev git pkg-config npm nasm
 ```
 
 2. Install [Rust](https://www.rust-lang.org/tools/install) - Can be installed with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and shell refreshed with `. "$HOME/.cargo/env"`
