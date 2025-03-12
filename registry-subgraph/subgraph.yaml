@@ -8,7 +8,7 @@ dataSources:
     name: DdexSequencer
     network: holesky
     source:
-      address: "0xdF83A1529C73CA77b1fc6323C103B9F84b57f687"
+      address: "0xc69d6CA304AAaB8368cC0104D08011f6C70041F1"
       abi: DdexSequencer
       startBlock: 3397385
     mapping:
@@ -29,7 +29,7 @@ dataSources:
     name: DdexEmitter
     network: holesky
     source:
-      address: "0xe6443E75e713Ec31225B30bb2BFD1744a241E389"
+      address: "0x6638d3e72d78f9f33420c5658363753cf7860cb2"
       abi: DdexEmitter
       startBlock: 3397388
     mapping:
