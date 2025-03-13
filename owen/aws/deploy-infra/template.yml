@@ -134,7 +134,7 @@ Resources:
       Architectures:
         - x86_64
       Handler: bootstrap
-      MemorySize: 128
+      MemorySize: 512
       Timeout: 600
       AutoPublishAlias: OwenLambdaAlias
       ProvisionedConcurrencyConfig:
