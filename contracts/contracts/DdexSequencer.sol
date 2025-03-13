@@ -112,11 +112,12 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     function submitProof(
         bytes32 _imageId,
         bytes memory _journal,
-        bytes calldata _seal
+        bytes calldata _seal,
+        string memory cid
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
 
-        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal);
+        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal, cid);
 
         _moveQueue();
     }
