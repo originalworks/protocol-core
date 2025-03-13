@@ -113,7 +113,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         bytes32 _imageId,
         bytes memory _journal,
         bytes calldata _seal,
-        string memory cid
+        string memory _cid
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
 
