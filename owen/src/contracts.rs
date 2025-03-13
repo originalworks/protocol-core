@@ -1,7 +1,7 @@
 use crate::blob::BlobTransactionData;
 use crate::is_local;
 use alloy::primitives::{Address, FixedBytes};
-use alloy::providers::ProviderBuilder;
+use alloy::providers::{Provider, ProviderBuilder};
 use alloy::signers::local::PrivateKeySigner;
 use alloy::sol_types::private::Bytes;
 use alloy::{
@@ -124,6 +124,8 @@ impl ContractsManager {
 
     pub async fn send_blob(&self, transaction_data: BlobTransactionData) -> anyhow::Result<()> {
         log_info!("Sending tx...");
+        let chain_id = self.sequencer.provider().get_chain_id().await?;
+
         let mut tx_builder = self
             .sequencer
             .submitNewBlob(
@@ -137,6 +139,8 @@ impl ContractsManager {
             tx_builder = tx_builder
                 .max_priority_fee_per_gas(500000000)
                 .max_fee_per_gas(500000001);
+        } else if chain_id == 17000 {
+            tx_builder = tx_builder.max_priority_fee_per_gas(1100000000);
         }
 
         let receipt = tx_builder.send().await?.get_receipt().await?;
