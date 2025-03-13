@@ -91,7 +91,7 @@ contract DdexEmitter is
         bytes32 _imageId,
         bytes memory _journal,
         bytes calldata _seal,
-        string memory cid
+        string memory _cid
     ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
