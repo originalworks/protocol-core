@@ -1,21 +1,13 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 
-import { BlobsStatus, BlobsSubmittedPerDay } from "./types/schema";
+import { recordBlobsStatuses } from "./helpers";
+import { BlobsSubmittedPerDay } from "./types/schema";
 import { NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 
 const BlobsSubmittedEventId = "submitted";
 
 export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
-  let blobs = BlobsStatus.load(BlobsSubmittedEventId);
-
-  if (blobs == null) {
-    blobs = new BlobsStatus(BlobsSubmittedEventId);
-    blobs.amount = BigInt.zero();
-  }
-
-  blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
-
-  blobs.save();
+  recordBlobsStatuses(BlobsSubmittedEventId, event.block.timestamp);
 
   let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;

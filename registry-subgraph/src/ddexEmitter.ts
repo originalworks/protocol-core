@@ -1,14 +1,14 @@
 import { BigInt, log } from "@graphprotocol/graph-ts";
 
 import {
-  BlobsStatus,
   ProvedMessage,
   BlobsRejectedPerDay,
   BlobsProcessedPerDay,
   MessagesProcessedPerDay
-} from './types/schema';
+} from "./types/schema";
+import { recordBlobsStatuses } from "./helpers";
 import { AssetMetadataTemplate } from "./types/templates";
-import { BlobProcessed, BlobRejected } from './types/DdexEmitter/DdexEmitter';
+import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 
 // Hardcoded IPFS folder with raw JSON files, for demonstration.
 // Each file is something like <HASH>/jsons/1.json, <HASH>/jsons/2.json, etc.
@@ -57,16 +57,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     messagesProcessed.save();
   }
 
-  let blobs = BlobsStatus.load(BlobProcessedEventId);
-
-  if (blobs == null) {
-    blobs = new BlobsStatus(BlobProcessedEventId);
-    blobs.amount = BigInt.zero();
-  }
-
-  blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
-
-  blobs.save();
+  recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp);
 
   let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
@@ -95,16 +86,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 }
 
 export function handleBlobRejected(event: BlobRejected): void {
-  let blobs = BlobsStatus.load(BlobRejectedEventId);
-
-  if (blobs == null) {
-    blobs = new BlobsStatus(BlobRejectedEventId);
-    blobs.amount = BigInt.zero();
-  }
-
-  blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
-
-  blobs.save();
+  recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp);
 
   let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
