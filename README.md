@@ -1,7 +1,7 @@
 # ORIGINAL WORKS PROTOCOL CORE COMPONENTS
 
 1. [OWEN](https://github.com/originalworks/protocol-core/tree/master/owen). Original Workes Electronic Notification. Software used by Royalty Administrators to publish assets to the Original Works Protocol. 
-1. [Parser](https://github.com/originalworks/protocol-core/tree/master/parser)
+1. [DDEX Parser](https://github.com/originalworks/protocol-core/tree/master/ddex_parser)
 1. [Validator_node](https://github.com/originalworks/protocol-core/tree/master/validator_node).
 1. [Prover](https://github.com/originalworks/protocol-core/tree/master/prover)
 
