@@ -117,7 +117,7 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
 
-        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal, cid);
+        ddexEmitter.verifyAndEmit(_imageId, _journal, _seal, _cid);
 
         _moveQueue();
     }

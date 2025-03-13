@@ -111,9 +111,9 @@ contract DdexEmitter is
         riscZeroGroth16Verifier.verify(_seal, _imageId, sha256(_journal));
 
         if (proverPublicOutputs.valid) {
-            emit BlobProcessed(proverPublicOutputs, cid);
+            emit BlobProcessed(proverPublicOutputs, _cid);
         } else {
-            emit BlobRejected(proverPublicOutputs, cid);
+            emit BlobRejected(proverPublicOutputs, _cid);
         }
 
         return proverPublicOutputs.digest;
