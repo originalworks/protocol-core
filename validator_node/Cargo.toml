@@ -5,32 +5,32 @@ edition = "2021"
 
 [dependencies]
 alloy = { version = "0.3.0", features = ["full"] }
-dotenvy = "0.15.7"
+dotenvy = { workspace = true }
 futures-util = "0.3.30"
-blob_codec = { path = "../blob_codec" }
-reqwest = "0.12.7"
-serde = { version = "1.0.210", features = ["derive"] }
-serde_json = "1.0.133"
+blob_codec = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 sha2 = "0.10.8"
-tokio = { version = "1.39.3", features = ["full"] }
-prover = { path = "../prover" }
+tokio = { workspace = true, features = ["full"] }
+prover = { workspace = true }
 risc0-zkvm = { version = "1.1.2" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-ddex_parser = { path = '../ddex_parser' }
+ddex_parser = { workspace = true }
 risc0-ethereum-contracts = { git = "https://github.com/risc0/risc0-ethereum", tag = "v1.1.4" }
 alloy-sol-types = "0.8.18"
-anyhow = "1.0.95"
-log = "0.4.25"
-log_macros = { path = "../log_macros" }
-sentry = "0.36.0"
-sentry-log = "0.36"
-pretty_env_logger = "0.5.0"
+anyhow = { workspace = true }
+log = { workspace = true }
+log_macros = { workspace = true }
+sentry = { workspace = true }
+sentry-log = { workspace = true }
+pretty_env_logger = { workspace = true }
 hex = "0.4.3"
 rand = "0.8"
 secp256k1 = { version = "0.30", features = ["rand"] }
 tiny-keccak = "2.0.2"
 regex = "1.11.1"
-serde_valid = "0.25.0"
+serde_valid = { workspace = true }
 cid = "0.11.1"
 multihash-codetable = { version = "0.1.4", default-features = false, features = [
     "sha2",

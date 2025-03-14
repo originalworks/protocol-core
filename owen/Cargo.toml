@@ -5,25 +5,25 @@ edition = "2021"
 default-run = "main"
 
 [dependencies]
-reqwest = { version = "0.12.8", features = ["stream", "multipart", "json"] }
+reqwest = { workspace = true, features = ["stream", "multipart", "json"] }
 alloy = { version = "0.3.6", features = ["full"] }
 c-kzg = "1.0.3"
-dotenvy = "0.15.7"
-blob_codec = { path = "../blob_codec" }
-tokio = { version = "1.40.0", features = ["full"] }
+dotenvy = { workspace = true }
+blob_codec = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 tokio-util = "0.7.12"
-serde = "1.0.210"
+serde = { workspace = true}
 infer = "0.16.0"
-ddex_parser = { path = "../ddex_parser" }
-serde_valid = "0.25.0"
-serde_json = "1.0.133"
-anyhow = "1.0.95"
-log = "0.4.25"
-log_macros = { path = "../log_macros" }
-sentry = "0.36.0"
-sentry-log = "0.36"
-pretty_env_logger = "0.5.0"
-prover = { path = "../prover" }
+ddex_parser = { workspace = true }
+serde_valid = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true}
+log_macros = { workspace = true }
+sentry = { workspace = true }
+sentry-log = { workspace = true }
+pretty_env_logger = { workspace = true }
+prover = { workspace = true }
 # owen build for AWS Lambda:
 aws_lambda_events = { version = "0.15.1", default-features = false, features = [
     "cloudwatch_events",
