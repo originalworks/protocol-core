@@ -207,10 +207,11 @@ impl ContractsManager {
         image_id: FixedBytes<32>,
         journal: Vec<u8>,
         seal: Vec<u8>,
+        ipfs_cid: String,
     ) -> anyhow::Result<TransactionReceipt> {
-        let mut tx_builder = self
-            .sequencer
-            .submitProof(image_id, journal.into(), seal.into());
+        let mut tx_builder =
+            self.sequencer
+                .submitProof(image_id, journal.into(), seal.into(), ipfs_cid);
 
         if is_local() {
             tx_builder = tx_builder
@@ -310,9 +311,14 @@ impl ContractsManager {
             transaction_hash = log
                 .transaction_hash
                 .ok_or_else(|| format_error!("Transaction hash not found in log"))?;
-            timestamp = log
-                .block_timestamp
-                .ok_or_else(|| format_error!("Block timestamp not found in log"))?;
+
+            timestamp = self
+                .provider
+                .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
+                .await?
+                .ok_or_else(|| format_error!("Cannot get block info"))?
+                .header
+                .timestamp;
             break;
         }
         Ok(QueueHeadData {
@@ -365,9 +371,14 @@ impl ContractsManager {
                         queue_head_commitment = commitment;
                         blob_image_id = image_id;
                         *config.start_block.borrow_mut() = block_number;
-                        timestamp = log
-                            .block_timestamp
-                            .ok_or_else(|| format_error!("Block timestamp not found in log"))?;
+
+                        timestamp = self
+                            .provider
+                            .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
+                            .await?
+                            .ok_or_else(|| format_error!("Cannot get block info"))?
+                            .header
+                            .timestamp;
                         break;
                     }
                 }

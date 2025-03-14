@@ -1,11 +1,11 @@
 use alloy::primitives::FixedBytes;
 
-pub const DDEX_SEQUENCER_ADDRESS: &str = "c69d6CA304AAaB8368cC0104D08011f6C70041F1";
+pub const DDEX_SEQUENCER_ADDRESS: &str = "05B077035F2f147543f2Ec69794F922bb5784909";
 pub const GET_BEACON_BLOCK_API_PATH: &str = "/eth/v2/beacon/blocks/";
 pub const GET_SIDECARS_API_PATH: &str = "/eth/v1/beacon/blob_sidecars/";
 pub const EMPTY_QUEUE_HEAD: FixedBytes<32> = FixedBytes::repeat_byte(0);
 pub const TEMP_FOLDER: &str = "./temp";
 #[allow(dead_code)]
-pub const IPFS_API_BASE_URL: &str = "http://localhost:5001";
+pub const IPFS_API_BASE_URL: &str = "https://ipfs.original.works";
 #[allow(dead_code)]
-pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
+pub const IPFS_API_CAT_FILE: &str = "/ipfs/";

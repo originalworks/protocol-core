@@ -130,7 +130,10 @@ async fn validate_blobs(
         "Pinning message JSON files to IPFS",
     );
 
-    ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
+    ipfs::prepare_blob_folder(blob, &queue_head_data)?;
+
+    let cid = ipfs::upload_blob_folder_and_cleanup()?;
+    //log_info!("Folder successfully uploaded to IPFS with CID: {}", cid);
 
     span.finish();
 
@@ -149,6 +152,7 @@ async fn validate_blobs(
             queue_head_data.image_id,
             prover_run_results.journal.into(),
             prover_run_results.seal.into(),
+            cid,
         )
         .await?;
 

@@ -1,7 +1,7 @@
 use crate::blob::BlobTransactionData;
 use crate::is_local;
 use alloy::primitives::{Address, FixedBytes};
-use alloy::providers::ProviderBuilder;
+use alloy::providers::{Provider, ProviderBuilder};
 use alloy::signers::local::PrivateKeySigner;
 use alloy::sol_types::private::Bytes;
 use alloy::{
@@ -148,15 +148,7 @@ impl ContractsManager {
         log_info!("Success!");
         log_info!("--From: {}", receipt.from.to_string());
         log_info!("--To: {}", receipt.to.unwrap_or_default().to_string());
-        log_info!(
-            "--ContractAddress: {}",
-            receipt.contract_address.unwrap_or_default().to_string()
-        );
-
         log_info!("--TxHash: {}", receipt.transaction_hash.to_string());
-        log_info!("--GasPrice: {}", receipt.blob_gas_price.unwrap_or_default());
-        log_info!("--EffGasPrice: {}", receipt.effective_gas_price.to_string());
-        log_info!("--GasUsed: {}", receipt.blob_gas_used.unwrap_or_default());
 
         Ok(())
     }
