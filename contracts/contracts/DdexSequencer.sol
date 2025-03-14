@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./Whitelist/WhitelistConsumer.sol";
 import "./interfaces/IStakeVault.sol";
 import "./interfaces/IDdexEmitter.sol";
@@ -7,7 +9,11 @@ import "./interfaces/IProverPublicOutputs.sol";
 
 pragma solidity ^0.8.24;
 
-contract DdexSequencer is WhitelistConsumer, Ownable {
+contract DdexSequencer is
+    WhitelistConsumer,
+    OwnableUpgradeable,
+    UUPSUpgradeable
+{
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
     event WhitelistingStatusChanged(bool current_status);
 
@@ -33,14 +39,22 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
 
     mapping(bytes32 => Blob) public blobs;
 
-    constructor(
+    uint256[50] __gap;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
         address dataProvidersWhitelist,
         address validatorsWhitelist,
         address stakeVaultAddress
-    ) Ownable(msg.sender) {
+    ) public initializer {
         _setWhitelistAddress(dataProvidersWhitelist, DATA_PROVIDERS_WHITELIST);
         _setWhitelistAddress(validatorsWhitelist, VALIDATORS_WHITELIST);
         stakeVault = IStakeVault(stakeVaultAddress);
+        __Ownable_init(msg.sender);
     }
 
     function setDdexEmitter(IDdexEmitter _ddexEmitter) public onlyOwner {
@@ -143,4 +157,6 @@ contract DdexSequencer is WhitelistConsumer, Ownable {
         blobs[blobQueueHead].nextBlob = bytes32(0);
         blobs[blobQueueHead].proposer = address(0);
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }

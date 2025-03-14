@@ -24,6 +24,8 @@ contract DdexEmitter is
 
     mapping(bytes1 => bytes32) imageIds;
 
+    uint256[50] __gap;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
