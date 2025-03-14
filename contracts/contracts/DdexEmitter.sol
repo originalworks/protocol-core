@@ -24,6 +24,8 @@ contract DdexEmitter is
 
     mapping(bytes1 => bytes32) imageIds;
 
+    uint256[50] __gap;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -90,7 +92,8 @@ contract DdexEmitter is
     function verifyAndEmit(
         bytes32 _imageId,
         bytes memory _journal,
-        bytes calldata _seal
+        bytes calldata _seal,
+        string memory _cid
     ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
@@ -110,9 +113,9 @@ contract DdexEmitter is
         riscZeroGroth16Verifier.verify(_seal, _imageId, sha256(_journal));
 
         if (proverPublicOutputs.valid) {
-            emit BlobProcessed(proverPublicOutputs);
+            emit BlobProcessed(proverPublicOutputs, _cid);
         } else {
-            emit BlobRejected(proverPublicOutputs);
+            emit BlobRejected(proverPublicOutputs, _cid);
         }
 
         return proverPublicOutputs.digest;
