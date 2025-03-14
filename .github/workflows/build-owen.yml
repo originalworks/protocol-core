@@ -19,6 +19,9 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
+      - name: "Install nasm"
+        run: sudo apt-get install -y nasm
+
       - name: "Compile conracts"
         working-directory: contracts
         run: |
