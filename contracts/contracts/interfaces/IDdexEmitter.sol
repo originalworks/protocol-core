@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 import "./IProverPublicOutputs.sol";
 
 interface IDdexEmitter {
-    event BlobProcessed(ProverPublicOutputs proverPublicOutputs);
-    event BlobRejected(ProverPublicOutputs proverPublicOutputs);
+    event BlobProcessed(ProverPublicOutputs proverPublicOutputs, string cid);
+    event BlobRejected(ProverPublicOutputs proverPublicOutputs, string cid);
     event ImageIdChanged(
         bytes1 target,
         bytes32 previousImageId,
@@ -25,6 +25,7 @@ interface IDdexEmitter {
     function verifyAndEmit(
         bytes32 _imageId,
         bytes memory _journal,
-        bytes calldata _seal
+        bytes calldata _seal,
+        string memory cid
     ) external returns (bytes32 blobDigest);
 }

@@ -1,6 +1,6 @@
 use alloy::primitives::FixedBytes;
 
-pub const DDEX_SEQUENCER_ADDRESS: &str = "c69d6CA304AAaB8368cC0104D08011f6C70041F1";
+pub const DDEX_SEQUENCER_ADDRESS: &str = "05B077035F2f147543f2Ec69794F922bb5784909";
 pub const GET_BEACON_BLOCK_API_PATH: &str = "/eth/v2/beacon/blocks/";
 pub const GET_SIDECARS_API_PATH: &str = "/eth/v1/beacon/blob_sidecars/";
 pub const EMPTY_QUEUE_HEAD: FixedBytes<32> = FixedBytes::repeat_byte(0);

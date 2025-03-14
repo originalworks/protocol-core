@@ -1,4 +1,11 @@
-import { BytesLike, ethers, parseEther, randomBytes, Signer, Wallet } from "ethers";
+import {
+  BytesLike,
+  ethers,
+  parseEther,
+  randomBytes,
+  Signer,
+  Wallet,
+} from "ethers";
 import { FixtureOutput } from "../scripts/fixture/fixture.types";
 import {
   deployFixture,
@@ -46,13 +53,16 @@ describe("DdexSequencer", () => {
       ],
       disableWhitelist: false,
       fakeRisc0Groth16Verifier: true,
-      fakeImageId: true
+      fakeImageId: true,
     });
   });
 
   it("Can add to empty queue", async () => {
     const dataProvider = dataProviders[0];
-    const { ddexSequencer, ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
     const kzgInput = await KzgHelper.generate(
       "./test/ddex-messages/new_release.xml"
     );
@@ -95,13 +105,16 @@ describe("DdexSequencer", () => {
   });
 
   it("Can add to non-empty queue", async () => {
-    const { ddexSequencer, ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
 
     const blob1Result = await sendBlob(
       ddexSequencer.contract,
       dataProviders[0],
       "./test/ddex-messages/new_release.xml",
-      imageId,
+      imageId
     );
 
     const blob2Result = await sendBlob(
@@ -136,7 +149,7 @@ describe("DdexSequencer", () => {
   it("Set nextBlob for previous tail after adding new message", async () => {
     const {
       ddexSequencer,
-      ddexEmitter: {imageId},
+      ddexEmitter: { imageId },
       dataProviders: [dataProvider],
     } = fixture;
 
@@ -179,7 +192,10 @@ describe("DdexSequencer", () => {
   });
 
   it("Clear queue after submitting proof for the last message", async () => {
-    const { ddexSequencer,ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
 
     const { blobhash } = await sendBlob(
       ddexSequencer.contract,
@@ -192,9 +208,11 @@ describe("DdexSequencer", () => {
     expect(await ddexSequencer.contract.blobQueueTail()).equal(blobhash);
 
     const blobDetailsBefore = await ddexSequencer.contract.blobs(blobhash);
-    await(await ddexSequencer.contract
-      .connect(validators[0])
-      .submitProof(imageId,JOURNAL_EXAMPLE, "0x00")).wait();
+    await (
+      await ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).wait();
     const blobDetailsAfter = await ddexSequencer.contract.blobs(blobhash);
     expect(await ddexSequencer.contract.blobQueueHead()).equal(ZERO_BYTES32);
     expect(await ddexSequencer.contract.blobQueueTail()).equal(ZERO_BYTES32);
@@ -209,7 +227,10 @@ describe("DdexSequencer", () => {
   });
 
   it("Move queue when proof is submitted (2 messages in the queue)", async () => {
-    const { ddexSequencer, ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
 
     const { blobhash: blobhash1 } = await sendBlob(
       ddexSequencer.contract,
@@ -232,7 +253,7 @@ describe("DdexSequencer", () => {
     const blob1DetailsBefore = await ddexSequencer.contract.blobs(blobhash1);
     await ddexSequencer.contract
       .connect(validators[0])
-      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00");
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
     const blob1DetailsAfter = await ddexSequencer.contract.blobs(blobhash1);
 
     expect(blob1DetailsBefore.nextBlob).equal(blobhash2);
@@ -249,7 +270,7 @@ describe("DdexSequencer", () => {
     const blob2DetailsBefore = await ddexSequencer.contract.blobs(blobhash2);
     await ddexSequencer.contract
       .connect(validators[0])
-      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00");
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
     const blob2DetailsAfter = await ddexSequencer.contract.blobs(blobhash2);
 
     expect(blob2DetailsBefore.nextBlob).equal(ZERO_BYTES32);
@@ -266,7 +287,10 @@ describe("DdexSequencer", () => {
   });
 
   it("Move queue when proof is submitted (3 messages in the queue)", async () => {
-    const { ddexSequencer, ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
 
     const { blobhash: blobhash1 } = await sendBlob(
       ddexSequencer.contract,
@@ -296,7 +320,7 @@ describe("DdexSequencer", () => {
     const blob1DetailsBefore = await ddexSequencer.contract.blobs(blobhash1);
     await ddexSequencer.contract
       .connect(validators[0])
-      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00");
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
     const blob1DetailsAfter = await ddexSequencer.contract.blobs(blobhash1);
 
     expect(blob1DetailsBefore.nextBlob).equal(blobhash2);
@@ -313,7 +337,7 @@ describe("DdexSequencer", () => {
     const blob2DetailsBefore = await ddexSequencer.contract.blobs(blobhash2);
     await ddexSequencer.contract
       .connect(validators[0])
-      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00");
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
     const blob2DetailsAfter = await ddexSequencer.contract.blobs(blobhash2);
 
     expect(blob2DetailsBefore.nextBlob).equal(blobhash3);
@@ -330,7 +354,7 @@ describe("DdexSequencer", () => {
     const blob3DetailsBefore = await ddexSequencer.contract.blobs(blobhash3);
     await ddexSequencer.contract
       .connect(validators[0])
-      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00");
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
     const blob3DetailsAfter = await ddexSequencer.contract.blobs(blobhash3);
 
     expect(blob3DetailsBefore.nextBlob).equal(ZERO_BYTES32);
@@ -347,19 +371,22 @@ describe("DdexSequencer", () => {
   });
 
   it("Can't submit proof for empty queue", async () => {
-    const { ddexSequencer, ddexEmitter: {imageId} } = fixture;
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
     expect(await ddexSequencer.contract.blobQueueHead()).equal(ZERO_BYTES32);
     await expect(
       ddexSequencer.contract
         .connect(validators[0])
-        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00")
+        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
     ).to.rejected;
   });
 
   it("Rejects on incompatible blob imageId", async () => {
     const dataProvider = dataProviders[0];
     const { ddexSequencer, ddexEmitter } = fixture;
-    
+
     const kzgInput1 = await KzgHelper.generate(
       "./test/ddex-messages/new_release.xml"
     );
@@ -382,27 +409,36 @@ describe("DdexSequencer", () => {
               commitment: kzgInput.commitment,
             },
           ],
-        })
-    }
+        });
+    };
 
     // rejects: bytes32(0)
-    await expect(submitBlob(ZERO_BYTES32, kzgInput1)).to.be.rejectedWith("DdexSequencer: ImageId cannot be 0");
-    
+    await expect(submitBlob(ZERO_BYTES32, kzgInput1)).to.be.rejectedWith(
+      "DdexSequencer: ImageId cannot be 0"
+    );
+
     // rejects: unknown version
-    await expect(submitBlob(ethers.randomBytes(32), kzgInput1)).to.be.rejectedWith("DdexSequencer: Unsupported imageId");
-    
+    await expect(
+      submitBlob(ethers.randomBytes(32), kzgInput1)
+    ).to.be.rejectedWith("DdexSequencer: Unsupported imageId");
+
     // success: imageId == currentBlobImageId
     await expect(submitBlob(ddexEmitter.imageId, kzgInput1)).not.to.be.rejected;
 
-    const currTarget = await ddexEmitter.contract.BLOB_CURRENT_IMAGE_ID()
-    const prevTarget = await ddexEmitter.contract.BLOB_PREVIOUS_IMAGE_ID()
+    const currTarget = await ddexEmitter.contract.BLOB_CURRENT_IMAGE_ID();
+    const prevTarget = await ddexEmitter.contract.BLOB_PREVIOUS_IMAGE_ID();
 
     // previous = current, current = new one
-    await(await ddexEmitter.contract.setImageIds([currTarget,prevTarget], [ethers.randomBytes(32), ddexEmitter.imageId])).wait();
+    await (
+      await ddexEmitter.contract.setImageIds(
+        [currTarget, prevTarget],
+        [ethers.randomBytes(32), ddexEmitter.imageId]
+      )
+    ).wait();
 
     // success: imageId == currentBlobImageId
     await expect(submitBlob(ddexEmitter.imageId, kzgInput2)).not.to.be.rejected;
-  })
+  });
 
   it("Rejects on incompatible verifier imageId", async () => {
     const { ddexSequencer, ddexEmitter } = fixture;
@@ -422,32 +458,42 @@ describe("DdexSequencer", () => {
     );
 
     // rejects: bytes32(0)
-    await expect(ddexSequencer.contract
-    .connect(validators[0])
-    .submitProof(ZERO_BYTES32, JOURNAL_EXAMPLE, "0x00")).to.be.rejectedWith("DdexEmitter: ImageId cannot be 0");
-    
-    // rejects: unknown version
-    await expect(ddexSequencer.contract
-      .connect(validators[0])
-      .submitProof(ethers.randomBytes(32), JOURNAL_EXAMPLE, "0x00")).to.be.rejectedWith("DdexEmitter: Unsupported imageId");
-    
-    // success: imageId == currentBlobImageId
-    await expect(ddexSequencer.contract
-      .connect(validators[0])
-      .submitProof(ddexEmitter.imageId, JOURNAL_EXAMPLE, "0x00")).not.to.be.rejected;
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(ZERO_BYTES32, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).to.be.rejectedWith("DdexEmitter: ImageId cannot be 0");
 
-    const currTarget = await ddexEmitter.contract.VERIFIER_CURRENT_IMAGE_ID()
-    const prevTarget = await ddexEmitter.contract.VERIFIER_PREVIOUS_IMAGE_ID()
+    // rejects: unknown version
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(ethers.randomBytes(32), JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).to.be.rejectedWith("DdexEmitter: Unsupported imageId");
+
+    // success: imageId == currentBlobImageId
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(ddexEmitter.imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).not.to.be.rejected;
+
+    const currTarget = await ddexEmitter.contract.VERIFIER_CURRENT_IMAGE_ID();
+    const prevTarget = await ddexEmitter.contract.VERIFIER_PREVIOUS_IMAGE_ID();
 
     // previous = current, current = new one
-    await(await ddexEmitter.contract.setImageIds(
-      [currTarget, prevTarget], 
-      [ethers.randomBytes(32), ddexEmitter.imageId]
-    )).wait();
+    await (
+      await ddexEmitter.contract.setImageIds(
+        [currTarget, prevTarget],
+        [ethers.randomBytes(32), ddexEmitter.imageId]
+      )
+    ).wait();
 
     // success: imageId == currentBlobImageId
-    await expect(ddexSequencer.contract
-      .connect(validators[0])
-      .submitProof(ddexEmitter.imageId, JOURNAL_EXAMPLE, "0x00")).not.to.be.rejected;
-  })
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(ddexEmitter.imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).not.to.be.rejected;
+  });
 });

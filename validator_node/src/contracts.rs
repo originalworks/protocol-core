@@ -207,11 +207,11 @@ impl ContractsManager {
         image_id: FixedBytes<32>,
         journal: Vec<u8>,
         seal: Vec<u8>,
-        //ipfs_cid: String,
+        ipfs_cid: String,
     ) -> anyhow::Result<TransactionReceipt> {
-        let mut tx_builder = self
-            .sequencer
-            .submitProof(image_id, journal.into(), seal.into());
+        let mut tx_builder =
+            self.sequencer
+                .submitProof(image_id, journal.into(), seal.into(), ipfs_cid);
 
         if is_local() {
             tx_builder = tx_builder
