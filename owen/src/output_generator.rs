@@ -231,12 +231,20 @@ async fn process_message_folder(
                             return Ok(message_dir_processing_context);
                         }
                     };
-                    pin_and_write_cid(
+                    let pinning_result = pin_and_write_cid(
                         &mut message_dir_processing_context,
                         &mut new_release_message,
                         &config,
                     )
-                    .await?;
+                    .await;
+
+                    match pinning_result {
+                        Err(err) => {
+                            message_dir_processing_context.reason = Some(err.to_string());
+                            return Ok(message_dir_processing_context);
+                        }
+                        _ => (),
+                    }
 
                     json_output = new_release_message.to_json_string_pretty()?;
                     message_dir_processing_context.excluded = false;
