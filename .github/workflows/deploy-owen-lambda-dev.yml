@@ -106,6 +106,8 @@ jobs:
 
       - name: "Copy binaries"
         run: |
+          mkdir -p owen/target/lambda/owen_lambda
+          mkdir -p aws-queue-consumer/target/lambda/queue-consumer
           cp owen-lambda-binaries/owen/target/lambda/owen_lambda/bootstrap owen/target/lambda/owen_lambda/bootstrap
           cp owen-lambda-binaries/aws-queue-consumer/target/lambda/queue-consumer/bootstrap aws-queue-consumer/target/lambda/queue-consumer/bootstrap
 
