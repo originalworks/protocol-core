@@ -1,0 +1,30 @@
+name: "Build Owen"
+
+on:
+  pull_request:
+    paths:
+      - "owen/**"
+
+jobs:
+  build-owen-binary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: "Compile conracts"
+        working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
+
+      - name: "Build OWEN"
+        working-directory: owen
+        run: cargo build --release
