@@ -34,12 +34,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     provedMessage.validator = event.transaction.from;
     provedMessage.save();
 
-    log.info("Processed message, subtitle: {}, icpn: {}, title_text: {}", [
-      message.release.subtitle.toString(),
-      message.release.release_id.icpn.toString(),
-      message.release.title_text.toString(),
-    ])
-
     let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
     let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
     let messagesProcessed = MessagesProcessedPerDay.load(id);
@@ -75,6 +69,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
+  log.info("BlobProcessed CID: {}", [event.params.cid])
   // Now spin up sub‑dataSources for each JSON file in IPFS
   // for (let i = 1; i <= maxFiles; i++) {
   //   let ipfsPath = ipfsFolderCID + "/" + i.toString() + ".json";

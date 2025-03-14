@@ -8,9 +8,9 @@ dataSources:
     name: DdexSequencer
     network: holesky
     source:
-      address: "0xc69d6CA304AAaB8368cC0104D08011f6C70041F1"
+      address: "0x05b077035f2f147543f2ec69794f922bb5784909"
       abi: DdexSequencer
-      startBlock: 3477433
+      startBlock: 3488757
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -29,9 +29,9 @@ dataSources:
     name: DdexEmitter
     network: holesky
     source:
-      address: "0x6638d3e72d78f9f33420c5658363753cf7860cb2"
+      address: "0x9eDc1914650a7B7360f4af08B35Bf59Ca2dDaAD3"
       abi: DdexEmitter
-      startBlock: 3477437
+      startBlock: 3488763
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -47,9 +47,9 @@ dataSources:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]))
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
           handler: handleBlobProcessed
-        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]))
+        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
           handler: handleBlobRejected
 templates:
   - kind: file/ipfs
