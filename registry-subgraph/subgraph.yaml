@@ -5,22 +5,62 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: DdexEmitter
+    name: DdexSequencer
     network: holesky
     source:
-      address: "0xe6443E75e713Ec31225B30bb2BFD1744a241E389"
-      abi: DdexEmitter
-      startBlock: 3164428
+      address: "0x05b077035f2f147543f2ec69794f922bb5784909"
+      abi: DdexSequencer
+      startBlock: 3488757
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/mapping.ts
+      file: ./src/ddexSequencer.ts
       entities:
+        - BlobsStatus
+        - BlobsSubmittedPerDay
+      abis:
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      eventHandlers:
+        - event: NewBlobSubmitted(bytes,bytes32)
+          handler: handleNewBlobSubmitted
+  - kind: ethereum/contract
+    name: DdexEmitter
+    network: holesky
+    source:
+      address: "0x9eDc1914650a7B7360f4af08B35Bf59Ca2dDaAD3"
+      abi: DdexEmitter
+      startBlock: 3488763
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ddexEmitter.ts
+      entities:
+        - BlobsStatus
+        - BlobsProcessedPerDay
+        - BlobsRejectedPerDay
         - ProvedMessage
+        - MessagesProcessedPerDay
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
       eventHandlers:
-        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[]))
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
           handler: handleBlobProcessed
+        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
+          handler: handleBlobRejected
+templates:
+  - kind: file/ipfs
+    name: AssetMetadataTemplate
+    mapping:
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AssetMetadata
+      abis:
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
+      handler: handleAssetMetadata
+      file: ./src/assetMetadata.ts
