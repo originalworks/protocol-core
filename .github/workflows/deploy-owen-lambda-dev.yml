@@ -6,8 +6,6 @@ on:
   #   paths:
   #     - "owen/**"
   pull_request:
-    branches:
-      - main
     paths:
       - "owen/**"
 
@@ -29,7 +27,7 @@ jobs:
           source $HOME/.cargo/env
 
       - name: "Install dependencies with dnf"
-        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs nasm
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda

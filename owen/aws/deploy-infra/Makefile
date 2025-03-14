@@ -7,7 +7,6 @@ TEMPLATE_FILE=template.yml
 DEV_STACK_NAME=owen-infra-dev
 DEV_ARTIFACTS_BUCKET=owen-artifacts-dev
 DEV_PARAMETERS_FILE=template-config-dev.json
-TEMPLATE_FILE_TEST=template-test.yml
 
 deploy-infra: PARAMETERS_FILE=template-config.json
 deploy-infra: PARAMETERS=$(shell cat $(PARAMETERS_FILE) | jqn 'get("Parameters") | entries | map(x => x[0] + "=" + x[1]) | join(" ")')
@@ -18,4 +17,4 @@ deploy-infra:
 
 deploy-infra-dev: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(DEV_PARAMETERS_FILE))
 deploy-infra-dev: 
-	sam deploy --template-file $(TEMPLATE_FILE_TEST) --stack-name $(DEV_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(DEV_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
+	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(DEV_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(DEV_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
