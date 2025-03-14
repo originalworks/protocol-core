@@ -54,7 +54,7 @@ export async function deployFixture(
   });
 
   if (input.disableWhitelist) {
-    await ddexSequencerOutput.contract.disableWhitelist();
+    await ddexSequencerOutput.contract.setWhitelistingStatus(true);
   }
 
   _console.log("Deploying DdexEmitter...");
@@ -76,6 +76,7 @@ export async function deployFixture(
     deployer: input.deployer,
     ddexSequencerAddress: await ddexSequencerOutput.contract.getAddress(),
     _riscZeroGroth16VerifierAddress: riscZeroGroth16VerifierAddress,
+    fakeImageId: !!input.fakeImageId
   });
   await ddexSequencerOutput.contract.setDdexEmitter(
     await ddexEmitterOutput.contract.getAddress()

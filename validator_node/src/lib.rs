@@ -1,18 +1,11 @@
 mod beacon_chain;
 mod constants;
-mod ddex_sequencer;
+mod contracts;
 mod ipfs;
-mod prover_wrapper;
-
-use alloy::network::{Ethereum, EthereumWallet};
+pub mod prover_wrapper;
 use alloy::primitives::Address;
-use alloy::providers::fillers::{
-    ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
-};
-use alloy::providers::{ProviderBuilder, RootProvider};
-use alloy::signers::local::PrivateKeySigner;
 use constants::EMPTY_QUEUE_HEAD;
-use ddex_sequencer::DdexSequencerContext;
+use contracts::ContractsManager;
 use log_macros::{log_debug, log_error, log_info};
 use serde_json::json;
 use std::cell::RefCell;
@@ -39,25 +32,6 @@ pub struct Config {
     pub username: String,
     pub segment_limit_po2: u32,
     pub ddex_sequencer_address: Address,
-    #[serde(skip_serializing)]
-    pub provider: FillProvider<
-        JoinFill<
-            JoinFill<
-                alloy::providers::Identity,
-                JoinFill<
-                    GasFiller,
-                    JoinFill<
-                        alloy::providers::fillers::BlobGasFiller,
-                        JoinFill<NonceFiller, ChainIdFiller>,
-                    >,
-                >,
-            >,
-            WalletFiller<EthereumWallet>,
-        >,
-        RootProvider<alloy::transports::http::Http<reqwest::Client>>,
-        alloy::transports::http::Http<reqwest::Client>,
-        Ethereum,
-    >,
 }
 
 impl Config {
@@ -84,18 +58,10 @@ impl Config {
         );
         let environment = Config::get_env_var("ENVIRONMENT");
         let username = Config::get_env_var("USERNAME");
-        let private_key_signer: PrivateKeySigner =
-            private_key.parse().expect("Failed to parse PRIVATE_KEY");
-        let wallet = EthereumWallet::from(private_key_signer);
         let segment_limit_po2: u32 = env::var("SEGMENT_LIMIT_PO2")
             .unwrap_or_else(|_| "18".to_string())
             .parse()
             .expect("Failed to parse SEGMENT_LIMIT_PO2");
-        let provider = ProviderBuilder::new()
-            .with_recommended_fillers()
-            .wallet(wallet)
-            .on_http(rpc_url.parse().expect("RPC_URL parsing error"));
-
         let ddex_sequencer_address = Address::from_str(
             std::env::var("DDEX_SEQUENCER_ADDRESS")
                 .unwrap_or_else(|_| constants::DDEX_SEQUENCER_ADDRESS.to_string())
@@ -109,7 +75,6 @@ impl Config {
             ws_url,
             start_block,
             private_key,
-            provider,
             environment,
             username,
             segment_limit_po2,
@@ -120,33 +85,32 @@ impl Config {
 
 async fn validate_blobs(
     config: &Config,
-    ddex_sequencer_context: &DdexSequencerContext<'_>,
+    contracts_manager: &ContractsManager,
 ) -> anyhow::Result<()> {
     let tx_context = sentry::TransactionContext::new("blob_processing", "process_blob");
     let tx = sentry::start_transaction(tx_context);
 
     let mut span = tx.start_child("queue_head_processing", "Get queue head data");
 
-    let queue_head = ddex_sequencer_context
-        .contract
-        .blobQueueHead()
-        .call()
-        .await?
-        ._0;
+    let queue_head = contracts_manager.sequencer.blobQueueHead().call().await?._0;
 
     let queue_head_data;
 
     if queue_head == EMPTY_QUEUE_HEAD {
         log_info!("Queue head is empty");
-        queue_head_data = ddex_sequencer_context.subscribe_to_queue(&config).await?;
+        queue_head_data = contracts_manager.subscribe_to_queue(&config).await?;
     } else {
         log_info!("Queue head points to {}", queue_head.to_string());
-        queue_head_data = ddex_sequencer_context
+        queue_head_data = contracts_manager
             .get_queue_head_data(&config, queue_head)
             .await?;
     }
 
     log_debug!("**Queue head data: {}", json!(queue_head_data));
+
+    let image_elf = contracts_manager
+        .select_image_elf(&queue_head_data.image_id)
+        .await?;
 
     span.finish();
 
@@ -154,32 +118,41 @@ async fn validate_blobs(
 
     let blob = beacon_chain::find_blob(
         &config.beacon_rpc_url,
-        queue_head_data.commitment,
-        queue_head_data.parent_beacon_block_root,
+        &queue_head_data.commitment,
+        &queue_head_data.parent_beacon_block_root,
     )
     .await?;
 
     span.finish();
-    // let ipfs_cids = ddex_messages_data
-    //     .iter()
-    //     .map(|emittable_values| emittable_values.image_ipfs_cid.clone())
-    //     .collect();
 
-    // ipfs::check_file_accessibility(ipfs_cids).await?;
+    span = tx.start_child(
+        "message_jsons_ipfs_pin",
+        "Pinning message JSON files to IPFS",
+    );
+
+    ipfs::prepare_blob_folder(blob, &queue_head_data)?;
+
+    let cid = ipfs::upload_blob_folder_and_cleanup()?;
+    //log_info!("Folder successfully uploaded to IPFS with CID: {}", cid);
+
+    span.finish();
 
     span = tx.start_child("proving", "Proving");
 
-    let prover_run_results = prover_wrapper::run(&blob.into(), config.segment_limit_po2)?;
+    let prover_run_results =
+        prover_wrapper::run(&blob.into(), image_elf, config.segment_limit_po2)?;
 
     span.finish();
 
     log_info!("Sending tx...");
     span = tx.start_child("transaction_sending", "Sending transaction");
 
-    let _ = ddex_sequencer_context
+    let _ = contracts_manager
         .submit_proof(
+            queue_head_data.image_id,
             prover_run_results.journal.into(),
             prover_run_results.seal.into(),
+            cid,
         )
         .await?;
 
@@ -190,14 +163,15 @@ async fn validate_blobs(
 }
 
 pub async fn run(config: &Config) -> anyhow::Result<()> {
-    let ddex_sequencer_context = ddex_sequencer::DdexSequencerContext::build(
-        &config.provider,
-        config.ddex_sequencer_address,
-    )
-    .await;
-
     let mut consecutive_error_ct = 0;
     let threshold = 5;
+
+    let contracts_manager = ContractsManager::build(
+        config.ddex_sequencer_address,
+        &config.private_key,
+        &config.rpc_url,
+    )
+    .await?;
 
     loop {
         if consecutive_error_ct == threshold {
@@ -207,7 +181,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
             ));
         }
 
-        let res = validate_blobs(&config, &ddex_sequencer_context).await;
+        let res = validate_blobs(&config, &contracts_manager).await;
         if let Err(e) = res {
             log_error!("{e}");
             consecutive_error_ct += 1;

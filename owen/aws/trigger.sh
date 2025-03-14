@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#s3://ddex-messages-prod/revelator/...
+
 # Configuration
 LAMBDA_NAME="aws_cli_test"
 DATE_FILE="to_process.json"

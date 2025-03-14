@@ -1,6 +1,49 @@
+type BlobsStatus @entity {
+  id: String! # status
+  amount: BigInt!
+  latestEvent: BigInt!
+}
+
+type BlobsSubmittedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsProcessedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsRejectedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type MessagesProcessedPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
 type ProvedMessage @entity {
   id: ID!
   message_id: String!
   timestamp: BigInt!
   validator: Bytes!
+}
+
+type AssetMetadata @entity {
+  id: ID!
+  rawContent: String!
 }

@@ -507,9 +507,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.93"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c95c10ba0b00a02636238b814946408b1322d5ac4760326e6fb8ec956d85775"
+checksum = "6b964d184e89d9b6b67dd2715bc8e74cf3107fb2b529990c90cf517326150bf4"
 
 [[package]]
 name = "ark-bn254"
@@ -1190,14 +1190,15 @@ name = "ddex_guest"
 version = "0.1.0"
 dependencies = [
  "alloy-sol-types",
+ "anyhow",
  "blob_codec",
- "ddex_schema",
+ "ddex_parser",
  "prover_interface",
  "risc0-zkvm",
 ]
 
 [[package]]
-name = "ddex_schema"
+name = "ddex_parser"
 version = "0.1.0"
 dependencies = [
  "log_macros",
@@ -1208,7 +1209,6 @@ dependencies = [
  "thiserror 2.0.11",
  "xml-rs",
  "yaserde",
- "yaserde_derive",
 ]
 
 [[package]]
@@ -2555,7 +2555,7 @@ version = "0.1.0"
 dependencies = [
  "alloy-contract",
  "alloy-sol-types",
- "ddex_schema",
+ "ddex_parser",
  "risc0-zkvm",
  "serde",
 ]
@@ -3225,6 +3225,18 @@ dependencies = [
  "memchr",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "serde_tokenstream"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64060d864397305347a78851c51588fd283767e7e7589829e8121d65512340f1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 2.0.87",
 ]
 
 [[package]]
@@ -4193,21 +4205,28 @@ checksum = "af310deaae937e48a26602b730250b4949e125f468f11e6990be3e5304ddd96f"
 
 [[package]]
 name = "yaserde"
-version = "0.10.1"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bfa0d2b420fd005aa9b6f99f9584ebd964e6865d7ca787304cc1a3366c39231"
 dependencies = [
  "log",
  "xml-rs",
+ "yaserde_derive",
 ]
 
 [[package]]
 name = "yaserde_derive"
-version = "0.10.1"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f785831c0e09e0f1a83f917054fd59c088f6561db5b2a42c1c3e1687329325f"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "log",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "serde",
+ "serde_tokenstream",
+ "syn 2.0.87",
  "xml-rs",
 ]
 
