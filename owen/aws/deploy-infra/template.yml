@@ -189,7 +189,7 @@ Resources:
   QueueConsumerLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../aws-queue-consumer/target/lambda/queue-consumer
+      CodeUri: ../../../target/lambda/aws_queue_consumer
       Runtime: "provided.al2023"
       Architectures:
         - x86_64

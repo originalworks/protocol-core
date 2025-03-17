@@ -1,12 +1,13 @@
 [workspace]
 resolver = "2"
 members = [
-    "blob_codec", 
+    "aws_queue_consumer",
+    "blob_codec",
     "ddex_parser",
-    "log_macros", 
-    "owen", 
-    "prover", 
-    "validator_node"
+    "log_macros",
+    "owen",
+    "prover",
+    "validator_node",
 ]
 
 [workspace.dependencies]
