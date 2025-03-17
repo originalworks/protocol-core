@@ -39,20 +39,5 @@ publish = false
 tag = true
 push = true
 tag-name = "{{crate_name}}@{{version}}"
-tag-message = "## [{{version}}](https://github.com/original-works/protocol-core/compare/{{crate_name}}@{{version}}...{{crate_name}}@{{prev_version}}) ({{date}})"
+tag-message = "[{{version}}](https://github.com/original-works/protocol-core/compare/{{crate_name}}@{{version}}...{{crate_name}}@{{prev_version}}) ({{date}})"
 pre-release-commit-message = "Release {{crate_name}}@{{version}}"
-
-#[workspace.metadata.release.packages.owen]
-#publish = false  
-#tag = true     
-#push = true    
-
-#[workspace.metadata.release.packages.validator_node]
-#publish = false
-#tag = true
-#push = true
-
-#[workspace.metadata.release.packages.contracts]
-#publish = false
-#tag = true
-#push = true
