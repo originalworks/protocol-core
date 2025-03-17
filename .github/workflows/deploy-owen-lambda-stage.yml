@@ -94,4 +94,4 @@ jobs:
 
       - name: "Deploy AWS Cloud Formation template"
         working-directory: owen/aws/deploy-infra
-        run: make deploy-infra-dev
+        run: make deploy-infra-stage
