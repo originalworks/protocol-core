@@ -17,6 +17,7 @@
         "InputFilesDir": "/tmp/input_files",
         "Environment": "development",
         "OwenUsername": "owen_lambda",
-        "OwenLambdaSecretsName": "OwenLambdaSecretsDev"
+        "OwenLambdaSecretsName": "OwenLambdaSecretsDev",
+        "DdexSequencerAddress": "B076DDf7B0d77721113F725896665f8589ee042e"
     }
 }

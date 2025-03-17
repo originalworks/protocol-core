@@ -42,9 +42,13 @@ Parameters:
     Type: String
   OwenLambdaSecretsName:
     Type: String
+  DdexSequencerAddress:
+    Type: String
+    Default: ""
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
+  OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
 
 Resources:
   NewUploadsQueue:
@@ -155,6 +159,10 @@ Resources:
           ENVIRONMENT: !Ref Environment
           USERNAME: !Ref OwenUsername
           OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
+          DDEX_SEQUENCER_ADDRESS: !If
+            - OverwriteDdexSequencerAddress
+            - !Ref DdexSequencerAddress
+            - !Ref "AWS::NoValue"
       Policies:
         - Statement:
             - Effect: Allow
