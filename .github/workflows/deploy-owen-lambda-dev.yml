@@ -64,26 +64,6 @@ jobs:
             owen/target/lambda/owen_lambda
             aws-queue-consumer/target/lambda/queue-consumer
 
-      # - name: "See queue consumer files"
-      #   working-directory: aws-queue-consumer
-      #   run: ls
-
-      # - name: "See owen files"
-      #   working-directory: owen
-      #   run: ls
-
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v2
-      #   with:
-      #     aws-region: us-east-1
-      #     role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
-      #     role-session-name: protocol-core-session-id-${{ github.run_id }}
-      #     role-duration-seconds: 1200
-
-      # - name: "Deploy AWS Cloud Formation template"
-      #   working-directory: owen/aws/deploy-infra
-      #   run: make deploy-infra-dev
-
   deploy-changes:
     runs-on: ubuntu-latest
     needs: build-binaries
