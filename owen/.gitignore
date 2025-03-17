@@ -2,4 +2,4 @@
 .env.local
 /target/
 /output_files/
-owen_cli.zip
+owen.zip

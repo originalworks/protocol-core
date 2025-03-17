@@ -1,8 +1,8 @@
 [package]
-name = "owen_cli"
+name = "owen"
 version = "0.2.1"
 edition = "2021"
-default-run = "main"
+default-run = "owen"
 
 [dependencies]
 reqwest = { workspace = true, features = ["stream", "multipart", "json"] }
@@ -50,7 +50,7 @@ aws-integration = [
 ]
 
 [[bin]]
-name = "main"
+name = "owen"
 path = "src/main.rs"
 
 [[bin]]
