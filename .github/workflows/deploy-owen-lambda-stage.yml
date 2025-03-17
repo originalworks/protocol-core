@@ -1,10 +1,9 @@
-name: "Deploy Owen infrastructure and code to AWS dev environment"
+name: "Deploy Owen infrastructure and code to AWS stage environment"
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "owen/**"
+  release:
+    types:
+      - created
 
 permissions:
   id-token: write
