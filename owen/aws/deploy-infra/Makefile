@@ -1,18 +1,19 @@
-REGION=us-east-1
-STACK_NAME=owen-infra-stage
-ARTIFACTS_BUCKET=owen-artifacts-stage
-CAPABILITIES=CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM
-TEMPLATE_FILE=template.yml
+STAGE_STACK_NAME=owen-infra-stage
+STAGE_ARTIFACTS_BUCKET=owen-artifacts-stage
+STAGE_PARAMETERS_FILE=template-config-stage.json
 
 DEV_STACK_NAME=owen-infra-dev
 DEV_ARTIFACTS_BUCKET=owen-artifacts-dev
 DEV_PARAMETERS_FILE=template-config-dev.json
 
-deploy-infra: PARAMETERS_FILE=template-config.json
-deploy-infra: PARAMETERS=$(shell cat $(PARAMETERS_FILE) | jqn 'get("Parameters") | entries | map(x => x[0] + "=" + x[1]) | join(" ")')
-deploy-infra: 
-	./build-aws-queue-consumer.sh
-	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
+TEMPLATE_FILE=template.yml
+CAPABILITIES=CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM
+REGION=us-east-1
+
+
+deploy-infra-stage: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(STAGE_PARAMETERS_FILE))
+deploy-infra-stage: 
+	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(STAGE_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(STAGE_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
 
 
 deploy-infra-dev: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(DEV_PARAMETERS_FILE))
