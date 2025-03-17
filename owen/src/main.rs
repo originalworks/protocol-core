@@ -1,5 +1,5 @@
 use anyhow::Result;
-use owen_cli::{
+use owen::{
     logger::{init_logging, init_sentry},
     run_with_sentry, Config,
 };

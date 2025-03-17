@@ -129,7 +129,7 @@ Resources:
   OwenLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../target/lambda/owen_lambda
+      CodeUri: ../../../target/lambda/owen_lambda
       Runtime: "provided.al2023"
       Architectures:
         - x86_64
