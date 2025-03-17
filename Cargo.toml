@@ -30,3 +30,25 @@ pretty_env_logger = "0.5.0"
 
 [profile.dev]
 opt-level = 3
+
+[workspace.metadata.release]
+allow-branch = ["master"]
+shared-version = false
+publish = false  
+tag = true       
+push = true      
+
+#[workspace.metadata.release.packages.owen]
+#publish = false  
+#tag = true     
+#push = true    
+
+#[workspace.metadata.release.packages.validator_node]
+#publish = false
+#tag = true
+#push = true
+
+#[workspace.metadata.release.packages.contracts]
+#publish = false
+#tag = true
+#push = true
