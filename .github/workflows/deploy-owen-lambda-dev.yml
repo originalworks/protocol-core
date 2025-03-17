@@ -36,7 +36,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          ref: main
 
       - name: "Compile conracts"
         working-directory: contracts
