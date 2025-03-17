@@ -1,11 +1,8 @@
 name: "Deploy Owen infrastructure and code to AWS"
 
 on:
-  # push:
-  #   branches: [master]
-  #   paths:
-  #     - "owen/**"
-  pull_request:
+  push:
+    branches: [master]
     paths:
       - "owen/**"
 
