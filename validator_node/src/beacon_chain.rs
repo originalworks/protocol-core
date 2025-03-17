@@ -7,6 +7,7 @@ use log_macros::{format_error, log_info};
 use reqwest;
 use serde::Deserialize;
 use tokio::time::{sleep, Duration};
+use anyhow::anyhow;
 
 #[derive(Deserialize, Debug)]
 struct BeaconBlockDataMessage {
@@ -34,66 +35,92 @@ struct BlobSidecars {
     data: Vec<BlobSidecarData>,
 }
 
-/// A small helper to perform a GET request and deserialize into T,
-/// retrying on failure up to `max_retries` times. If it fails all attempts,
-/// returns Err with the last error.
+/// Helper to GET from `url` and parse JSON into `T`, with up to `max_retries` attempts.
+/// If any step fails (bad HTTP status, invalid JSON, etc.), it logs details, sleeps for
+/// `delay_seconds`, and tries again. Logs the body text on error so you can see what's
+/// actually being returned by the server.
 async fn get_with_retry<T: serde::de::DeserializeOwned>(
-    url: String,
+    url: &str,
     max_retries: u32,
     delay_seconds: u64,
 ) -> anyhow::Result<T> {
     let mut attempt = 0;
     loop {
         attempt += 1;
-        match reqwest::get(&url).await {
+        let request_result = reqwest::get(url).await;
+
+        let this_attempt_failed = match request_result {
             Ok(resp) => {
-                let result = resp.json::<T>().await;
-                match result {
-                    Ok(parsed) => {
-                        return Ok(parsed);
+                let status = resp.status();
+
+                // Read entire body as text so we can log it on error
+                let body_text_result = resp.text().await;
+                match body_text_result {
+                    Ok(body_text) => {
+                        // If status != 200..=299, treat that as an error
+                        if !status.is_success() {
+                            log::warn!(
+                                "[Beacon RPC] Non-2xx status (attempt {} of {}): {}, body:\n{}",
+                                attempt,
+                                max_retries,
+                                status,
+                                body_text,
+                            );
+                            true // means "error, will retry"
+                        } else {
+                            // Attempt to parse JSON
+                            match serde_json::from_str::<T>(&body_text) {
+                                Ok(parsed) => {
+                                    // Success, return
+                                    return Ok(parsed);
+                                }
+                                Err(e) => {
+                                    // Log the raw body so we can see what's invalid
+                                    log::warn!(
+                                        "[Beacon RPC] JSON parse error (attempt {} of {}): {}\nBody was:\n{}",
+                                        attempt,
+                                        max_retries,
+                                        e,
+                                        body_text
+                                    );
+                                    true
+                                }
+                            }
+                        }
                     }
                     Err(e) => {
-                        if attempt >= max_retries {
-                            log::error!(
-                                "Beacon RPC call failed (attempt {} of {}). Last error: {}",
-                                attempt,
-                                max_retries,
-                                e
-                            );
-                            return Err(anyhow::anyhow!(e));
-                        } else {
-                            log::warn!(
-                                "Beacon RPC call failed (attempt {} of {}): {}. Retrying in {}s...",
-                                attempt,
-                                max_retries,
-                                e,
-                                delay_seconds
-                            );
-                            sleep(Duration::from_secs(delay_seconds)).await;
-                        }
+                        log::warn!(
+                            "[Beacon RPC] Could not read body text (attempt {} of {}): {}",
+                            attempt,
+                            max_retries,
+                            e
+                        );
+                        true
                     }
                 }
             }
             Err(e) => {
-                if attempt >= max_retries {
-                    log::error!(
-                        "Beacon RPC call failed (attempt {} of {}). Last error: {}",
-                        attempt,
-                        max_retries,
-                        e
-                    );
-                    return Err(anyhow::anyhow!(e));
-                } else {
-                    log::warn!(
-                        "Beacon RPC call failed (attempt {} of {}): {}. Retrying in {}s...",
-                        attempt,
-                        max_retries,
-                        e,
-                        delay_seconds
-                    );
-                    sleep(Duration::from_secs(delay_seconds)).await;
-                }
+                log::warn!(
+                    "[Beacon RPC] Request error (attempt {} of {}): {}",
+                    attempt,
+                    max_retries,
+                    e
+                );
+                true
             }
+        };
+
+        // If we get here, it means something failed on this attempt
+        if this_attempt_failed {
+            if attempt >= max_retries {
+                log::error!(
+                    "[Beacon RPC] Failed after {} attempts. Giving up.",
+                    max_retries
+                );
+                return Err(anyhow!("Beacon RPC call failed after {} attempts.", max_retries));
+            }
+            // Sleep and retry
+            sleep(Duration::from_secs(delay_seconds)).await;
         }
     }
 }
@@ -111,10 +138,9 @@ async fn get_parent_beacon_block_slot(
         parent_beacon_block_root
     );
 
-    // Use the new retry helper
-    let response: BeaconBlock = get_with_retry(url, max_retries, delay_seconds).await?;
+    let response: BeaconBlock = get_with_retry(&url, max_retries, delay_seconds).await?;
 
-    // Print for debug
+    // For debugging:
     println!("{response:?}");
 
     let slot = response.data.message.slot.parse::<u64>()?;
@@ -135,7 +161,7 @@ async fn find_commitment_in_sidecars(
         beacon_slot
     );
 
-    let response: BlobSidecars = get_with_retry(url, max_retries, delay_seconds).await?;
+    let response: BlobSidecars = get_with_retry(&url, max_retries, delay_seconds).await?;
 
     let sidecars_filtered: Vec<BlobSidecarData> = response
         .data
@@ -172,7 +198,7 @@ fn blob_vec_from_string(prefixed_blob: String) -> anyhow::Result<[u8; BYTES_PER_
 }
 
 /// Repeatedly increments slot until we find the needed blob sidecar. Each
-/// individual RPC call is retried up to `max_retries`.
+/// call is retried up to `max_retries`. If none succeed, returns an error.
 pub async fn find_blob(
     beacon_rpc_url: &String,
     commitment: &Bytes,
@@ -190,8 +216,8 @@ pub async fn find_blob(
     )
     .await?;
 
-    // Check sidecars for the correct commitment; if not found, increment slot
-    // and keep going. Each call is also retried on failure.
+    // Keep trying next slots until we find the sidecar that has our commitment
+    // (and each call is internally retried, if the server is unresponsive).
     let mut blob_sidecar_data = find_commitment_in_sidecars(
         beacon_rpc_url,
         slot,
