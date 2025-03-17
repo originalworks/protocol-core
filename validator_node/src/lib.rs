@@ -32,6 +32,10 @@ pub struct Config {
     pub username: String,
     pub segment_limit_po2: u32,
     pub ddex_sequencer_address: Address,
+
+    // [ADDED] fields for Beacon RPC retry
+    pub beacon_rpc_retry_delay_seconds: u64,
+    pub beacon_rpc_max_retries: u32,
 }
 
 impl Config {
@@ -69,6 +73,17 @@ impl Config {
         )
         .expect("Could not parse ddex sequencer address");
 
+        // [ADDED] parse new .env vars for Beacon RPC retry
+        let beacon_rpc_retry_delay_seconds = env::var("BEACON_RPC_RETRY_DELAY_SECONDS")
+            .unwrap_or_else(|_| "5".to_string())
+            .parse()
+            .expect("Failed to parse BEACON_RPC_RETRY_DELAY_SECONDS");
+
+        let beacon_rpc_max_retries = env::var("BEACON_RPC_MAX_RETRIES")
+            .unwrap_or_else(|_| "5".to_string())
+            .parse()
+            .expect("Failed to parse BEACON_RPC_MAX_RETRIES");
+
         Config {
             rpc_url,
             beacon_rpc_url,
@@ -79,6 +94,10 @@ impl Config {
             username,
             segment_limit_po2,
             ddex_sequencer_address,
+
+            // [ADDED]
+            beacon_rpc_retry_delay_seconds,
+            beacon_rpc_max_retries,
         }
     }
 }
@@ -116,10 +135,13 @@ async fn validate_blobs(
 
     span = tx.start_child("blob_discovery", "Get blob");
 
+    // [CHANGED] now pass the new retry parameters
     let blob = beacon_chain::find_blob(
         &config.beacon_rpc_url,
         &queue_head_data.commitment,
         &queue_head_data.parent_beacon_block_root,
+        config.beacon_rpc_max_retries,
+        config.beacon_rpc_retry_delay_seconds,
     )
     .await?;
 

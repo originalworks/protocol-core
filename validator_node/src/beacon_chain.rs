@@ -6,6 +6,7 @@ use alloy::{
 use log_macros::{format_error, log_info};
 use reqwest;
 use serde::Deserialize;
+use tokio::time::{sleep, Duration};
 
 #[derive(Deserialize, Debug)]
 struct BeaconBlockDataMessage {
@@ -33,9 +34,75 @@ struct BlobSidecars {
     data: Vec<BlobSidecarData>,
 }
 
+/// A small helper to perform a GET request and deserialize into T,
+/// retrying on failure up to `max_retries` times. If it fails all attempts,
+/// returns Err with the last error.
+async fn get_with_retry<T: serde::de::DeserializeOwned>(
+    url: String,
+    max_retries: u32,
+    delay_seconds: u64,
+) -> anyhow::Result<T> {
+    let mut attempt = 0;
+    loop {
+        attempt += 1;
+        match reqwest::get(&url).await {
+            Ok(resp) => {
+                let result = resp.json::<T>().await;
+                match result {
+                    Ok(parsed) => {
+                        return Ok(parsed);
+                    }
+                    Err(e) => {
+                        if attempt >= max_retries {
+                            log::error!(
+                                "Beacon RPC call failed (attempt {} of {}). Last error: {}",
+                                attempt,
+                                max_retries,
+                                e
+                            );
+                            return Err(anyhow::anyhow!(e));
+                        } else {
+                            log::warn!(
+                                "Beacon RPC call failed (attempt {} of {}): {}. Retrying in {}s...",
+                                attempt,
+                                max_retries,
+                                e,
+                                delay_seconds
+                            );
+                            sleep(Duration::from_secs(delay_seconds)).await;
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                if attempt >= max_retries {
+                    log::error!(
+                        "Beacon RPC call failed (attempt {} of {}). Last error: {}",
+                        attempt,
+                        max_retries,
+                        e
+                    );
+                    return Err(anyhow::anyhow!(e));
+                } else {
+                    log::warn!(
+                        "Beacon RPC call failed (attempt {} of {}): {}. Retrying in {}s...",
+                        attempt,
+                        max_retries,
+                        e,
+                        delay_seconds
+                    );
+                    sleep(Duration::from_secs(delay_seconds)).await;
+                }
+            }
+        }
+    }
+}
+
 async fn get_parent_beacon_block_slot(
     beacon_rpc_url: &String,
     parent_beacon_block_root: &FixedBytes<32>,
+    max_retries: u32,
+    delay_seconds: u64,
 ) -> anyhow::Result<u64> {
     let url = format!(
         "{}{}{}",
@@ -44,11 +111,13 @@ async fn get_parent_beacon_block_slot(
         parent_beacon_block_root
     );
 
-    let response = reqwest::get(url).await?.json::<BeaconBlock>().await?;
+    // Use the new retry helper
+    let response: BeaconBlock = get_with_retry(url, max_retries, delay_seconds).await?;
+
+    // Print for debug (same as your old code did)
     println!("{response:?}");
 
     let slot = response.data.message.slot.parse::<u64>()?;
-
     Ok(slot)
 }
 
@@ -56,7 +125,9 @@ async fn find_commitment_in_sidecars(
     beacon_rpc_url: &String,
     beacon_slot: u64,
     commitment: &Bytes,
-) -> Option<BlobSidecarData> {
+    max_retries: u32,
+    delay_seconds: u64,
+) -> anyhow::Result<Option<BlobSidecarData>> {
     let url = format!(
         "{}{}{}",
         beacon_rpc_url,
@@ -64,12 +135,7 @@ async fn find_commitment_in_sidecars(
         beacon_slot
     );
 
-    let response = reqwest::get(url)
-        .await
-        .ok()?
-        .json::<BlobSidecars>()
-        .await
-        .ok()?;
+    let response: BlobSidecars = get_with_retry(url, max_retries, delay_seconds).await?;
 
     let sidecars_filtered: Vec<BlobSidecarData> = response
         .data
@@ -78,12 +144,13 @@ async fn find_commitment_in_sidecars(
         .collect();
 
     if sidecars_filtered.len() == 1 {
-        Some(sidecars_filtered.into_iter().next()?)
+        Ok(sidecars_filtered.into_iter().next())
     } else {
-        None
+        Ok(None)
     }
 }
 
+/// Convert hex-encoded blob string (0x + 2*BYTES_PER_BLOB hex chars) into a [u8; BYTES_PER_BLOB].
 fn blob_vec_from_string(prefixed_blob: String) -> anyhow::Result<[u8; BYTES_PER_BLOB]> {
     if prefixed_blob.len() != BYTES_PER_BLOB * 2 + 2 {
         return Err(format_error!(
@@ -104,19 +171,46 @@ fn blob_vec_from_string(prefixed_blob: String) -> anyhow::Result<[u8; BYTES_PER_
     Ok(byte_array)
 }
 
+/// Repeatedly increments slot until we find the needed blob sidecar. Each
+/// individual RPC call is retried up to `max_retries`.
 pub async fn find_blob(
     beacon_rpc_url: &String,
     commitment: &Bytes,
     parent_beacon_block_root: &FixedBytes<32>,
+    max_retries: u32,
+    delay_seconds: u64,
 ) -> anyhow::Result<[u8; BYTES_PER_BLOB]> {
     log_info!("Finding a blob...");
-    let mut slot = get_parent_beacon_block_slot(beacon_rpc_url, parent_beacon_block_root).await?;
-    let mut blob_sidecar_data: Option<BlobSidecarData> =
-        find_commitment_in_sidecars(beacon_rpc_url, slot, &commitment).await;
+
+    let mut slot = get_parent_beacon_block_slot(
+        beacon_rpc_url,
+        parent_beacon_block_root,
+        max_retries,
+        delay_seconds,
+    )
+    .await?;
+
+    // Check sidecars for the correct commitment; if not found, increment slot
+    // and keep going. Each call is also retried on failure.
+    let mut blob_sidecar_data = find_commitment_in_sidecars(
+        beacon_rpc_url,
+        slot,
+        commitment,
+        max_retries,
+        delay_seconds,
+    )
+    .await?;
 
     while blob_sidecar_data.is_none() {
         slot += 1;
-        blob_sidecar_data = find_commitment_in_sidecars(beacon_rpc_url, slot, &commitment).await;
+        blob_sidecar_data = find_commitment_in_sidecars(
+            beacon_rpc_url,
+            slot,
+            commitment,
+            max_retries,
+            delay_seconds,
+        )
+        .await?;
     }
 
     let blob = blob_sidecar_data
@@ -128,6 +222,5 @@ pub async fn find_blob(
         .blob;
 
     let blob_array = blob_vec_from_string(blob)?;
-
     Ok(blob_array)
 }
