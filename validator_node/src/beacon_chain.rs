@@ -114,7 +114,7 @@ async fn get_parent_beacon_block_slot(
     // Use the new retry helper
     let response: BeaconBlock = get_with_retry(url, max_retries, delay_seconds).await?;
 
-    // Print for debug (same as your old code did)
+    // Print for debug
     println!("{response:?}");
 
     let slot = response.data.message.slot.parse::<u64>()?;
