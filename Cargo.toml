@@ -39,6 +39,5 @@ publish = false
 tag = true
 push = true
 tag-name = "{{crate_name}}@{{version}}"
-#tag-message = "[{{version}}](https://github.com/original-works/protocol-core/compare/{{crate_name}}@{{version}}...{{crate_name}}@{{prev_version}}) ({{date}})"
-tag-message = "{{crate_name}}@{{version}}...{{crate_name}}@{{prev_version}}"
+tag-message = "[{{version}}](https://github.com/original-works/protocol-core/compare/{{crate_name}}@{{prev_version}}...{{crate_name}}@{{version}}) ({{date}})"
 pre-release-commit-message = "Release {{crate_name}}@{{version}}"
