@@ -3,7 +3,7 @@
         "MessagesBucketName": "ddex-messages-dev",
         "MessageStatusTableName": "DdexMessageStatusDev",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "5",
+        "OwenLambdaScheduleRateMin": "1440",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
         "ProcessingStatusAttributeName": "processingStatus",
