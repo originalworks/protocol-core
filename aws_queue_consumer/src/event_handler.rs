@@ -28,7 +28,7 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
     let payload = event.payload;
     tracing::info!("Payload: {:?}", payload);
 
-    let queue_consumer_config = queue_consumer::Config::build();
+    let queue_consumer_config = aws_queue_consumer::Config::build();
 
     let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
     let aws_config = aws_config::defaults(BehaviorVersion::latest())
@@ -75,7 +75,7 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
 
 fn prepare_item(
     event_body_string: &String,
-    config: &queue_consumer::Config,
+    config: &aws_queue_consumer::Config,
 ) -> Result<HashMap<String, AttributeValue>, Error> {
     let event_body: EventBody = serde_json::from_str(event_body_string.as_str())?;
     let s3_path = Path::new(&event_body.detail.object.key);
