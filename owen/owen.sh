@@ -5,9 +5,9 @@ set -e
 
 # Define the relative paths
 CONTRACTS_DIR="../contracts"
-OWEN_CLI_DIR="./owen_cli"
-OWEN_CLI_BINARY="./target/release/main"
-OUTPUT_ZIP="./owen_cli.zip"
+OWEN_DIR="./owen"
+OWEN_BINARY="../target/release/owen"
+OUTPUT_ZIP="./owen.zip"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -414,26 +414,26 @@ fi
 
 if [ "$1" == "--lambda" ]; then
   # Build the Rust binary
-  echo "Building the owen_cli binary for Lambda packaging..."
+  echo "Building the owen binary for Lambda packaging..."
   cargo build --release --bin main
 
   # Check if the binary was successfully built
-  if [ ! -f "$OWEN_CLI_BINARY" ]; then
-    echo "Error: owen_cli binary was not found after build."
+  if [ ! -f "$OWEN_BINARY" ]; then
+    echo "Error: owen binary was not found after build."
     exit 1
   fi
 
   # Prepare and package the binary
-  echo "Packaging the owen_cli binary into $OUTPUT_ZIP ..."
-  mkdir -p "$OWEN_CLI_DIR"
-  cp "$OWEN_CLI_BINARY" "$OWEN_CLI_DIR/owen_cli"
-  zip -r "$OUTPUT_ZIP" "$OWEN_CLI_DIR/owen_cli" > /dev/null
-  rm -rf "$OWEN_CLI_DIR"
+  echo "Packaging the owen binary into $OUTPUT_ZIP ..."
+  mkdir -p "$OWEN_DIR"
+  cp "$OWEN_BINARY" "$OWEN_DIR/owen"
+  zip -r "$OUTPUT_ZIP" "$OWEN_DIR/owen" > /dev/null
+  rm -rf "$OWEN_DIR"
 
   echo "Packaging completed: $OUTPUT_ZIP"
   echo "You may upload this file as a Lambda layer to your AWS account."
 else
   # If the first argument is anything else (e.g., 'foldername'), run cargo with that argument
-  echo "Running 'cargo run --bin main $1' ..."
-  cargo run --bin main "$1"
+  echo "Running 'cargo run --bin owen $1' ..."
+  cargo run --bin owen "$1"
 fi

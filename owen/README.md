@@ -245,10 +245,10 @@ docker compose -f ./docker/run-local.yml down
 # HOW TO RUN OWEN AS AL LAMBDA LAYER ON AWS
 
 1. Clone this repository with its submodules `git clone -recurse-submodules https://github.com/originalworks/protocol-core`
-2. Make bundle of owen by running `/owen/bundle.sh` that will generate a file named `owen_cli.zip`.
-3. Log into AWS Console, and go to Lambda -> layers -> owen_cli:
+2. Make bundle of owen by running `/owen/bundle.sh` that will generate a file named `owen.zip`.
+3. Log into AWS Console, and go to Lambda -> layers -> owen:
 ![alt text](image.png)
 4. Click on Create version:
 ![alt text](image-2.png)
-5. Upload the newley generated file`owen_cli.zip
+5. Upload the newley generated file`owen.zip
 ![alt text](image-1.png)

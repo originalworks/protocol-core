@@ -5,7 +5,7 @@ edition = "2021"
 
 [build-dependencies]
 risc0-build = { version = "1.2.0" }
-dotenvy = "0.15.7"
+dotenvy = { workspace = true }
 risc0-build-ethereum = "1.2.0"
 
 [package.metadata.risc0]

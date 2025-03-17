@@ -1,5 +1,5 @@
 use aws_sdk_dynamodb::types::AttributeValue;
-use owen_cli::output_generator::MessageDirProcessingContext;
+use owen::output_generator::MessageDirProcessingContext;
 use std::{collections::HashMap, env, error::Error};
 
 pub struct MessageQueue {
