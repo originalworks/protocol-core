@@ -85,8 +85,8 @@ jobs:
         run: |
           mkdir -p target/lambda/owen_lambda
           mkdir -p target/lambda/aws_queue_consumer
-          cp owen-lambda-binaries/owen/target/lambda/owen_lambda/bootstrap target/lambda/owen_lambda/bootstrap
-          cp owen-lambda-binaries/aws_queue_consumer/target/lambda/aws_queue_consumer/bootstrap target/lambda/aws_queue_consumer/bootstrap
+          cp owen-lambda-binaries/target/lambda/owen_lambda/bootstrap target/lambda/owen_lambda/bootstrap
+          cp owen-lambda-binaries/target/lambda/aws_queue_consumer/bootstrap target/lambda/aws_queue_consumer/bootstrap
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
