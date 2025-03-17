@@ -1,7 +1,7 @@
 use crate::blob::BlobTransactionData;
 use crate::is_local;
 use alloy::primitives::{Address, FixedBytes};
-use alloy::providers::{Provider, ProviderBuilder};
+use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use alloy::sol_types::private::Bytes;
 use alloy::{

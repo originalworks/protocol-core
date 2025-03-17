@@ -8,7 +8,7 @@ use blob_codec::errors::OwCodecError;
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
 use message_queue::MessageQueue;
 use message_storage::MessageStorage;
-use owen_cli::logger::{init_logging, init_sentry};
+use owen::logger::{init_logging, init_sentry};
 use secrets::set_secret_envs;
 use std::fs;
 
@@ -25,7 +25,7 @@ async fn function_handler(
         .load()
         .await;
 
-    let owen_config = owen_cli::Config::build();
+    let owen_config = owen::Config::build();
 
     let queue = MessageQueue::build(&aws_main_config);
     let storage = MessageStorage::build(&aws_main_config);
@@ -44,7 +44,7 @@ async fn function_handler(
 
     println!("synced directories: {message_folders:?}");
 
-    match owen_cli::run_with_sentry(&owen_config).await {
+    match owen::run_with_sentry(&owen_config).await {
         Ok(message_processing_context) => {
             queue
                 .sync_message_folder_statuses(
@@ -99,7 +99,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
         .load()
         .await;
     set_secret_envs(&aws_main_config).await.unwrap();
-    let owen_config = owen_cli::Config::build();
+    let owen_config = owen::Config::build();
     let _guard = init_sentry(&owen_config);
     init_logging()?;
 
