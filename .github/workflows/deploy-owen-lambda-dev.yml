@@ -46,8 +46,8 @@ jobs:
           npm i
           npx hardhat compile
 
-      - name: "Build aws-queue-consumer"
-        working-directory: aws-queue-consumer
+      - name: "Build aws_queue_consumer"
+        working-directory: aws_queue_consumer
         run: |
           source $HOME/.cargo/env
           cargo lambda build --release
@@ -63,8 +63,8 @@ jobs:
         with:
           name: owen-lambda-binaries
           path: |
-            owen/target/lambda/owen_lambda
-            aws-queue-consumer/target/lambda/queue-consumer
+            target/lambda/owen_lambda
+            target/lambda/aws_queue_consumer
 
   deploy-changes:
     runs-on: ubuntu-latest
@@ -83,10 +83,10 @@ jobs:
 
       - name: "Copy binaries"
         run: |
-          mkdir -p owen/target/lambda/owen_lambda
-          mkdir -p aws-queue-consumer/target/lambda/queue-consumer
-          cp owen-lambda-binaries/owen/target/lambda/owen_lambda/bootstrap owen/target/lambda/owen_lambda/bootstrap
-          cp owen-lambda-binaries/aws-queue-consumer/target/lambda/queue-consumer/bootstrap aws-queue-consumer/target/lambda/queue-consumer/bootstrap
+          mkdir -p target/lambda/owen_lambda
+          mkdir -p target/lambda/aws_queue_consumer
+          cp owen-lambda-binaries/owen/target/lambda/owen_lambda/bootstrap target/lambda/owen_lambda/bootstrap
+          cp owen-lambda-binaries/aws_queue_consumer/target/lambda/aws_queue_consumer/bootstrap target/lambda/aws_queue_consumer/bootstrap
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
