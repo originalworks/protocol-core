@@ -46,7 +46,7 @@ type ProvedMessage @entity {
 type AssetMetadata @entity {
   id: ID!
   rawContent: String!
-  blobMetadata: BlobMetadata!
+  blobMetadata: BlobMetadata
 }
 
 type BlobMetadata @entity {
