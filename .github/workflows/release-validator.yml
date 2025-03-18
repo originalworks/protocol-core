@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: 🛎 Checkout repository
         uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
 
       - name: 🔍 Extract Version from Tag
         id: extract_version
@@ -26,14 +28,14 @@ jobs:
       - name: 🔍 Get Previous Version Tag
         id: get_previous_version
         run: |
-          PREV_TAG=$(git tag --sort=-v:refname | grep 'validator_node@' | grep -v "$TAG_NAME" | head -n 1 || echo "N/A")
+          PREV_TAG=$(git tag --sort=-v:refname | grep 'validator_node@' | grep -v -F "$TAG_NAME" | head -n 1 || echo "N/A")
           echo "PREV_VERSION=${PREV_TAG#validator_node@}" >> $GITHUB_ENV
           echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
           body: |
             [${{ env.VERSION }}](https://github.com/original-works/protocol-core/compare/${{ env.PREV_TAG }}...${{ env.TAG_NAME }}) (${{ env.DATE }})
           draft: false
