@@ -31,9 +31,3 @@ jobs:
       - name: "Build OWEN"
         working-directory: owen
         run: cargo build --release
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: owen-bin
-          path: owen/target/release/main
