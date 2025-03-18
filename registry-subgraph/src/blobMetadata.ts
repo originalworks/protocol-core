@@ -3,7 +3,7 @@ import {
   json,
   Bytes,
   dataSource
-} from '@graphprotocol/graph-ts';
+} from "@graphprotocol/graph-ts";
 import { JSONValueKind } from "@graphprotocol/graph-ts/common/value";
 
 import { getValueIfExist } from "./helpers";
@@ -16,7 +16,7 @@ export function handleBlobMetadata(content: Bytes): void {
 
   if (jsonResult.isOk) {
     if (jsonResult.value.kind == JSONValueKind.OBJECT) {
-      const metadata = jsonResult.value.toObject()
+      const metadata = jsonResult.value.toObject();
 
       blobMetadata.versioned_hash = getValueIfExist(metadata, "versioned_hash");
       blobMetadata.transaction_hash = getValueIfExist(metadata, "transaction_hash");

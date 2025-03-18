@@ -24,10 +24,10 @@ export function getValueIfExist(
   sourceObject: TypedMap<string, JSONValue>,
   parameterName: string,
 ): string | null {
-  const jsonValue = sourceObject.get(parameterName)
+  const jsonValue = sourceObject.get(parameterName);
   if (jsonValue) {
-    return jsonValue.toString()
+    return jsonValue.toString();
   } else {
-    return null
+    return null;
   }
 }

@@ -11,7 +11,7 @@ import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
 // Just an example: we create a data source up to 70 files.
-const maxFiles = 70
+const maxFiles = 70;
 
 const BlobProcessedEventId = "processed";
 const BlobRejectedEventId = "rejected";
@@ -65,9 +65,9 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
-  log.info("BlobProcessed CID: {}", [event.params.cid])
+  log.info("BlobProcessed CID: {}", [event.params.cid]);
 
-  const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json"
+  const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json";
   BlobMetadataTemplate.create(blobMetadataIPFSPath);
 
   // Now spin up sub‑dataSources for each JSON file in IPFS
