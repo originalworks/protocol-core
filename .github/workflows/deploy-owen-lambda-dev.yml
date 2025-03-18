@@ -12,5 +12,5 @@ jobs:
     with:
       env: "dev"
       run_id: ${{ github.run_id }}
-      secrets: inherit
+    secrets: inherit
 
