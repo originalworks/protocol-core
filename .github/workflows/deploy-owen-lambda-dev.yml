@@ -1,0 +1,98 @@
+name: "Deploy Owen infrastructure and code to AWS dev environment"
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "owen/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-binaries:
+    runs-on: ubuntu-latest
+    container: amazonlinux:latest
+    timeout-minutes: 30
+
+    steps:
+      - name: "Install rust and cargo"
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo 'source $HOME/.cargo/env' >> ~/.bashrc
+          source $HOME/.cargo/env
+
+      - name: "Install dependencies with dnf"
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs nasm
+
+      - name: "Install cargo-lambda"
+        run: pip3 install cargo-lambda
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: "Compile conracts"
+        working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
+
+      - name: "Build aws_queue_consumer"
+        working-directory: aws_queue_consumer
+        run: |
+          source $HOME/.cargo/env
+          cargo lambda build --release
+
+      - name: "Build owen_lambda"
+        working-directory: owen
+        run: |
+          source $HOME/.cargo/env
+          cargo lambda build --release --bin owen_lambda --features aws-integration --compiler cargo
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: owen-lambda-binaries
+          path: |
+            target/lambda/owen_lambda
+            target/lambda/aws_queue_consumer
+
+  deploy-changes:
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    timeout-minutes: 30
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: owen-lambda-binaries
+          path: owen-lambda-binaries/
+
+      - name: "Copy binaries"
+        run: |
+          mkdir -p target/lambda/owen_lambda
+          mkdir -p target/lambda/aws_queue_consumer
+          cp owen-lambda-binaries/owen_lambda/bootstrap target/lambda/owen_lambda/bootstrap
+          cp owen-lambda-binaries/aws_queue_consumer/bootstrap target/lambda/aws_queue_consumer/bootstrap
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+          role-session-name: protocol-core-session-id-${{ github.run_id }}
+          role-duration-seconds: 1200
+
+      - name: "Deploy AWS Cloud Formation template"
+        working-directory: owen/aws/deploy-infra
+        run: make deploy-infra-dev

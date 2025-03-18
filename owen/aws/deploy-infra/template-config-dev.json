@@ -1,0 +1,23 @@
+{
+    "Parameters": {
+        "MessagesBucketName": "ddex-messages-dev",
+        "MessageStatusTableName": "DdexMessageStatusDev",
+        "TriggerFilePattern": "BatchComplete_",
+        "OwenLambdaScheduleRateMin": "1440",
+        "ProcessingStatusIndexName": "ProcessingStatusIndex",
+        "MessageFolderAttributeName": "messageFolder",
+        "ProcessingStatusAttributeName": "processingStatus",
+        "CreatedTimestampAttributeName": "createdTimestamp",
+        "UpdatedTimestampAttributeName": "updatedTimestamp",
+        "UnprocessedStatusValue": "unprocessed",
+        "ProcessedStatusValue": "processed",
+        "MessagePerBlob": "5",
+        "DefaultIpfsInterface": "PINATA",
+        "OutputFilesDir": "/tmp/output_files",
+        "InputFilesDir": "/tmp/input_files",
+        "Environment": "development",
+        "OwenUsername": "owen_lambda",
+        "OwenLambdaSecretsName": "OwenLambdaSecretsDev",
+        "DdexSequencerAddress": "B076DDf7B0d77721113F725896665f8589ee042e"
+    }
+}
