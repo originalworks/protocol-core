@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-binaries:
     runs-on: ubuntu-latest
+    if: startsWith(github.event.release.tag_name, 'owen@*')
     container: amazonlinux:latest
     timeout-minutes: 30
 
