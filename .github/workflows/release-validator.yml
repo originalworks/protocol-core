@@ -7,38 +7,6 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: 🛎 Checkout repository
-        uses: actions/checkout@v4
-        with:
-            fetch-depth: 0
-
-      - name: 🔍 Extract Version from Tag
-        id: extract_version
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "VERSION=${TAG_NAME#validator_node@}" >> $GITHUB_ENV
-          echo "CRATE_NAME=validator_node" >> $GITHUB_ENV
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-      - name: 🔍 Get Previous Version Tag
-        id: get_previous_version
-        run: |
-          PREV_TAG=$(git tag --sort=-v:refname | grep 'validator_node@' | grep -v -F "$TAG_NAME" | head -n 1 || echo "N/A")
-          echo "PREV_VERSION=${PREV_TAG#validator_node@}" >> $GITHUB_ENV
-          echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
-      - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: ${{ env.TAG_NAME }}
-          body: |
-            [${{ env.VERSION }}](https://github.com/original-works/protocol-core/compare/${{ env.PREV_TAG }}...${{ env.TAG_NAME }}) (${{ env.DATE }})
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/_release-template.yml
+    with:
+      tag: ${{ github.ref }}
