@@ -46,7 +46,7 @@ jobs:
           tag_name: ${{ env.TAG_NAME }}
           name: ${{ env.TAG_NAME }}
           body: |
-            [${{ env.VERSION }}](https://github.com/original-works/protocol-core/compare/${{ env.PREV_TAG }}...${{ env.TAG_NAME }}) (${{ env.DATE }})
+            [${{ env.VERSION }}](https://github.com/originalworks/protocol-core/compare/${{ env.PREV_TAG }}...${{ env.TAG_NAME }}) (${{ env.DATE }})
           draft: false
           prerelease: false
         env:
