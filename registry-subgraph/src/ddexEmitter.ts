@@ -7,14 +7,11 @@ import {
   MessagesProcessedPerDay
 } from "./types/schema";
 import { recordBlobsStatuses } from "./helpers";
-import { AssetMetadataTemplate } from "./types/templates";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
+import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
-// Hardcoded IPFS folder with raw JSON files, for demonstration.
-// Each file is something like <HASH>/jsons/1.json, <HASH>/jsons/2.json, etc.
-const ipfsFolderCID = "bafybeid5l3yfspemqdmwhw4sal5r4fd2odtsuvuc2jt4teq42v3a4lloy4/jsons";
 // Just an example: we create a data source up to 70 files.
-const maxFiles = 70
+const maxFiles = 70;
 
 const BlobProcessedEventId = "processed";
 const BlobRejectedEventId = "rejected";
@@ -22,6 +19,9 @@ const BlobRejectedEventId = "rejected";
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
   const messages = proverPublicOutputs.messages;
+
+  const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
@@ -34,8 +34,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     provedMessage.validator = event.transaction.from;
     provedMessage.save();
 
-    let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
-    let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
     let messagesProcessed = MessagesProcessedPerDay.load(id);
 
     if (messagesProcessed == null) {
@@ -53,8 +51,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp);
 
-  let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
-  let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
   let blobsProcessed = BlobsProcessedPerDay.load(id);
 
   if (blobsProcessed == null) {
@@ -69,22 +65,25 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
-  log.info("BlobProcessed CID: {}", [event.params.cid])
+  log.info("BlobProcessed CID: {}", [event.params.cid]);
+
+  const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json";
+  BlobMetadataTemplate.create(blobMetadataIPFSPath);
+
   // Now spin up sub‑dataSources for each JSON file in IPFS
-  // for (let i = 1; i <= maxFiles; i++) {
-  //   let ipfsPath = ipfsFolderCID + "/" + i.toString() + ".json";
-  //   log.info("Creating IPFS data source for file: {}", [ipfsPath]);
-  //
-  //   // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
-  //   AssetMetadataTemplate.create(ipfsPath);
-  // }
+  for (let i = 1; i <= maxFiles; i++) {
+    const ipfsPath = event.params.cid + "/json/" + i.toString() + ".json";
+
+    // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
+    AssetMetadataTemplate.create(ipfsPath);
+  }
 }
 
 export function handleBlobRejected(event: BlobRejected): void {
   recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp);
 
-  let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
-  let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
   let blobsRejected = BlobsRejectedPerDay.load(id);
 
   if (blobsRejected == null) {

@@ -46,4 +46,16 @@ type ProvedMessage @entity {
 type AssetMetadata @entity {
   id: ID!
   rawContent: String!
+  blobMetadata: BlobMetadata
+}
+
+type BlobMetadata @entity {
+  id: ID!
+  versioned_hash: String
+  transaction_hash: String
+  block_number: String
+  timestamp: String
+  chain_id: String
+  network_name: String
+  blob_ipfs_cid: String
 }
