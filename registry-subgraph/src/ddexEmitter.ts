@@ -7,7 +7,7 @@ import {
   MessagesProcessedPerDay
 } from "./types/schema";
 import { recordBlobsStatuses } from "./helpers";
-import { AssetMetadataTemplate } from "./types/templates";
+import { AssetMetadataTemplate, BlobMetadataTemplate } from './types/templates';
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 
 // Just an example: we create a data source up to 70 files.
@@ -68,14 +68,18 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   log.info("BlobProcessed CID: {}", [event.params.cid])
 
-  // Now spin up sub‑dataSources for each JSON file in IPFS
-  for (let i = 1; i <= maxFiles; i++) {
-    let ipfsPath = event.params.cid + "/json/" + i.toString() + ".json";
-    log.info("Creating IPFS data source for file: {}", [ipfsPath]);
+  const blobMetadataIPFSPath = event.params.cid + '/blob/metadata.json'
+  log.info("Creating Blob Metadata IPFS data source for file: {}", [blobMetadataIPFSPath]);
+  BlobMetadataTemplate.create(blobMetadataIPFSPath);
 
-    // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
-    AssetMetadataTemplate.create(ipfsPath);
-  }
+  // // Now spin up sub‑dataSources for each JSON file in IPFS
+  // for (let i = 1; i <= maxFiles; i++) {
+  //   let ipfsPath = event.params.cid + "/json/" + i.toString() + ".json";
+  //   log.info("Creating IPFS data source for file: {}", [ipfsPath]);
+  //
+  //   // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
+  //   AssetMetadataTemplate.create(ipfsPath);
+  // }
 }
 
 export function handleBlobRejected(event: BlobRejected): void {

@@ -64,3 +64,15 @@ templates:
           file: ./abis/DdexEmitter.json
       handler: handleAssetMetadata
       file: ./src/assetMetadata.ts
+  - kind: file/ipfs
+    name: BlobMetadataTemplate
+    mapping:
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BlobMetadata
+      abis:
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
+      handler: handleBlobMetadata
+      file: ./src/blobMetadata.ts
