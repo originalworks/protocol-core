@@ -9,8 +9,8 @@ const BlobsSubmittedEventId = "submitted";
 export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
   recordBlobsStatuses(BlobsSubmittedEventId, event.block.timestamp);
 
-  let date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
-  let id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
   let blobsSubmitted = BlobsSubmittedPerDay.load(id);
 
   if (blobsSubmitted == null) {

@@ -1,4 +1,8 @@
-import { BigInt, JSONValue, TypedMap } from "@graphprotocol/graph-ts";
+import {
+  BigInt,
+  TypedMap,
+  JSONValue
+} from "@graphprotocol/graph-ts";
 
 import { BlobsStatus } from "./types/schema";
 
