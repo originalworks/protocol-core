@@ -7,7 +7,7 @@ on:
         description: "The full GitHub ref (e.g., refs/tags/validator_node@1.2.3)"
         required: true
         type: string
-
+      
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -51,3 +51,13 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Sentry release
+        uses: getsentry/action-release@v3
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ env.CRATE_NAME }}
+        with:
+          release: ${{ env.VERSION }}
+          release_prefix: "@"
