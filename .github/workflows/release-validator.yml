@@ -10,3 +10,20 @@ jobs:
     uses: ./.github/workflows/_release-template.yml
     with:
       tag: ${{ github.ref }}
+    
+  sentry-release:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout repository
+       uses: actions/checkout@v4
+       with:
+         fetch-depth: 0
+     - name: Create Sentry release
+       uses: getsentry/action-release@v3
+       env:
+         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+         SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_VALIDATOR }}
+       with:
+         release: ${{ github.ref }}
