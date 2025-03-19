@@ -10,7 +10,6 @@ use message_queue::MessageQueue;
 use message_storage::MessageStorage;
 use owen::logger::{init_logging, init_sentry};
 use secrets::set_secret_envs;
-use std::fs;
 
 async fn function_handler(
     event: LambdaEvent<CloudWatchEvent>,
@@ -30,17 +29,22 @@ async fn function_handler(
     let queue = MessageQueue::build(&aws_main_config);
     let storage = MessageStorage::build(&aws_main_config);
 
-    let message_folders = queue.get_message_folders().await.unwrap();
+    let message_folders = queue
+        .get_message_folders()
+        .await
+        .expect("Failed to get message folders");
     if message_folders.is_empty() {
         tracing::info!("No message folders found, queue is empty. Terminating execution.");
         return Ok(());
     }
-    storage.clear_input_folder().unwrap();
+    storage
+        .clear_input_folder()
+        .expect("Clearing input folder failed");
 
     let local_to_s3_folder_mapping = storage
         .sync_message_folders(&message_folders)
         .await
-        .unwrap();
+        .expect("Failed to sync message folders");
 
     println!("synced directories: {message_folders:?}");
 
@@ -53,7 +57,7 @@ async fn function_handler(
                     message_folders,
                 )
                 .await
-                .unwrap();
+                .expect("Syncing message folder statuses failed.");
         }
         Err(e)
             if e.to_string()
@@ -63,7 +67,7 @@ async fn function_handler(
             queue
                 .set_message_folders_as_processed(message_folders)
                 .await
-                .unwrap();
+                .expect("Setting message folder statuses as processed failed.");
         }
         Err(e) if e.is::<OwCodecError>() => {
             if let Some(e) = e.downcast_ref::<OwCodecError>() {
@@ -82,7 +86,7 @@ async fn function_handler(
             queue
                 .set_message_folders_as_rejected(message_folders)
                 .await
-                .unwrap();
+                .expect("Setting message folder statuses as rejected failed.");
         }
     };
     println!("Lambda execution leave");
@@ -98,7 +102,9 @@ async fn main() -> Result<(), lambda_runtime::Error> {
         .region(region_provider)
         .load()
         .await;
-    set_secret_envs(&aws_main_config).await.unwrap();
+    set_secret_envs(&aws_main_config)
+        .await
+        .expect("Setting secret envs failed.");
     let owen_config = owen::Config::build();
     let _guard = init_sentry(&owen_config);
     init_logging()?;

@@ -116,7 +116,13 @@ impl MessageQueue {
         for message_processing_context in message_processing_context_vec {
             let s3_path = local_to_s3_folder_mapping
                 .get(&message_processing_context.message_dir_path)
-                .unwrap();
+                .expect(
+                    format!(
+                        "Could not retrieve s3 path from mapping to local folder. Local folder: {}",
+                        message_processing_context.message_dir_path
+                    )
+                    .as_str(),
+                );
 
             s3_folder_to_processing_context_map.insert(s3_path.clone(), message_processing_context);
         }
