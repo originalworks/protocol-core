@@ -25,7 +25,9 @@ impl MessageStorage {
         s3_message_folder: &String,
         local_message_folder: &String,
     ) -> Result<String, Box<dyn Error>> {
-        let (_, s3_parent_dir_file) = s3_folder_object_key.split_once(s3_message_folder).unwrap();
+        let (_, s3_parent_dir_file) = s3_folder_object_key
+            .split_once(s3_message_folder)
+            .expect("Could not split s3 folder key");
         let local_object_path = format!("{local_message_folder}{s3_parent_dir_file}");
         Ok(local_object_path)
     }
@@ -38,7 +40,11 @@ impl MessageStorage {
             .key(key)
             .send()
             .await?;
-        fs::create_dir_all(Path::new(&local_path).parent().unwrap())?;
+        fs::create_dir_all(
+            Path::new(&local_path)
+                .parent()
+                .expect("Local message folder path has no parent"),
+        )?;
         let mut file = File::create(&local_path).await?;
         let mut stream = resp.body.into_async_read();
 
@@ -55,9 +61,11 @@ impl MessageStorage {
         for s3_message_folder in message_folders {
             let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
                 .file_name()
-                .unwrap()
+                .expect(
+                    format!("S3 message folder has no filename {}", &s3_message_folder).as_str(),
+                )
                 .to_str()
-                .unwrap();
+                .expect("Parsing to str failed");
 
             let local_message_folder =
                 format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
@@ -73,15 +81,18 @@ impl MessageStorage {
                 .send()
                 .await?;
 
-            for s3_folder_object in s3_message_folder_objects.contents.unwrap() {
-                let s3_folder_object_key = s3_folder_object.key.unwrap();
-                let local_object_path = self
-                    .build_local_object_path(
-                        &s3_folder_object_key,
-                        &s3_message_folder,
-                        &local_message_folder,
-                    )
-                    .unwrap();
+            for s3_folder_object in s3_message_folder_objects
+                .contents
+                .expect("S3 message folder object has no 'contents'")
+            {
+                let s3_folder_object_key = s3_folder_object
+                    .key
+                    .expect("S3 message folder object has no 'key'");
+                let local_object_path = self.build_local_object_path(
+                    &s3_folder_object_key,
+                    &s3_message_folder,
+                    &local_message_folder,
+                )?;
 
                 self.copy_from_s3(s3_folder_object_key, local_object_path)
                     .await?;
@@ -94,7 +105,7 @@ impl MessageStorage {
     pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
         let input_files_path = Path::new(&self.input_files_dir);
         if input_files_path.is_dir() {
-            fs::remove_dir_all(input_files_path).unwrap();
+            fs::remove_dir_all(input_files_path)?;
         }
         Ok(())
     }

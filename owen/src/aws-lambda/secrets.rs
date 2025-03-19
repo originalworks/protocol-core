@@ -23,7 +23,9 @@ pub async fn set_secret_envs(
         .send()
         .await?;
 
-    let secrets_json_string = response.secret_string().unwrap();
+    let secrets_json_string = response
+        .secret_string()
+        .expect("Could not retrieve secret string from AWS SM");
 
     let owen_secret_envs: OwenSecretEnvs = serde_json::from_str(secrets_json_string)?;
 
