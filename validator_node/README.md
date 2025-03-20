@@ -134,3 +134,8 @@ export NVCC_APPEND_FLAGS="--gpu-architecture=compute_${COMPUTE_CAP} --gpu-code=c
 ```
 
 To run risc0 additional resources are required. Full installation guide can be found at https://dev.risczero.com/api/zkvm/install
+
+
+## Recompile contracts if needed
+
+Run `npx hardhat compile` from the contracts folder
