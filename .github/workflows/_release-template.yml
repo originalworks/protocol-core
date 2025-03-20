@@ -7,6 +7,11 @@ on:
         description: "The full GitHub ref (e.g., refs/tags/validator_node@1.2.3)"
         required: true
         type: string
+    secrets:
+      SENTRY_ORG:
+        required: true
+      SENTRY_AUTH_TOKEN:
+        required: true
       
 jobs:
   release:
@@ -51,15 +56,6 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug
-        run: |
-          if [[ -z "$SENTRY_ORG" ]]; then
-            echo "❌ SENTRY_ORG is not set!"
-          else
-            echo "✅ SENTRY_ORG is set!"
-          fi
-        env:
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       - name: Create Sentry release
         uses: getsentry/action-release@v3
         env:

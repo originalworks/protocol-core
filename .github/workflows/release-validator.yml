@@ -10,3 +10,6 @@ jobs:
     uses: ./.github/workflows/_release-template.yml
     with:
       tag: ${{ github.ref }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
