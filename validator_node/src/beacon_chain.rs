@@ -3,7 +3,7 @@ use alloy::{
     eips::eip4844::BYTES_PER_BLOB,
     primitives::{Bytes, FixedBytes},
 };
-use log_macros::{format_error, log_info};
+use log_macros::{format_error, log_info, log_warn};
 use reqwest;
 use serde::Deserialize;
 
@@ -44,10 +44,20 @@ async fn get_parent_beacon_block_slot(
         parent_beacon_block_root
     );
 
-    let response = reqwest::get(url).await?.json::<BeaconBlock>().await?;
-    println!("{response:?}");
+    log_info!("Fetching initial beacon block slot...");
 
-    let slot = response.data.message.slot.parse::<u64>()?;
+    let response = reqwest::get(url).await?;
+    let slot;
+
+    if response.status().is_success() {
+        let beacon_block = response.json::<BeaconBlock>().await?;
+        slot = beacon_block.data.message.slot.parse::<u64>()?;
+    } else {
+        let reason = response.text().await?;
+        return Err(format_error!("Beacon RPC returned error: {}", reason));
+    }
+
+    log_info!("Initial beacon block slot: {}", slot);
 
     Ok(slot)
 }
@@ -56,7 +66,9 @@ async fn find_commitment_in_sidecars(
     beacon_rpc_url: &String,
     beacon_slot: u64,
     commitment: &Bytes,
-) -> Option<BlobSidecarData> {
+) -> anyhow::Result<Option<BlobSidecarData>> {
+    log_info!("Fetching beacon block at slot {}...", beacon_slot);
+
     let url = format!(
         "{}{}{}",
         beacon_rpc_url,
@@ -64,23 +76,22 @@ async fn find_commitment_in_sidecars(
         beacon_slot
     );
 
-    let response = reqwest::get(url)
-        .await
-        .ok()?
-        .json::<BlobSidecars>()
-        .await
-        .ok()?;
+    let response = reqwest::get(url).await?;
+    let status_code = response.status().as_u16();
 
-    let sidecars_filtered: Vec<BlobSidecarData> = response
-        .data
-        .into_iter()
-        .filter(|sidecar| &sidecar.kzg_commitment == commitment)
-        .collect();
-
-    if sidecars_filtered.len() == 1 {
-        Some(sidecars_filtered.into_iter().next()?)
+    if status_code == 200 {
+        log_info!("Beacon block found");
+        let blob_sidecars = response.json::<BlobSidecars>().await?;
+        return Ok(blob_sidecars
+            .data
+            .into_iter()
+            .find(|sidecar| &sidecar.kzg_commitment == commitment));
+    } else if status_code == 404 {
+        log_warn!("Beacon block at slot {} not found", { beacon_slot });
+        return Ok(None);
     } else {
-        None
+        let reason = response.text().await?;
+        return Err(format_error!("Beacon RPC returned error: {}", reason));
     }
 }
 
@@ -109,15 +120,29 @@ pub async fn find_blob(
     commitment: &Bytes,
     parent_beacon_block_root: &FixedBytes<32>,
 ) -> anyhow::Result<[u8; BYTES_PER_BLOB]> {
-    log_info!("Finding a blob...");
-    let mut slot = get_parent_beacon_block_slot(beacon_rpc_url, parent_beacon_block_root).await?;
+    let slot = get_parent_beacon_block_slot(beacon_rpc_url, parent_beacon_block_root).await?;
     let mut blob_sidecar_data: Option<BlobSidecarData> =
-        find_commitment_in_sidecars(beacon_rpc_url, slot, &commitment).await;
+        find_commitment_in_sidecars(beacon_rpc_url, slot, &commitment).await?;
+
+    let mut next_slot = slot;
 
     while blob_sidecar_data.is_none() {
-        slot += 1;
-        blob_sidecar_data = find_commitment_in_sidecars(beacon_rpc_url, slot, &commitment).await;
+        if next_slot - slot >= 20 {
+            return Err(format_error!(
+                "Looked for commitment in 20 blocks. Aborting."
+            ));
+        }
+
+        log_info!(
+            "Commitment not found in beacon block at slot {}. Looking at next one",
+            slot
+        );
+
+        next_slot += 1;
+        blob_sidecar_data =
+            find_commitment_in_sidecars(beacon_rpc_url, next_slot, &commitment).await?;
     }
+    log_info!("Commitment found in beacon block at slot {}", slot);
 
     let blob = blob_sidecar_data
         .ok_or_else(|| {
