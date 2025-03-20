@@ -110,8 +110,9 @@ impl MessageStorage {
             while empty != true {
                 fs::remove_dir_all(input_files_path)?;
                 if input_files_path.is_dir() == false {
-                    println!("Input folder is not cleared yet, retrying...");
                     empty = true;
+                } else {
+                    println!("Input folder is not cleared yet, retrying...");
                 }
             }
         }
