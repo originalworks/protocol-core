@@ -7,7 +7,7 @@ import { NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 const BlobsSubmittedEventId = "submitted";
 
 export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
-  recordBlobsStatuses(BlobsSubmittedEventId, event.block.timestamp);
+  recordBlobsStatuses(BlobsSubmittedEventId, event.block.timestamp, event.transaction.hash);
 
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;

@@ -1,7 +1,8 @@
 type BlobsStatus @entity {
   id: String! # status
   amount: BigInt!
-  latestEvent: BigInt!
+  latestEventTimestamp: BigInt!
+  latestEventTxHash: Bytes!
 }
 
 type BlobsSubmittedPerDay @entity {

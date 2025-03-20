@@ -49,7 +49,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     messagesProcessed.save();
   }
 
-  recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp);
+  recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp, event.transaction.hash);
 
   let blobsProcessed = BlobsProcessedPerDay.load(id);
 
@@ -80,7 +80,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 }
 
 export function handleBlobRejected(event: BlobRejected): void {
-  recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp);
+  recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp, event.transaction.hash);
 
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;

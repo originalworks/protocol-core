@@ -1,12 +1,13 @@
 import {
+  Bytes,
   BigInt,
   TypedMap,
-  JSONValue
+  JSONValue,
 } from "@graphprotocol/graph-ts";
 
 import { BlobsStatus } from "./types/schema";
 
-export function recordBlobsStatuses(id: string, timestamp: BigInt): void {
+export function recordBlobsStatuses(id: string, timestamp: BigInt, txHash: Bytes): void {
   let blobs = BlobsStatus.load(id);
 
   if (blobs == null) {
@@ -15,7 +16,8 @@ export function recordBlobsStatuses(id: string, timestamp: BigInt): void {
   }
 
   blobs.amount = blobs.amount.plus(BigInt.fromI32(1));
-  blobs.latestEvent = timestamp;
+  blobs.latestEventTimestamp = timestamp;
+  blobs.latestEventTxHash = txHash;
 
   blobs.save();
 }
