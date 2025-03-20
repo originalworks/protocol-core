@@ -24,6 +24,8 @@ dataSources:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
       eventHandlers:
+        - event: Initialized(uint64)
+          handler: handleInitialized
         - event: NewBlobSubmitted(bytes,bytes32)
           handler: handleNewBlobSubmitted
   - kind: ethereum/contract

@@ -1,5 +1,8 @@
 type HealthStatus @entity {
   id: String!
+  txAmount: BigInt!
+  owenTxAmount: BigInt!
+  validatorTxAmount: BigInt!
   batchTimestamp: BigInt
   batchTxHash: Bytes
   validationTimestamp: BigInt
@@ -9,8 +12,8 @@ type HealthStatus @entity {
 type BlobsStatus @entity {
   id: String! # status
   amount: BigInt!
-  latestEventTimestamp: BigInt!
-  latestEventTxHash: Bytes!
+  latestEventTimestamp: BigInt
+  latestEventTxHash: Bytes
 }
 
 type BlobsSubmittedPerDay @entity {

@@ -1,10 +1,19 @@
 import { BigInt } from "@graphprotocol/graph-ts";
 
+import {
+  recordBlobsStatuses,
+  BlobsSubmittedEventId,
+  initializeHealthStatus,
+  initializeBlobsStatuses,
+  recordHealthStatusBatchData,
+} from "./helpers";
 import { BlobsSubmittedPerDay } from "./types/schema";
-import { NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
-import { recordBlobsStatuses, recordHealthStatusBatchData } from "./helpers";
+import { Initialized, NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 
-const BlobsSubmittedEventId = "submitted";
+export function handleInitialized(event: Initialized): void {
+  initializeBlobsStatuses();
+  initializeHealthStatus();
+}
 
 export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
   recordBlobsStatuses(BlobsSubmittedEventId, event.block.timestamp, event.transaction.hash);

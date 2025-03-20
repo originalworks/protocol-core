@@ -1,6 +1,12 @@
 import { BigInt, log } from "@graphprotocol/graph-ts";
 
 import {
+  BlobRejectedEventId,
+  recordBlobsStatuses,
+  BlobProcessedEventId,
+  recordHealthStatusValidatorData,
+} from "./helpers";
+import {
   ProvedMessage,
   BlobsRejectedPerDay,
   BlobsProcessedPerDay,
@@ -8,13 +14,9 @@ import {
 } from "./types/schema";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
-import { recordBlobsStatuses, recordHealthStatusValidatorData } from "./helpers";
 
 // Just an example: we create a data source up to 70 files.
 const maxFiles = 70;
-
-const BlobProcessedEventId = "processed";
-const BlobRejectedEventId = "rejected";
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
