@@ -49,6 +49,7 @@ pub struct QueueHeadData {
     pub block_number: u64,
     pub timestamp: u64,
     pub image_id: FixedBytes<32>,
+    pub chain_id: u64,
 }
 
 type HardlyTypedProvider = FillProvider<
@@ -76,6 +77,7 @@ pub struct ContractsManager {
     pub current_image_id: alloy::primitives::FixedBytes<32>,
     pub previous_image_id: alloy::primitives::FixedBytes<32>,
     pub provider: HardlyTypedProvider,
+    pub chain_id: u64,
 }
 
 impl ContractsManager {
@@ -93,6 +95,8 @@ impl ContractsManager {
             .with_recommended_fillers()
             .wallet(wallet)
             .on_http(rpc_url.parse()?);
+
+        let chain_id = provider.get_chain_id().await?;
 
         let sequencer = DdexSequencer::new(ddex_sequencer_address, provider.clone());
 
@@ -117,6 +121,7 @@ impl ContractsManager {
             current_image_id: current_image_id_parsed,
             previous_image_id: previous_image_id_parsed,
             provider,
+            chain_id,
         })
     }
 
@@ -329,6 +334,7 @@ impl ContractsManager {
             transaction_hash,
             block_number,
             timestamp,
+            chain_id: self.chain_id,
         })
     }
 
@@ -403,6 +409,7 @@ impl ContractsManager {
             transaction_hash,
             block_number,
             timestamp,
+            chain_id: self.chain_id,
         })
     }
 }

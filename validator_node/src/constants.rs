@@ -9,3 +9,12 @@ pub const TEMP_FOLDER: &str = "./temp";
 pub const IPFS_API_BASE_URL: &str = "https://ipfs.original.works";
 #[allow(dead_code)]
 pub const IPFS_API_CAT_FILE: &str = "/ipfs/";
+
+pub const fn network_name(chain_id: &u64) -> &'static str {
+    match chain_id {
+        1 => "Ethereum",
+        100 => "Gnosis",
+        17000 => "Holesky",
+        _ => panic!("Unrecognized chain"),
+    }
+}

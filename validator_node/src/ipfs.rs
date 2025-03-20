@@ -1,20 +1,20 @@
-use crate::constants::{self, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
+use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
 use crate::contracts::QueueHeadData;
 use anyhow::{anyhow, Context};
 use blob_codec::BlobCodec;
 use cid::Cid;
 use ddex_parser::DdexParser; // only import what you need
-use log_macros::{format_error, log_warn, log_error, log_info};
+use log_macros::{format_error, log_error, log_info, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
+use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
 use std::{
     fs::{self, File},
-    io::{Write, Cursor},
+    io::{Cursor, Write},
     path::Path,
     process::Command,
-};
-use reqwest::blocking::Client; // synchronous
+}; // synchronous
 
 #[derive(Serialize, Deserialize)]
 struct BlobMetadata {
@@ -25,6 +25,7 @@ struct BlobMetadata {
     chain_id: String,
     network_name: String,
     blob_ipfs_cid: String,
+    image_id: String,
 }
 
 /// Fully synchronous check for each CID (via POST to /api/v0/cat).
@@ -77,7 +78,11 @@ pub fn prepare_blob_folder(
         let parsed = match DdexParser::from_json_reader(Cursor::new(&message_bytes)) {
             Ok(p) => p,
             Err(e) => {
-                log_warn!("Skipping message upload {} due to parsing error: {:?}", msg_idx, e);
+                log_warn!(
+                    "Skipping message upload {} due to parsing error: {:?}",
+                    msg_idx,
+                    e
+                );
                 continue;
             }
         };
@@ -85,7 +90,10 @@ pub fn prepare_blob_folder(
         // Write out the pretty JSON
         match parsed.to_json_string_pretty() {
             Ok(json_output) => {
-                fs::write(blob_folder_path.join(format!("json/{msg_idx}.json")), json_output)?;
+                fs::write(
+                    blob_folder_path.join(format!("json/{msg_idx}.json")),
+                    json_output,
+                )?;
             }
             Err(e) => {
                 log_warn!(
@@ -157,9 +165,10 @@ pub fn prepare_blob_folder(
         transaction_hash: queue_head_data.transaction_hash.to_string(),
         block_number: queue_head_data.block_number.to_string(),
         timestamp: queue_head_data.timestamp.to_string(),
-        chain_id: "17000".to_string(),
-        network_name: "Holesky".to_string(),
+        chain_id: queue_head_data.chain_id.to_string(),
+        network_name: network_name(&queue_head_data.chain_id).to_string(),
         blob_ipfs_cid: calculate_blob_data_cid()?,
+        image_id: format!("0x{}", hex::encode(queue_head_data.image_id)),
     };
 
     let blob_metadata_json_string = serde_json::to_string_pretty(&blob_metadata)?;
