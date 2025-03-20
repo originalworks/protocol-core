@@ -3,6 +3,7 @@ type HealthStatus @entity {
   txAmount: BigInt!
   owenTxAmount: BigInt!
   validatorTxAmount: BigInt!
+  blobsInQueueAmount: BigInt!
   batchTimestamp: BigInt
   batchTxHash: Bytes
   validationTimestamp: BigInt

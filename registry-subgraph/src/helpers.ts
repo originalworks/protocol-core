@@ -49,6 +49,7 @@ export function initializeHealthStatus(): void {
     healthStatus.txAmount = BigInt.zero();
     healthStatus.owenTxAmount = BigInt.zero();
     healthStatus.validatorTxAmount = BigInt.zero();
+    healthStatus.blobsInQueueAmount = BigInt.zero();
   }
 
   healthStatus.save();
@@ -62,6 +63,7 @@ export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash:
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.owenTxAmount = healthStatus.owenTxAmount.plus(BigInt.fromI32(1));
+  healthStatus.blobsInQueueAmount = healthStatus.blobsInQueueAmount.plus(BigInt.fromI32(1));
   healthStatus.batchTimestamp = batchTimestamp;
   healthStatus.batchTxHash = batchTxHash;
 
@@ -76,6 +78,7 @@ export function recordHealthStatusValidatorData(validationTimestamp: BigInt, val
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.validatorTxAmount = healthStatus.validatorTxAmount.plus(BigInt.fromI32(1));
+  healthStatus.blobsInQueueAmount = healthStatus.blobsInQueueAmount.minus(BigInt.fromI32(1));
   healthStatus.validationTimestamp = validationTimestamp;
   healthStatus.validationTxHash = validationTxHash;
 
