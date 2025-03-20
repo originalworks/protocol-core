@@ -5,7 +5,31 @@ import {
   JSONValue,
 } from "@graphprotocol/graph-ts";
 
-import { BlobsStatus } from "./types/schema";
+import { BlobsStatus, HealthStatus } from "./types/schema";
+
+export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash: Bytes): void {
+  let healthStatus = HealthStatus.load('status');
+
+  if (healthStatus == null) {
+    healthStatus = new HealthStatus('status');
+  }
+  healthStatus.batchTimestamp = batchTimestamp;
+  healthStatus.batchTxHash = batchTxHash;
+
+  healthStatus.save();
+}
+
+export function recordHealthStatusValidatorData(validationTimestamp: BigInt, validationTxHash: Bytes): void {
+  let healthStatus = HealthStatus.load('status');
+
+  if (healthStatus == null) {
+    healthStatus = new HealthStatus('status');
+  }
+  healthStatus.validationTimestamp = validationTimestamp;
+  healthStatus.validationTxHash = validationTxHash;
+
+  healthStatus.save();
+}
 
 export function recordBlobsStatuses(id: string, timestamp: BigInt, txHash: Bytes): void {
   let blobs = BlobsStatus.load(id);

@@ -6,9 +6,9 @@ import {
   BlobsProcessedPerDay,
   MessagesProcessedPerDay
 } from "./types/schema";
-import { recordBlobsStatuses } from "./helpers";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
+import { recordBlobsStatuses, recordHealthStatusValidatorData } from "./helpers";
 
 // Just an example: we create a data source up to 70 files.
 const maxFiles = 70;
@@ -50,6 +50,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   }
 
   recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp, event.transaction.hash);
+  recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
 
   let blobsProcessed = BlobsProcessedPerDay.load(id);
 
@@ -81,6 +82,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
 export function handleBlobRejected(event: BlobRejected): void {
   recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp, event.transaction.hash);
+  recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
 
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;

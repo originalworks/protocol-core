@@ -17,6 +17,7 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexSequencer.ts
       entities:
+        - HealthStatus
         - BlobsStatus
         - BlobsSubmittedPerDay
       abis:
@@ -38,6 +39,7 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexEmitter.ts
       entities:
+        - HealthStatus
         - BlobsStatus
         - BlobsProcessedPerDay
         - BlobsRejectedPerDay

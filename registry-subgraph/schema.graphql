@@ -1,3 +1,11 @@
+type HealthStatus @entity {
+  id: String!
+  batchTimestamp: BigInt
+  batchTxHash: Bytes
+  validationTimestamp: BigInt
+  validationTxHash: Bytes
+}
+
 type BlobsStatus @entity {
   id: String! # status
   amount: BigInt!
