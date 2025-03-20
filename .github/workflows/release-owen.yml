@@ -6,6 +6,19 @@ on:
       - "owen@*"
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: |
+          if [[ -z "$SENTRY_ORG" ]]; then
+            echo "❌ SENTRY_ORG is not set!"
+          else
+            echo "✅ SENTRY_ORG is set!"
+          fi
+        env:
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        
   release:
     uses: ./.github/workflows/_release-template.yml
     with:
