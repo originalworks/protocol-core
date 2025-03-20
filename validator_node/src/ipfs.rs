@@ -157,8 +157,8 @@ pub fn prepare_blob_folder(
         transaction_hash: queue_head_data.transaction_hash.to_string(),
         block_number: queue_head_data.block_number.to_string(),
         timestamp: queue_head_data.timestamp.to_string(),
-        chain_id: "10200".to_string(),
-        network_name: "Gnosis".to_string(),
+        chain_id: "17000".to_string(),
+        network_name: "Holesky".to_string(),
         blob_ipfs_cid: calculate_blob_data_cid()?,
     };
 
