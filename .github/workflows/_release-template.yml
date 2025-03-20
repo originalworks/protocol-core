@@ -51,7 +51,15 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Debug
+        run: |
+          if [[ -z "$SENTRY_ORG" ]]; then
+            echo "❌ SENTRY_ORG is not set!"
+          else
+            echo "✅ SENTRY_ORG is set!"
+          fi
+        env:
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       - name: Create Sentry release
         uses: getsentry/action-release@v3
         env:
