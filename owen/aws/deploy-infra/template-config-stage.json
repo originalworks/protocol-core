@@ -15,7 +15,7 @@
         "DefaultIpfsInterface": "PINATA",
         "OutputFilesDir": "/tmp/output_files",
         "InputFilesDir": "/tmp/input_files",
-        "Environment": "development",
+        "Environment": "stage",
         "OwenUsername": "owen_lambda",
         "OwenLambdaSecretsName": "OwenLambdaSecretsStage"
     }
