@@ -10,8 +10,10 @@ import {
   ProvedMessage,
   BlobsRejectedPerDay,
   BlobsProcessedPerDay,
-  MessagesProcessedPerDay
-} from "./types/schema";
+  BlobsRejectedPerMonth,
+  BlobsProcessedPerMonth,
+  MessagesProcessedPerDay,
+} from './types/schema';
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
@@ -68,6 +70,20 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
+  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  let processedPerMonth = BlobsProcessedPerMonth.load(idPerMonth);
+
+  if (processedPerMonth == null) {
+    processedPerMonth = new BlobsProcessedPerMonth(idPerMonth);
+    processedPerMonth.amount = BigInt.zero();
+  }
+
+  processedPerMonth.month = (date.getUTCMonth() + 1).toString();
+  processedPerMonth.year = date.getUTCFullYear().toString();
+  processedPerMonth.amount = processedPerMonth.amount.plus(BigInt.fromI32(1));
+
+  processedPerMonth.save();
+
   log.info("BlobProcessed CID: {}", [event.params.cid]);
 
   const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json";
@@ -101,4 +117,18 @@ export function handleBlobRejected(event: BlobRejected): void {
   blobsRejected.amount = blobsRejected.amount.plus(BigInt.fromI32(1));
 
   blobsRejected.save();
+
+  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  let rejectedPerMonth = BlobsRejectedPerMonth.load(idPerMonth);
+
+  if (rejectedPerMonth == null) {
+    rejectedPerMonth = new BlobsRejectedPerMonth(idPerMonth);
+    rejectedPerMonth.amount = BigInt.zero();
+  }
+
+  rejectedPerMonth.month = (date.getUTCMonth() + 1).toString();
+  rejectedPerMonth.year = date.getUTCFullYear().toString();
+  rejectedPerMonth.amount = rejectedPerMonth.amount.plus(BigInt.fromI32(1));
+
+  rejectedPerMonth.save();
 }

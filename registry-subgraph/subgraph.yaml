@@ -20,6 +20,7 @@ dataSources:
         - HealthStatus
         - BlobsStatus
         - BlobsSubmittedPerDay
+        - BlobsSubmittedPerMonth
       abis:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
@@ -44,7 +45,9 @@ dataSources:
         - HealthStatus
         - BlobsStatus
         - BlobsProcessedPerDay
+        - BlobsProcessedPerMonth
         - BlobsRejectedPerDay
+        - BlobsRejectedPerMonth
         - ProvedMessage
         - MessagesProcessedPerDay
       abis:

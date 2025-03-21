@@ -25,6 +25,13 @@ type BlobsSubmittedPerDay @entity {
   amount: BigInt!
 }
 
+type BlobsSubmittedPerMonth @entity {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type BlobsProcessedPerDay @entity {
   id: String! # date
   month: String!
@@ -33,10 +40,24 @@ type BlobsProcessedPerDay @entity {
   amount: BigInt!
 }
 
+type BlobsProcessedPerMonth @entity {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type BlobsRejectedPerDay @entity {
   id: String! # date
   month: String!
   day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsRejectedPerMonth @entity {
+  id: String! # date
+  month: String!
   year: String!
   amount: BigInt!
 }

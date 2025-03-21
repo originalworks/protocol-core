@@ -7,7 +7,7 @@ import {
   initializeBlobsStatuses,
   recordHealthStatusBatchData,
 } from "./helpers";
-import { BlobsSubmittedPerDay } from "./types/schema";
+import { BlobsSubmittedPerDay, BlobsSubmittedPerMonth } from "./types/schema";
 import { Initialized, NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 
 export function handleInitialized(event: Initialized): void {
@@ -34,4 +34,18 @@ export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
   blobsSubmitted.amount = blobsSubmitted.amount.plus(BigInt.fromI32(1));
 
   blobsSubmitted.save();
+
+  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  let submittedPerMonth = BlobsSubmittedPerMonth.load(idPerMonth);
+
+  if (submittedPerMonth == null) {
+    submittedPerMonth = new BlobsSubmittedPerMonth(idPerMonth);
+    submittedPerMonth.amount = BigInt.zero();
+  }
+
+  submittedPerMonth.month = (date.getUTCMonth() + 1).toString();
+  submittedPerMonth.year = date.getUTCFullYear().toString();
+  submittedPerMonth.amount = submittedPerMonth.amount.plus(BigInt.fromI32(1));
+
+  submittedPerMonth.save();
 }
