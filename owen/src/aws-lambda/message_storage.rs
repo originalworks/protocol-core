@@ -105,7 +105,16 @@ impl MessageStorage {
     pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
         let input_files_path = Path::new(&self.input_files_dir);
         if input_files_path.is_dir() {
-            fs::remove_dir_all(input_files_path)?;
+            // Debugging issue with leftovers between lambda runs:
+            let mut empty = false;
+            while empty != true {
+                fs::remove_dir_all(input_files_path)?;
+                if input_files_path.is_dir() == false {
+                    empty = true;
+                } else {
+                    println!("Input folder is not cleared yet, retrying...");
+                }
+            }
         }
         Ok(())
     }
