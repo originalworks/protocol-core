@@ -8,7 +8,9 @@ import {
 } from "./helpers";
 import {
   ProvedMessage,
+  ValidatorTxPerDay,
   BlobsRejectedPerDay,
+  ValidatorTxPerMonth,
   BlobsProcessedPerDay,
   BlobsRejectedPerMonth,
   BlobsProcessedPerMonth,
@@ -55,6 +57,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp, event.transaction.hash);
   recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
+  handleValidatorData(event.block.timestamp);
 
   let blobsProcessed = BlobsProcessedPerDay.load(id);
 
@@ -101,6 +104,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 export function handleBlobRejected(event: BlobRejected): void {
   recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp, event.transaction.hash);
   recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
+  handleValidatorData(event.block.timestamp);
 
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
@@ -131,4 +135,36 @@ export function handleBlobRejected(event: BlobRejected): void {
   rejectedPerMonth.amount = rejectedPerMonth.amount.plus(BigInt.fromI32(1));
 
   rejectedPerMonth.save();
+}
+
+function handleValidatorData(validationTimestamp: BigInt): void {
+  const date = new Date(BigInt.fromString(`${validationTimestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  let validatorDay = ValidatorTxPerDay.load(id);
+
+  if (validatorDay == null) {
+    validatorDay = new ValidatorTxPerDay(id);
+    validatorDay.amount = BigInt.zero();
+  }
+
+  validatorDay.month = (date.getUTCMonth() + 1).toString();
+  validatorDay.day = date.getUTCDate().toString();
+  validatorDay.year = date.getUTCFullYear().toString();
+  validatorDay.amount = validatorDay.amount.plus(BigInt.fromI32(1));
+
+  validatorDay.save();
+
+  const idMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
+  let validatorMonth = ValidatorTxPerMonth.load(idMonth);
+
+  if (validatorMonth == null) {
+    validatorMonth = new ValidatorTxPerMonth(idMonth);
+    validatorMonth.amount = BigInt.zero();
+  }
+
+  validatorMonth.month = (date.getUTCMonth() + 1).toString();
+  validatorMonth.year = date.getUTCFullYear().toString();
+  validatorMonth.amount = validatorMonth.amount.plus(BigInt.fromI32(1));
+
+  validatorMonth.save();
 }

@@ -48,6 +48,8 @@ dataSources:
         - BlobsProcessedPerMonth
         - BlobsRejectedPerDay
         - BlobsRejectedPerMonth
+        - ValidatorTxPerDay
+        - ValidatorTxPerMonth
         - ProvedMessage
         - MessagesProcessedPerDay
       abis:

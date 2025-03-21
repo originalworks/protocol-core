@@ -10,6 +10,21 @@ type HealthStatus @entity {
   validationTxHash: Bytes
 }
 
+type ValidatorTxPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ValidatorTxPerMonth @entity {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type BlobsStatus @entity {
   id: String! # status
   amount: BigInt!
