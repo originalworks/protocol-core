@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-const SEQUENCER_ADDRTESs = "0xc69d6CA304AAaB8368cC0104D08011f6C70041F1";
+const SEQUENCER_ADDRTESs = "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e";
 
 async function main() {
   const sequencer = await ethers.getContractAt("DdexSequencer", SEQUENCER_ADDRTESs);

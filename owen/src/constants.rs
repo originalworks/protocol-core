@@ -1,4 +1,4 @@
-pub const DDEX_SEQUENCER_ADDRESS: &str = "05B077035F2f147543f2Ec69794F922bb5784909";
+pub const DDEX_SEQUENCER_ADDRESS: &str = "75AbeCf07C26368F0f4AA0b0d3637A732E25467e";
 pub const IPFS_API_BASE_URL: &str = "http://localhost:5001";
 pub const IPFS_API_ADD_FILE: &str = "/api/v0/add";
 pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
