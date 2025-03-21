@@ -70,7 +70,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
-  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
   let processedPerMonth = BlobsProcessedPerMonth.load(idPerMonth);
 
   if (processedPerMonth == null) {
@@ -118,7 +118,7 @@ export function handleBlobRejected(event: BlobRejected): void {
 
   blobsRejected.save();
 
-  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
   let rejectedPerMonth = BlobsRejectedPerMonth.load(idPerMonth);
 
   if (rejectedPerMonth == null) {

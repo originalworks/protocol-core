@@ -35,7 +35,7 @@ export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
 
   blobsSubmitted.save();
 
-  const idPerMonth = `${date.getUTCMonth() + 1}-${date.getUTCFullYear()}`;
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
   let submittedPerMonth = BlobsSubmittedPerMonth.load(idPerMonth);
 
   if (submittedPerMonth == null) {
