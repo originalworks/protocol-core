@@ -17,6 +17,10 @@ const config: HardhatUserConfig = {
       url: `${process.env.RPC_URL}`,
       kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`,
     },
+    sepolia: {
+      url: `${process.env.RPC_URL}`,
+      kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`
+    },
     kurtosis_testnet: {
       url: `${process.env.RPC_URL}`,
       accounts: [

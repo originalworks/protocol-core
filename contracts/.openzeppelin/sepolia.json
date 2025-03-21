@@ -1,0 +1,371 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e",
+      "txHash": "0x81ecd2200e7fc375682d95f982f04ee07daab43554081b0337e1388f258c9aba",
+      "kind": "uups"
+    },
+    {
+      "address": "0xDe804E8fc13883C447092d05F7968f86D1fD6847",
+      "txHash": "0x8056b65510ab5d9f8c1d9a512420424ace6887218bbd9530cda7cacde407bfb4",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "d40a5525ed87ad8c5e7dd93c64cb057ba4ff5fb8d10e6ad04ac740085e5dc4e6": {
+      "address": "0x29556A5afDeC9bF2fCF811Efb1414E3B0F8636b2",
+      "txHash": "0xe38ea9d84d1bb3269ca3909c9e60615321f4fed511c48d79ef8cc0040107fb92",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "whitelists",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_bytes1,t_address)",
+            "contract": "WhitelistConsumer",
+            "src": "contracts/Whitelist/WhitelistConsumer.sol:8"
+          },
+          {
+            "label": "blobQueueHead",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:31"
+          },
+          {
+            "label": "blobQueueTail",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:32"
+          },
+          {
+            "label": "stakeVault",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IStakeVault)4332",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:34"
+          },
+          {
+            "label": "ddexEmitter",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IDdexEmitter)4202",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:35"
+          },
+          {
+            "label": "whitelistsDisabled",
+            "offset": 20,
+            "slot": "4",
+            "type": "t_bool",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:38"
+          },
+          {
+            "label": "blobs",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_bytes32,t_struct(Blob)3289_storage)",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bytes1": {
+            "label": "bytes1",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDdexEmitter)4202": {
+            "label": "contract IDdexEmitter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStakeVault)4332": {
+            "label": "contract IStakeVault",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes1,t_address)": {
+            "label": "mapping(bytes1 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Blob)3289_storage)": {
+            "label": "mapping(bytes32 => struct DdexSequencer.Blob)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Blob)3289_storage": {
+            "label": "struct DdexSequencer.Blob",
+            "members": [
+              {
+                "label": "nextBlob",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "submitted",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "proposer",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "blobId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "imageId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "7e331d62f5fcd7435418c1aba51aaaf69bc90c0f089b88240d635c9d4a04a230": {
+      "address": "0x51e12A006Cb4486D1008aaC28b16597023a00a60",
+      "txHash": "0xdfb7ea9aa8af3438d328097bd0c5c8a6941d2dc1e5c7ae02d28eee8aa27ef61a",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "riscZeroGroth16Verifier",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IRiscZeroVerifier)4600",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:17"
+          },
+          {
+            "label": "ddexSequencerAddress",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:18"
+          },
+          {
+            "label": "imageIds",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_bytes1,t_bytes32)",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:25"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "DdexEmitter",
+            "src": "contracts/DdexEmitter.sol:27"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bytes1": {
+            "label": "bytes1",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IRiscZeroVerifier)4600": {
+            "label": "contract IRiscZeroVerifier",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes1,t_bytes32)": {
+            "label": "mapping(bytes1 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
