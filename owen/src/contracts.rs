@@ -162,7 +162,9 @@ impl ContractsManager {
             log_info!("Success!");
             return Ok(());
         } else {
-            return Err(format_error!("Transaction has been rejected (probably because same blob has been already submitted"));
+            return Err(format_error!(
+                "Transaction has been rejected (probable cause: blob already submitted"
+            ));
         }
     }
 }
