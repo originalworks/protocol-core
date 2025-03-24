@@ -163,7 +163,7 @@ impl ContractsManager {
             return Ok(());
         } else {
             return Err(format_error!(
-                "Transaction has been rejected (probable cause: blob already submitted"
+                "Transaction has been rejected (probable cause: blob already submitted)"
             ));
         }
     }
