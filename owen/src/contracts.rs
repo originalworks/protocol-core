@@ -1,7 +1,7 @@
 use crate::blob::BlobTransactionData;
 use crate::is_local;
 use alloy::primitives::{Address, FixedBytes};
-use alloy::providers::ProviderBuilder;
+use alloy::providers::{Provider, ProviderBuilder};
 use alloy::signers::local::PrivateKeySigner;
 use alloy::sol_types::private::Bytes;
 use alloy::{
@@ -131,7 +131,8 @@ impl ContractsManager {
                 Bytes::from(transaction_data.kzg_commitment.to_vec()),
                 FixedBytes::<32>::from(transaction_data.blob_sha2),
             )
-            .sidecar(transaction_data.blob_sidecar);
+            .sidecar(transaction_data.blob_sidecar)
+            .max_fee_per_blob_gas(1000000001);
 
         if is_local() {
             tx_builder = tx_builder
@@ -139,17 +140,29 @@ impl ContractsManager {
                 .max_fee_per_gas(500000001);
         }
 
-        let receipt = tx_builder.send().await?.get_receipt().await?;
+        let tx_request = tx_builder.into_transaction_request().gas_limit(300000);
+
+        let receipt = self
+            .sequencer
+            .provider()
+            .send_transaction(tx_request)
+            .await?
+            .get_receipt()
+            .await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));
         });
 
-        log_info!("Success!");
         log_info!("--From: {}", receipt.from.to_string());
         log_info!("--To: {}", receipt.to.unwrap_or_default().to_string());
         log_info!("--TxHash: {}", receipt.transaction_hash.to_string());
 
-        Ok(())
+        if receipt.status() {
+            log_info!("Success!");
+            return Ok(());
+        } else {
+            return Err(format_error!("Transaction has been rejected (probably because same blob has been already submitted"));
+        }
     }
 }
