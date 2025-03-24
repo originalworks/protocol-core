@@ -14,6 +14,7 @@ pub const fn network_name(chain_id: &u64) -> &'static str {
     match chain_id {
         1 => "Ethereum",
         100 => "Gnosis",
+        10200 => "Chiado",
         17000 => "Holesky",
         11155111 => "Sepolia",
         _ => panic!("Unrecognized chain"),
