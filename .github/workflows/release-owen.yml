@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/_release-template.yml
     with:
       tag: ${{ github.ref }}
+    secrets: inherit
 
   deploy:
     needs: release

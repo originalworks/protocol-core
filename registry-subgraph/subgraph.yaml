@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DdexSequencer
-    network: holesky
+    network: sepolia
     source:
-      address: "0x05b077035f2f147543f2ec69794f922bb5784909"
+      address: "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
       abi: DdexSequencer
-      startBlock: 3488757
+      startBlock: 7949303
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -31,11 +31,11 @@ dataSources:
           handler: handleNewBlobSubmitted
   - kind: ethereum/contract
     name: DdexEmitter
-    network: holesky
+    network: sepolia
     source:
-      address: "0x9eDc1914650a7B7360f4af08B35Bf59Ca2dDaAD3"
+      address: "0xDe804E8fc13883C447092d05F7968f86D1fD6847"
       abi: DdexEmitter
-      startBlock: 3488763
+      startBlock: 7949307
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
