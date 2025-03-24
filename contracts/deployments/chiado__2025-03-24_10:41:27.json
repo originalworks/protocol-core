@@ -1,0 +1,11 @@
+{
+  "deployer": "0x51Df2b866e2450B279F7c9D3eb76B047502b3CA4",
+  "ownToken": "0x1E294922f714439Bfac4f45B3Dea00980EAE5C60",
+  "stakeVault": "0x5A68972A2dd0e064Ffb6a86817a31cf0B3ADedEA",
+  "ddexSequencer": "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e",
+  "ddexEmitter": "0xDe804E8fc13883C447092d05F7968f86D1fD6847",
+  "dataProvidersWhitelist": "0x2479742eDe9a2c2C496A27BC98166259945390Db",
+  "validatorsWhitelist": "0x6073931632467a3b9AeF7f6AbF26dB03D08210f5",
+  "dataProviders": [],
+  "validators": []
+}

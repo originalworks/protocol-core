@@ -21,6 +21,10 @@ const config: HardhatUserConfig = {
       url: `${process.env.RPC_URL}`,
       kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`
     },
+    chiado: {
+      url: `${process.env.RPC_URL}`,
+      kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`,
+    },
     kurtosis_testnet: {
       url: `${process.env.RPC_URL}`,
       accounts: [
@@ -29,8 +33,15 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      holesky: process.env.ETHERSCAN_API_KEY || "",
+      sepolia: process.env.ETHERSCAN_API_KEY || "",
+      chiado: process.env.BLOCKSCOUT_API_KEY || ""
+    },
   },
+  sourcify: {
+    enabled: false
+  }
 };
 
 export default config;
