@@ -17,12 +17,16 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexSequencer.ts
       entities:
+        - HealthStatus
         - BlobsStatus
         - BlobsSubmittedPerDay
+        - BlobsSubmittedPerMonth
       abis:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
       eventHandlers:
+        - event: Initialized(uint64)
+          handler: handleInitialized
         - event: NewBlobSubmitted(bytes,bytes32)
           handler: handleNewBlobSubmitted
   - kind: ethereum/contract
@@ -38,9 +42,14 @@ dataSources:
       language: wasm/assemblyscript
       file: ./src/ddexEmitter.ts
       entities:
+        - HealthStatus
         - BlobsStatus
         - BlobsProcessedPerDay
+        - BlobsProcessedPerMonth
         - BlobsRejectedPerDay
+        - BlobsRejectedPerMonth
+        - ValidatorTxPerDay
+        - ValidatorTxPerMonth
         - ProvedMessage
         - MessagesProcessedPerDay
       abis:

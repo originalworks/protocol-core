@@ -1,13 +1,48 @@
+type HealthStatus @entity {
+  id: String!
+  txAmount: BigInt!
+  owenTxAmount: BigInt!
+  validatorTxAmount: BigInt!
+  blobsInQueueAmount: BigInt!
+  batchTimestamp: BigInt
+  batchTxHash: Bytes
+  validationTimestamp: BigInt
+  validationTxHash: Bytes
+}
+
+type ValidatorTxPerDay @entity {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ValidatorTxPerMonth @entity {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type BlobsStatus @entity {
   id: String! # status
   amount: BigInt!
-  latestEvent: BigInt!
+  latestEventTimestamp: BigInt
+  latestEventTxHash: Bytes
 }
 
 type BlobsSubmittedPerDay @entity {
   id: String! # date
   month: String!
   day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsSubmittedPerMonth @entity {
+  id: String! # date
+  month: String!
   year: String!
   amount: BigInt!
 }
@@ -20,10 +55,24 @@ type BlobsProcessedPerDay @entity {
   amount: BigInt!
 }
 
+type BlobsProcessedPerMonth @entity {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type BlobsRejectedPerDay @entity {
   id: String! # date
   month: String!
   day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type BlobsRejectedPerMonth @entity {
+  id: String! # date
+  month: String!
   year: String!
   amount: BigInt!
 }
