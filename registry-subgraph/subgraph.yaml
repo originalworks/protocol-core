@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DdexSequencer
-    network: sepolia
+    network: gnosis-chiado
     source:
       address: "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
       abi: DdexSequencer
-      startBlock: 7949303
+      startBlock: 14932699
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -31,11 +31,11 @@ dataSources:
           handler: handleNewBlobSubmitted
   - kind: ethereum/contract
     name: DdexEmitter
-    network: sepolia
+    network: gnosis-chiado
     source:
       address: "0xDe804E8fc13883C447092d05F7968f86D1fD6847"
       abi: DdexEmitter
-      startBlock: 7949307
+      startBlock: 14932704
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
