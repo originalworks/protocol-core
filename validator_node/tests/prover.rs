@@ -2,7 +2,9 @@ use validator_node::prover_wrapper::ProverRunResults;
 
 fn produce_proof(dir: &str) -> Result<ProverRunResults, anyhow::Error> {
     std::env::set_var("RISC0_DEV_MODE", "1");
-    let blob = blob_codec::BlobCodec::from_dir(dir).unwrap();
+    let blob =
+        blob_codec::BlobCodec::from_dir(dir, Some(blob_codec::CalldataLimitConfig::default()))
+            .unwrap();
     validator_node::prover_wrapper::run(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
 }
 
