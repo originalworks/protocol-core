@@ -1,5 +1,4 @@
 mod message_queue;
-mod message_storage;
 mod secrets;
 
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
@@ -7,8 +6,10 @@ use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
 use blob_codec::errors::OwCodecError;
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
 use message_queue::MessageQueue;
-use message_storage::MessageStorage;
-use owen::logger::{init_logging, init_sentry};
+use owen::{
+    logger::{init_logging, init_sentry},
+    s3_message_storage::MessageStorage,
+};
 use secrets::set_secret_envs;
 
 async fn function_handler(

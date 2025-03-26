@@ -17,6 +17,9 @@ use serde_json::json;
 use std::env;
 use std::str::FromStr;
 
+#[cfg(any(feature = "aws-integration", feature = "local-s3"))]
+pub mod s3_message_storage;
+
 pub fn is_local() -> bool {
     matches!(
         std::env::var("LOCAL")
