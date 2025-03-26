@@ -1,9 +1,9 @@
-use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
+use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE, MAX_RETRIES, RETRY_DELAY_SECONDS};
 use crate::contracts::QueueHeadData;
 use anyhow::{anyhow, Context};
 use blob_codec::BlobCodec;
 use cid::Cid;
-use ddex_parser::DdexParser; // only import what you need
+use ddex_parser::DdexParser;
 use log_macros::{format_error, log_error, log_info, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
 use reqwest::blocking::Client;
@@ -14,6 +14,8 @@ use std::{
     io::{Cursor, Write},
     path::Path,
     process::Command,
+    time::Duration,
+    thread::sleep
 }; // synchronous
 
 #[derive(Serialize, Deserialize)]
@@ -191,65 +193,77 @@ fn calculate_blob_data_cid() -> anyhow::Result<String> {
 
 /// Upload the contents of `TEMP_FOLDER` to IPFS via `w3 up <folder>`, parse the CID,
 /// log it, then remove all files in `TEMP_FOLDER`.
+/// Retries is command fails, with a delay of `RETRY_DELAY_SECONDS` between each attempt
 pub fn upload_blob_folder_and_cleanup() -> anyhow::Result<String> {
     let folder_path = Path::new(constants::TEMP_FOLDER);
-
-    let output = Command::new("w3")
-        .args(["up", folder_path.to_str().unwrap()])
-        .output()
-        .with_context(|| format!("Failed to run `w3 up {}`", folder_path.display()))?;
-
-    if !output.status.success() {
-        let msg = format!(
-            "`w3 up` command failed with status: {:?}\nStdout: {}\nStderr: {}",
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        log_error!("{}", msg);
-        return Err(anyhow!(msg));
-    }
-
-    let stdout_str = String::from_utf8_lossy(&output.stdout);
-
     let mut cid: Option<String> = None;
-    for line in stdout_str.lines() {
-        if line.starts_with("⁂ https://") {
-            let tokens: Vec<_> = line.split_whitespace().collect();
-            if tokens.len() >= 2 {
-                if let Some(url) = tokens.get(1) {
-                    if let Some(pos) = url.rfind('/') {
-                        cid = Some(url[(pos + 1)..].to_string());
-                        break;
+
+    for attempt in 1..=MAX_RETRIES {
+        log_info!("Running `w3 up` attempt {}/{}", attempt, MAX_RETRIES);
+
+        let output = Command::new("w3")
+            .args(["up", folder_path.to_str().unwrap()])
+            .output()
+            .with_context(|| format!("Failed to run `w3 up {}`", folder_path.display()))?;
+
+        if output.status.success() {
+            let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+            for line in stdout_str.lines() {
+                if line.starts_with("⁂ https://") {
+                    let tokens: Vec<_> = line.split_whitespace().collect();
+                    if tokens.len() >= 2 {
+                        if let Some(url) = tokens.get(1) {
+                            if let Some(pos) = url.rfind('/') {
+                                cid = Some(url[(pos + 1)..].to_string());
+                                break;
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
 
-    let cid = match cid {
-        Some(c) => c,
-        None => {
-            let msg = format!(
-                "Could not parse the CID from w3 output.\nFull output:\n{}",
-                stdout_str
-            );
-            log_error!("{}", msg);
-            return Err(anyhow!(msg));
-        }
-    };
-
-    log_info!("Successfully uploaded folder to IPFS. CID: {}", cid);
-    log_info!("URL: https://{}.ipfs.w3s.link/", cid);
-
-    for entry in fs::read_dir(folder_path)? {
-        let path = entry?.path();
-        if path.is_dir() {
-            fs::remove_dir_all(&path)?;
+            if let Some(ref c) = cid {
+                log_info!("Successfully uploaded folder to IPFS. CID: {}", c);
+                log_info!("URL: https://{}.ipfs.w3s.link/", c);
+                break;
+            } else {
+                log_warn!("Could not parse CID from successful `w3 up` output. Retrying...");
+            }
         } else {
-            fs::remove_file(&path)?;
+            log_warn!(
+                "`w3 up` command failed (attempt {}/{}) with status: {:?}\nStdout: {}\nStderr: {}",
+                attempt,
+                MAX_RETRIES,
+                output.status,
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+
+        if attempt < MAX_RETRIES {
+            log_info!("Retrying in {} seconds...", RETRY_DELAY_SECONDS);
+            sleep(Duration::from_secs(RETRY_DELAY_SECONDS));
         }
     }
 
-    Ok(cid)
+    if let Some(c) = cid {
+        for entry in fs::read_dir(folder_path)? {
+            let path = entry?.path();
+            if path.is_dir() {
+                fs::remove_dir_all(&path)?;
+            } else {
+                fs::remove_file(&path)?;
+            }
+        }
+        Ok(c)
+    } else {
+        let msg = format!(
+            "Failed to upload folder to IPFS after {} retries.",
+            MAX_RETRIES
+        );
+        log_error!("{}", msg);
+        Err(anyhow!(msg))
+    }
 }
+
