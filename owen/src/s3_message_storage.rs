@@ -1,4 +1,5 @@
-use std::{collections::HashMap, env, error::Error, fs, path::Path};
+use anyhow::Result;
+use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
 pub struct MessageStorage {
@@ -24,7 +25,7 @@ impl MessageStorage {
         s3_folder_object_key: &String,
         s3_message_folder: &String,
         local_message_folder: &String,
-    ) -> Result<String, Box<dyn Error>> {
+    ) -> Result<String> {
         let (_, s3_parent_dir_file) = s3_folder_object_key
             .split_once(s3_message_folder)
             .expect("Could not split s3 folder key");
@@ -32,7 +33,7 @@ impl MessageStorage {
         Ok(local_object_path)
     }
 
-    async fn copy_from_s3(&self, key: String, local_path: String) -> Result<(), Box<dyn Error>> {
+    async fn copy_from_s3(&self, key: String, local_path: String) -> Result<()> {
         let resp = self
             .client
             .get_object()
@@ -56,7 +57,7 @@ impl MessageStorage {
     pub async fn sync_message_folders(
         &self,
         message_folders: &Vec<String>,
-    ) -> Result<HashMap<String, String>, Box<dyn Error>> {
+    ) -> Result<HashMap<String, String>> {
         let mut local_to_s3_folder_mapping = HashMap::<String, String>::new();
         for s3_message_folder in message_folders {
             let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
@@ -102,7 +103,7 @@ impl MessageStorage {
         Ok(local_to_s3_folder_mapping)
     }
 
-    pub fn clear_input_folder(&self) -> Result<(), Box<dyn Error>> {
+    pub fn clear_input_folder(&self) -> Result<()> {
         let input_files_path = Path::new(&self.input_files_dir);
         if input_files_path.is_dir() {
             // Debugging issue with leftovers between lambda runs:

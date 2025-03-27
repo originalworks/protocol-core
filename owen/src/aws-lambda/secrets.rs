@@ -1,5 +1,6 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::{env, error::Error};
+use std::env;
 
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -10,9 +11,7 @@ struct OwenSecretEnvs {
     IPFS_KUBO_URL: String,
 }
 
-pub async fn set_secret_envs(
-    aws_main_config: &aws_config::SdkConfig,
-) -> Result<(), Box<dyn Error>> {
+pub async fn set_secret_envs(aws_main_config: &aws_config::SdkConfig) -> Result<()> {
     let client = aws_sdk_secretsmanager::Client::new(&aws_main_config);
     let owen_lambda_secrets_name = env::var("OWEN_LAMBDA_SECRETS_NAME")
         .expect(format!("Missing env variable: OWEN_LAMBDA_SECRETS_NAME").as_str());

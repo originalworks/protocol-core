@@ -33,19 +33,20 @@ async fn function_handler(
     let message_folders = queue
         .get_message_folders()
         .await
-        .expect("Failed to get message folders");
+        .map_err(|err| format!("Error while getting messages from s3: {err}"))?;
+
     if message_folders.is_empty() {
         tracing::info!("No message folders found, queue is empty. Terminating execution.");
         return Ok(());
     }
     storage
         .clear_input_folder()
-        .expect("Clearing input folder failed");
+        .map_err(|err| format!("Clearing input folder error: {err}"))?;
 
     let local_to_s3_folder_mapping = storage
         .sync_message_folders(&message_folders)
         .await
-        .expect("Failed to sync message folders");
+        .map_err(|err| format!("Sync message folders error: {err}"))?;
 
     println!("synced directories: {message_folders:?}");
 
@@ -58,7 +59,7 @@ async fn function_handler(
                     message_folders,
                 )
                 .await
-                .expect("Syncing message folder statuses failed.");
+                .map_err(|err| format!("Sync message folder statuses error: {err}"))?;
         }
         Err(e)
             if e.to_string()
@@ -68,7 +69,9 @@ async fn function_handler(
             queue
                 .set_message_folders_as_processed(message_folders)
                 .await
-                .expect("Setting message folder statuses as processed failed.");
+                .map_err(|err| {
+                    format!("Setting message folder statuses as processed failed: {err}")
+                })?;
         }
         Err(e) if e.is::<OwCodecError>() => {
             if let Some(e) = e.downcast_ref::<OwCodecError>() {
@@ -87,7 +90,9 @@ async fn function_handler(
             queue
                 .set_message_folders_as_rejected(message_folders)
                 .await
-                .expect("Setting message folder statuses as rejected failed.");
+                .map_err(|err| {
+                    format!("Setting message folder statuses as rejected failed: {err}")
+                })?;
         }
     };
     println!("Lambda execution leave");
@@ -105,7 +110,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
         .await;
     set_secret_envs(&aws_main_config)
         .await
-        .expect("Setting secret envs failed.");
+        .map_err(|err| format!("Setting secret envs failed: {err}"))?;
     let owen_config = owen::Config::build();
     let _guard = init_sentry(&owen_config);
     init_logging()?;

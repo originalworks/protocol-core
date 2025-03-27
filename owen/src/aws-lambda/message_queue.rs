@@ -1,3 +1,4 @@
+use anyhow::Result;
 use aws_sdk_dynamodb::types::AttributeValue;
 use owen::output_generator::MessageDirProcessingContext;
 use std::{collections::HashMap, env, error::Error};
@@ -30,7 +31,7 @@ impl MessageQueue {
         }
     }
 
-    pub async fn get_message_folders(&self) -> Result<Vec<String>, Box<dyn Error>> {
+    pub async fn get_message_folders(&self) -> Result<Vec<String>> {
         let response = self
             .client
             .query()
@@ -65,7 +66,7 @@ impl MessageQueue {
     pub async fn set_message_folders_as_processed(
         &self,
         message_folders: Vec<String>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<()> {
         for folder in message_folders {
             let folder_key = AttributeValue::S(folder.clone());
             let status_value = AttributeValue::S(self.processed_status_value.to_string().clone());
@@ -86,7 +87,7 @@ impl MessageQueue {
     pub async fn set_message_folders_as_rejected(
         &self,
         message_folders: Vec<String>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<()> {
         for folder in message_folders {
             let folder_key = AttributeValue::S(folder.clone());
             let status_value = AttributeValue::S("rejected".to_string());
@@ -109,7 +110,7 @@ impl MessageQueue {
         local_to_s3_folder_mapping: HashMap<String, String>,
         message_processing_context_vec: Vec<MessageDirProcessingContext>,
         message_folders: Vec<String>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<()> {
         let mut s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext> =
             HashMap::new();
 
