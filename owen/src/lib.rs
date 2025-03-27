@@ -1,5 +1,5 @@
 mod blob;
-mod constants;
+pub mod constants;
 mod contracts;
 mod image_processor;
 mod ipfs;

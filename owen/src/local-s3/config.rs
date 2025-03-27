@@ -6,6 +6,7 @@ use aws_sdk_s3::config::Credentials;
 pub struct LocalS3Config {
     pub owen_config: owen::Config,
     pub aws_sdk_config: SdkConfig,
+    pub messages_per_blob: i32,
 }
 
 impl LocalS3Config {
@@ -19,6 +20,9 @@ impl LocalS3Config {
         let aws_access_key_id = LocalS3Config::get_env_var("AWS_ACCESS_KEY_ID");
         let aws_secret_access_key = LocalS3Config::get_env_var("AWS_SECRET_ACCESS_KEY");
         let aws_default_region = LocalS3Config::get_env_var("AWS_DEFAULT_REGION");
+        let messages_per_blob =
+            i32::from_str_radix(LocalS3Config::get_env_var("MESSAGES_PER_BLOB").as_str(), 10)
+                .expect("Error parsing MESSAGES_PER_BLOB to i32");
 
         let aws_credentials = Credentials::new(
             aws_access_key_id,
@@ -40,6 +44,7 @@ impl LocalS3Config {
         Self {
             owen_config,
             aws_sdk_config,
+            messages_per_blob,
         }
     }
 }
