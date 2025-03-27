@@ -35,7 +35,7 @@ fn single_file_roundtrip() {
 
 #[test]
 fn dir_roundtrip() {
-    let blob = BlobCodec::from_dir(VALID_DIR).unwrap();
+    let blob = BlobCodec::from_dir(VALID_DIR, None).unwrap();
 
     let files = fs::read_dir(VALID_DIR).unwrap();
     let mut raw_files = Vec::new();
@@ -55,7 +55,7 @@ fn dir_roundtrip() {
 
 #[test]
 fn pass_kzg_verification_dir() {
-    let blob = BlobCodec::from_dir(VALID_DIR).unwrap();
+    let blob = BlobCodec::from_dir(VALID_DIR, None).unwrap();
     let kzg_settings = ethereum_kzg_settings();
 
     let kzg_blob = Blob::new(blob.to_bytes());

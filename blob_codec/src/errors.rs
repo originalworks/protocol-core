@@ -2,6 +2,8 @@
 pub enum OwCodecError {
     #[error("Blob overflow error at: {path}")]
     BlobOverflow { path: String, loc: String },
+    #[error("Adding a file would cause to exceed limit of {limit} bytes in validator calldata.")]
+    CalldataOverflow { limit: u64, loc: String },
     #[error("Error while reading a file at {path} - {source}")]
     Io {
         #[source]
