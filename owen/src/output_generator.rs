@@ -18,7 +18,7 @@ pub struct MessageDirProcessingContext {
     image_cid: String,
     output_json_path: String,
     pub excluded: bool,
-    reason: Option<String>,
+    pub reason: Option<String>,
 }
 
 // fn generate_iscc_code_for_file(file_path: &str) -> anyhow::Result<String> {
