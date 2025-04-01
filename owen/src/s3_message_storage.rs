@@ -1,11 +1,16 @@
 use anyhow::Result;
+use aws_sdk_s3::types::{Delete, ObjectIdentifier};
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
+
+use crate::output_generator::MessageDirProcessingContext;
 
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
     bucket_name: String,
     input_files_dir: String,
+    message_bucket_prefix: String,
+    fallback_bucket_name: String,
 }
 
 impl MessageStorage {
@@ -17,6 +22,8 @@ impl MessageStorage {
             client: aws_sdk_s3::Client::new(aws_main_config),
             bucket_name: MessageStorage::get_env_var("MESSAGES_BUCKET_NAME"),
             input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
+            message_bucket_prefix: MessageStorage::get_env_var("MESSAGE_BUCKET_PREFIX"),
+            fallback_bucket_name: MessageStorage::get_env_var("FALLBACK_BUCKET_NAME"),
         }
     }
 
@@ -117,6 +124,176 @@ impl MessageStorage {
                 }
             }
         }
+        Ok(())
+    }
+
+    pub async fn list_message_folders_with_limit(&self, limit: i32) -> Result<Vec<String>> {
+        let s3_objects = self
+            .client
+            .list_objects_v2()
+            .bucket(&self.bucket_name)
+            .prefix(&self.message_bucket_prefix)
+            .delimiter("/")
+            .max_keys(limit)
+            .send()
+            .await?;
+        let message_folders: Vec<String> = s3_objects
+            .common_prefixes
+            .expect("Could not get message folders")
+            .iter()
+            .map(|s3_object| {
+                let mut message_folder = s3_object
+                    .prefix
+                    .as_ref()
+                    .expect("Could not get message folder prefix")
+                    .clone();
+                message_folder.pop(); // remove trailing slash
+                message_folder
+            })
+            .collect();
+        Ok(message_folders)
+    }
+
+    pub async fn clear_processed_s3_folders(&self, s3_message_folders: &Vec<String>) -> Result<()> {
+        let mut objects_to_delete = Vec::new();
+        for s3_message_folder in s3_message_folders {
+            let folder_objects = self
+                .client
+                .list_objects_v2()
+                .bucket(&self.bucket_name)
+                .prefix(s3_message_folder)
+                .send()
+                .await?;
+
+            if let Some(folder_contents) = folder_objects.contents {
+                for folder_object in folder_contents {
+                    if let Some(key) = folder_object.key {
+                        objects_to_delete.push(ObjectIdentifier::builder().key(key).build()?);
+                    }
+                }
+            }
+        }
+
+        if !objects_to_delete.is_empty() {
+            self.client
+                .delete_objects()
+                .bucket(&self.bucket_name)
+                .delete(
+                    Delete::builder()
+                        .set_objects(Some(objects_to_delete))
+                        .build()?,
+                )
+                .send()
+                .await?;
+        }
+        Ok(())
+    }
+
+    pub async fn clear_rejected_s3_folders(&self, s3_message_folders: &Vec<String>) -> Result<()> {
+        let mut objects_to_delete = Vec::new();
+        for s3_message_folder in s3_message_folders {
+            let folder_objects = self
+                .client
+                .list_objects_v2()
+                .bucket(&self.bucket_name)
+                .prefix(s3_message_folder)
+                .send()
+                .await?;
+
+            if let Some(folder_contents) = folder_objects.contents {
+                for folder_object in folder_contents {
+                    if let Some(key) = folder_object.key {
+                        objects_to_delete.push(ObjectIdentifier::builder().key(key).build()?);
+                    }
+                }
+            }
+        }
+
+        if !objects_to_delete.is_empty() {
+            for object_key in &objects_to_delete {
+                let source = format!("{}/{}", self.bucket_name, &object_key.key);
+                self.client
+                    .copy_object()
+                    .copy_source(source)
+                    .bucket(&self.fallback_bucket_name)
+                    .key(&object_key.key)
+                    .send()
+                    .await?;
+                println!("Object copied to fallback bucket: {}", &object_key.key);
+            }
+
+            self.client
+                .delete_objects()
+                .bucket(&self.bucket_name)
+                .delete(
+                    Delete::builder()
+                        .set_objects(Some(objects_to_delete))
+                        .build()?,
+                )
+                .send()
+                .await?;
+        }
+        Ok(())
+    }
+
+    pub async fn clear_s3_folders(
+        &self,
+        s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext>,
+        s3_message_folders: &Vec<String>,
+    ) -> Result<()> {
+        let mut objects_to_delete = Vec::new();
+        let mut objects_to_copy_to_fallback_bucket = Vec::new();
+        for s3_message_folder in s3_message_folders {
+            let folder_objects = self
+                .client
+                .list_objects_v2()
+                .bucket(&self.bucket_name)
+                .prefix(s3_message_folder)
+                .send()
+                .await?;
+
+            let processing_context = s3_folder_to_processing_context_map
+                .get(s3_message_folder)
+                .expect("Could not retrieve processing context");
+            if let Some(folder_contents) = folder_objects.contents {
+                for folder_object in folder_contents {
+                    if let Some(key) = folder_object.key {
+                        objects_to_delete.push(ObjectIdentifier::builder().key(&key).build()?);
+                        if processing_context.excluded {
+                            objects_to_copy_to_fallback_bucket.push(key);
+                        }
+                    }
+                }
+            }
+        }
+
+        if !objects_to_copy_to_fallback_bucket.is_empty() {
+            for object_key in objects_to_copy_to_fallback_bucket {
+                let source = format!("{}/{}", self.bucket_name, &object_key);
+                self.client
+                    .copy_object()
+                    .copy_source(source)
+                    .bucket(&self.fallback_bucket_name)
+                    .key(&object_key)
+                    .send()
+                    .await?;
+                println!("Object copied to fallback bucket: {}", &object_key);
+            }
+        }
+
+        if !objects_to_delete.is_empty() {
+            self.client
+                .delete_objects()
+                .bucket(&self.bucket_name)
+                .delete(
+                    Delete::builder()
+                        .set_objects(Some(objects_to_delete))
+                        .build()?,
+                )
+                .send()
+                .await?;
+        }
+
         Ok(())
     }
 }
