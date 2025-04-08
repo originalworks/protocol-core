@@ -5267,6 +5267,7 @@ dependencies = [
  "lambda_runtime",
  "log",
  "log_macros",
+ "once_cell",
  "pretty_env_logger",
  "prover",
  "ravif",
