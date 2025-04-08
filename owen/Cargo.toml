@@ -27,6 +27,7 @@ prover = { workspace = true }
 ravif = "0.11.11"
 image = "0.25.5"
 rgb = "0.8"
+once_cell = { workspace = true }
 
 aws_lambda_events = { version = "0.15.1", default-features = false, features = [
     "cloudwatch_events",
