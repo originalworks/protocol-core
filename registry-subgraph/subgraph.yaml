@@ -54,6 +54,10 @@ dataSources:
         - Release
         - DisplayArtist
         - DisplayArtistName
+        - SoundRecording
+        - SoundRecordingEdition
+        - Fingerprint
+        - PLine
         - MessagesProcessedPerDay
       abis:
         - name: DdexEmitter

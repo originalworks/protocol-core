@@ -136,3 +136,31 @@ type DisplayArtistName @entity {
   language_and_script_type: String
   display_artist_name: String
 }
+
+type SoundRecording @entity {
+  id: ID!
+  display_title: String
+  subtitle: String
+  display_title_text: String
+  sound_recording_editions: [SoundRecordingEdition!]
+}
+
+type SoundRecordingEdition @entity {
+  id: ID!
+  isrc: String
+  p_lines: [PLine!]
+  fingerprints: [Fingerprint!]
+}
+
+type Fingerprint @entity {
+  id: ID!
+  namespace: String,
+  user_defined_value: String,
+  parameter: String,
+}
+
+type PLine @entity {
+  id: ID!
+  year: String,
+  p_line_text: String!,
+}

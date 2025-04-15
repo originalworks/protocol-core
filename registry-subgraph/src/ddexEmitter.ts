@@ -7,15 +7,18 @@ import {
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
+  Release,
+  DisplayArtist,
   ProvedMessage,
+  DisplayArtistName,
   ValidatorTxPerDay,
   BlobsRejectedPerDay,
   ValidatorTxPerMonth,
   BlobsProcessedPerDay,
   BlobsRejectedPerMonth,
   BlobsProcessedPerMonth,
-  MessagesProcessedPerDay, Release, DisplayArtist, DisplayArtistName,
-} from './types/schema';
+  MessagesProcessedPerDay,
+} from "./types/schema";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
