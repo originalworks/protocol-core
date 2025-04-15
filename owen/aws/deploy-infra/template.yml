@@ -145,6 +145,8 @@ Resources:
         ProvisionedConcurrentExecutions: 1
       Environment:
         Variables:
+          MESSAGE_BUCKET_PREFIX: "revelator"
+          FALLBACK_BUCKET_NAME: "empty"
           MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
           PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
           MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
