@@ -90,6 +90,7 @@ type ProvedMessage @entity {
   message_id: String!
   timestamp: BigInt!
   validator: Bytes!
+  release: Release
 }
 
 type AssetMetadata @entity {
@@ -107,4 +108,31 @@ type BlobMetadata @entity {
   chain_id: String
   network_name: String
   blob_ipfs_cid: String
+}
+
+type Release @entity {
+  id: ID!
+  title_text: String
+  subtitle: String
+  display_title_text: String
+  release_types: [String!]
+  display_artists: [DisplayArtist!]
+  display_artist_names: [DisplayArtistName!]
+  grid: String
+  icpn: String
+  proprietary_ids: [String!]
+}
+
+type DisplayArtist @entity {
+  id: ID!
+  artist_party_reference: String
+  sequence_number: BigInt
+  display_artist_roles: [String!]
+}
+
+type DisplayArtistName @entity {
+  id: ID!
+  applicable_territory_code: String
+  language_and_script_type: String
+  display_artist_name: String
 }

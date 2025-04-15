@@ -51,6 +51,9 @@ dataSources:
         - ValidatorTxPerDay
         - ValidatorTxPerMonth
         - ProvedMessage
+        - Release
+        - DisplayArtist
+        - DisplayArtistName
         - MessagesProcessedPerDay
       abis:
         - name: DdexEmitter
