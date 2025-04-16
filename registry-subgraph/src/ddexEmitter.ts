@@ -17,8 +17,8 @@ import {
   BlobsProcessedPerDay,
   BlobsRejectedPerMonth,
   BlobsProcessedPerMonth,
-  MessagesProcessedPerDay,
-} from "./types/schema";
+  MessagesProcessedPerDay, SoundRecording,
+} from './types/schema';
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
@@ -35,6 +35,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
     const messageRelease = message.release;
+    const messageSoundRecordings = message.sound_recordings;
 
     const displayArtists: string[] = []
     for (let j = 0; j < messageRelease.display_artists.length; j++) {
@@ -68,6 +69,16 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     release.proprietary_ids = messageRelease.release_id.proprietary_ids;
     release.save();
 
+    const soundRecordings: string[] = []
+    for (let j = 0; j < messageSoundRecordings.length; j++) {
+      const soundRecording = new SoundRecording(messageSoundRecordings[j].track_release_id.icpn)
+      soundRecording.display_title = messageSoundRecordings[j].display_title;
+      soundRecording.subtitle = messageSoundRecordings[j].subtitle;
+      soundRecording.display_title_text = messageSoundRecordings[j].display_title_text;
+      soundRecording.save();
+      soundRecordings.push(soundRecording.id);
+    }
+
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
     );
@@ -75,6 +86,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
     provedMessage.release = release.id;
+    provedMessage.soundRecordings = soundRecordings;
     provedMessage.save();
 
     let messagesProcessed = MessagesProcessedPerDay.load(id);

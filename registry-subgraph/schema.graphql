@@ -91,6 +91,7 @@ type ProvedMessage @entity {
   timestamp: BigInt!
   validator: Bytes!
   release: Release
+  soundRecordings: [SoundRecording!]
 }
 
 type AssetMetadata @entity {
