@@ -38,6 +38,33 @@ export function handleAssetMetadata(content: Bytes): void {
             }
           }
 
+          const displayTitleTexts = releaseObject.get('display_title_texts');
+          if (displayTitleTexts) {
+            const displayTitleTextsArray = displayTitleTexts.toArray();
+            if (displayTitleTextsArray.length > 0) {
+              const displayTitleText = displayTitleTextsArray[0];
+              release.display_title_text = getValueIfExist(displayTitleText.toObject(), 'content');
+            }
+          }
+
+          release.release_reference = getValueIfExist(releaseObject, 'release_reference');
+
+          const releaseTypesJSONValue = releaseObject.get('release_types');
+          if (releaseTypesJSONValue) {
+            const releaseTypesArray = releaseTypesJSONValue.toArray();
+            if (releaseTypesArray.length > 0) {
+              let releaseTypes: string[] = []
+              for (let i = 0; i < releaseTypesArray.length; i++) {
+                const releaseType = releaseTypesArray[i].toObject();
+                const content = releaseType.get('content')
+                if (content) {
+                  releaseTypes.push(content.toString());
+                }
+              }
+              release.release_types = releaseTypes;
+            }
+          }
+
           const releaseId = releaseObject.get('release_id');
           if (releaseId) {
             release.grid = getValueIfExist(releaseId.toObject(),'grid');
