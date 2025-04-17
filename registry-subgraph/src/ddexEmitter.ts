@@ -20,7 +20,7 @@ import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
 // Just an example: we create a data source up to 70 files.
-const maxFiles = 70;
+const maxFiles = 5;
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
@@ -29,6 +29,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
 
+  log.info("rejected message: {}", [proverPublicOutputs.rejected_messages.toString()]);
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
     // const messageRelease = message.release;

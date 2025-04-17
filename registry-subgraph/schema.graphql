@@ -96,6 +96,7 @@ type AssetMetadata @entity {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
+  release: Release
 }
 
 type BlobMetadata @entity {
@@ -114,6 +115,7 @@ type Release @entity {
   title_text: String
   subtitle: String
   display_title_text: String
+  release_reference: String
   release_types: [String!]
   display_artists: [DisplayArtist!]
   display_artist_names: [DisplayArtistName!]
@@ -124,42 +126,8 @@ type Release @entity {
 
 type DisplayArtist @entity {
   id: ID!
-  artist_party_reference: String
-  sequence_number: BigInt
-  display_artist_roles: [String!]
 }
 
 type DisplayArtistName @entity {
   id: ID!
-  applicable_territory_code: String
-  language_and_script_type: String
-  display_artist_name: String
-}
-
-type SoundRecording @entity {
-  id: ID!
-  display_title: String
-  subtitle: String
-  display_title_text: String
-  sound_recording_editions: [SoundRecordingEdition!]
-}
-
-type SoundRecordingEdition @entity {
-  id: ID!
-  isrc: String
-  p_lines: [PLine!]
-  fingerprints: [Fingerprint!]
-}
-
-type Fingerprint @entity {
-  id: ID!
-  namespace: String,
-  user_defined_value: String,
-  parameter: String,
-}
-
-type PLine @entity {
-  id: ID!
-  year: String,
-  p_line_text: String!,
 }

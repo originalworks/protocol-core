@@ -52,6 +52,7 @@ dataSources:
         - ValidatorTxPerMonth
         - ProvedMessage
         - MessagesProcessedPerDay
+        - Release
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
@@ -68,6 +69,9 @@ templates:
       language: wasm/assemblyscript
       entities:
         - AssetMetadata
+        - Release
+        - DisplayArtist
+        - DisplayArtistName
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
