@@ -11,7 +11,6 @@ on:
         description: "github.run_id"
         required: true
         type: string
-      
 
 permissions:
   id-token: write
@@ -51,7 +50,7 @@ jobs:
           npx hardhat compile
 
       - name: "Build aws_queue_consumer"
-        working-directory: aws_queue_consumer
+        working-directory: aws/aws_queue_consumer
         run: |
           source $HOME/.cargo/env
           cargo lambda build --release

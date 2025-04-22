@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "aws_queue_consumer",
+    "aws/aws_queue_consumer",
     "blob_codec",
     "ddex_parser",
     "log_macros",
@@ -36,7 +36,7 @@ opt-level = 3
 allow-branch = ["master"]
 shared-version = false
 consolidate-commits = false
-publish = false  
+publish = false
 tag = true
 push = true
 tag-name = "{{crate_name}}@{{version}}"
