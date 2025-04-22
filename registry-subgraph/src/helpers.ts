@@ -1,11 +1,6 @@
-import {
-  Bytes,
-  BigInt,
-  TypedMap,
-  JSONValue,
-} from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, JSONValue, TypedMap, } from '@graphprotocol/graph-ts';
 
-import { BlobsStatus, HealthStatus } from "./types/schema";
+import { BlobsStatus, HealthStatus } from './types/schema';
 import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
 
 export const BlobsSubmittedEventId = "submitted";
@@ -91,7 +86,7 @@ export function getValueIfExist(
   parameterName: string,
 ): string | null {
   const jsonValue = sourceObject.get(parameterName);
-  if (jsonValue) {
+  if (jsonValue && jsonValue.kind == JSONValueKind.STRING) {
     return jsonValue.toString();
   } else {
     return null;
@@ -103,7 +98,7 @@ export function getNumberIfExist(
   parameterName: string,
 ): BigInt | null {
   const jsonValue = sourceObject.get(parameterName);
-  if (jsonValue) {
+  if (jsonValue && jsonValue.kind == JSONValueKind.NUMBER) {
     return jsonValue.toBigInt();
   } else {
     return null;

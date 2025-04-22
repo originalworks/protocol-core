@@ -133,4 +133,7 @@ type DisplayArtist @entity {
 
 type DisplayArtistName @entity {
   id: ID!
+  applicable_territory_code: String
+  language_and_script_type: String
+  display_artist_name: String
 }

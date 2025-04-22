@@ -1,6 +1,6 @@
 import { BigInt, Bytes, dataSource, json, JSONValue, log } from '@graphprotocol/graph-ts';
 
-import { AssetMetadata, DisplayArtist, Release } from './types/schema';
+import { AssetMetadata, DisplayArtist, DisplayArtistName, Release } from './types/schema';
 import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
 import { getNumberIfExist, getValueIfExist } from './helpers';
 import { TypedMap } from '@graphprotocol/graph-ts/common/collections';
@@ -142,6 +142,25 @@ export function handleAssetMetadata(content: Bytes): void {
               }
             }
             release.display_artists = artistsList;
+          }
+
+          const displayArtistNames = getArray(releaseData.get('display_artist_names'));
+          if (displayArtistNames) {
+            let artistsList: string[] = []
+            for (let i = 0; i < displayArtistNames.length; i++) {
+              const displayArtist = getObject(displayArtistNames[i]);
+              if (displayArtist) {
+                const artist = new DisplayArtistName(`${cid}-${i}`);
+
+                artist.applicable_territory_code = getValueIfExist(displayArtist, 'applicable_territory_code');
+                artist.language_and_script_type = getValueIfExist(displayArtist, 'language_and_script_code');
+                artist.display_artist_name = getValueIfExist(displayArtist, 'content');
+
+                artist.save();
+                artistsList.push(artist.id);
+              }
+            }
+            release.display_artist_names = artistsList;
           }
         }
       }
