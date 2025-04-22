@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  ValidatorLogGroupName:
+    Type: String
+    Default: "ValidatorLogGroup"
+
+Resources:
+  ValidatorEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: g4dn.xlarge
+      ImageId: ami-084568db4383264d4
+      SubnetId: !Ref ValidatorSubnet
+      KeyName: validator-ec2
+      IamInstanceProfile: !Ref CloudWatchInstanceProfile
+      AvailabilityZone: us-east-1a
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 150
+            VolumeType: gp3
+            DeleteOnTermination: true
+      SecurityGroupIds:
+        - !Ref ValidatorSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          git clone https://github.com/originalworks/protocol-core.git >> /var/log/preconfiguration.log 2>&1
+
+  ValidatorSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow SSH and outbound internet access"
+      VpcId: !Ref ValidatorVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  ValidatorVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+
+  CloudWatchInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref CloudWatchLogsRole
+
+  CloudWatchLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ["ec2.amazonaws.com"]
+            Action: ["sts:AssumeRole"]
+      Policies:
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "ec2-instance-connect:SendSSHPublicKey"
+                Resource: "*"
+
+  ValidatorSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      VpcId: !Ref ValidatorVPC
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: true
+
+  ValidatorInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ValidatorVPC
+      InternetGatewayId: !Ref ValidatorInternetGateway
+
+  ValidatorRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ValidatorVPC
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref ValidatorRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref ValidatorInternetGateway
+
+  ValidatorRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref ValidatorSubnet
+      RouteTableId: !Ref ValidatorRouteTable
+
+  ValidatorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref ValidatorLogGroupName
+      RetentionInDays: 14
