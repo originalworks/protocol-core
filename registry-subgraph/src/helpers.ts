@@ -6,6 +6,7 @@ import {
 } from "@graphprotocol/graph-ts";
 
 import { BlobsStatus, HealthStatus } from "./types/schema";
+import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
 
 export const BlobsSubmittedEventId = "submitted";
 export const BlobProcessedEventId = "processed";
@@ -92,6 +93,18 @@ export function getValueIfExist(
   const jsonValue = sourceObject.get(parameterName);
   if (jsonValue) {
     return jsonValue.toString();
+  } else {
+    return null;
+  }
+}
+
+export function getNumberIfExist(
+  sourceObject: TypedMap<string, JSONValue>,
+  parameterName: string,
+): BigInt | null {
+  const jsonValue = sourceObject.get(parameterName);
+  if (jsonValue) {
+    return jsonValue.toBigInt();
   } else {
     return null;
   }

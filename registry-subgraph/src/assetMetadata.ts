@@ -1,8 +1,8 @@
-import { json, Bytes, dataSource, log, JSONValue } from '@graphprotocol/graph-ts';
+import { BigInt, Bytes, dataSource, json, JSONValue, log } from '@graphprotocol/graph-ts';
 
-import { AssetMetadata, Release } from './types/schema';
+import { AssetMetadata, DisplayArtist, Release } from './types/schema';
 import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
-import { getValueIfExist } from './helpers';
+import { getNumberIfExist, getValueIfExist } from './helpers';
 import { TypedMap } from '@graphprotocol/graph-ts/common/collections';
 
 export function handleAssetMetadata(content: Bytes): void {
@@ -18,6 +18,41 @@ export function handleAssetMetadata(content: Bytes): void {
   if (jsonResult.isOk) {
     const jsonValue = getObject(jsonResult.value);
     if (jsonValue) {
+      let partyNames: string[] = [];
+      let partyReferences: string[] = [];
+
+      const partyList = getObject(jsonValue.get('party_list'));
+      if (partyList) {
+        const partys = getArray(partyList.get('partys'));
+        if (partys) {
+          for (let i = 0; i < partys.length; i++) {
+            const party = getObject(partys[i]);
+            if (!party) return;
+
+            const reference = getValueIfExist(party, 'party_reference');
+            if (reference) {
+              const partyNamesArray = getArray(party.get('parties_names'));
+              if (partyNamesArray) {
+                const nameElement = getFirstElement(partyNamesArray);
+                if (!nameElement) return;
+
+                const name = getObject(nameElement);
+                if (!name) return;
+
+                const fullName = getObject(name.get('full_name'));
+                if (!fullName) return;
+
+                const content = getValueIfExist(fullName, 'content');
+                if (content) {
+                  partyReferences.push(reference);
+                  partyNames.push(content);
+                }
+              }
+            }
+          }
+        }
+      }
+
       const releaseList = getObject(jsonValue.get('release_list'));
       if (releaseList) {
         const releaseData = getObject(releaseList.get('release'));
@@ -82,6 +117,54 @@ export function handleAssetMetadata(content: Bytes): void {
               }
             }
           }
+
+          const displayArtists = getArray(releaseData.get('display_artists'));
+          if (displayArtists) {
+            let artistsList: string[] = []
+            for (let i = 0; i < displayArtists.length; i++) {
+              const displayArtist = getObject(displayArtists[i]);
+              if (displayArtist) {
+                const artist = new DisplayArtist(`${cid}-${i}`);
+
+                artist.artist_party_reference = getValueIfExist(displayArtist, 'artist_party_reference');
+                artist.sequence_number = getNumberIfExist(displayArtist, 'sequence_number');
+
+                const artistRole = getObject(displayArtist.get('display_artist_role'));
+                if (artistRole) {
+                  const content = getValueIfExist(artistRole, 'content');
+                  if (content) {
+                    artist.display_artist_roles = [content];
+                  }
+                }
+
+                artist.save();
+                artistsList.push(artist.id);
+              }
+            }
+            release.display_artists = artistsList;
+          }
+          // if (displayArtists) {
+          //   for (let i = 0; i < displayArtists.length; i++) {
+          //     const artistObject = getObject(displayArtists[i]);
+          //     if (artistObject) {
+          //       const artistPartyReference = artistObject.get('artist_party_reference');
+          //       if (artistPartyReference) {
+          //         const artist = new DisplayArtist(`${cid}-${artistPartyReference.toString()}`);
+          //         artist.artist_party_reference = getValueIfExist(artistObject, 'artist_party_reference');
+          //         artist.sequence_number = getValueIfExist(artistObject, 'sequence_number');
+          //
+          //         const displayArtistRole = getObject(artistObject.get('display_artist_role'));
+          //         if (displayArtistRole) {
+          //           const role = getValueIfExist(displayArtistRole, 'content');
+          //           if (role) {
+          //             artist.display_artist_roles = [role];
+          //           }
+          //         }
+          //         artist.save()
+          //       }
+          //     }
+          //   }
+          // }
         }
       }
     }
@@ -203,6 +286,10 @@ function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null 
 
 function getArray(value: JSONValue | null): JSONValue[] | null {
   return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
+}
+
+function getNumber(value: JSONValue | null): BigInt | null {
+  return value && value.kind == JSONValueKind.NUMBER ? value.toBigInt() : null;
 }
 
 function getFirstElement(arr: JSONValue[] | null): JSONValue | null {

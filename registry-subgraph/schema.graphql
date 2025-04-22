@@ -126,6 +126,9 @@ type Release @entity {
 
 type DisplayArtist @entity {
   id: ID!
+  artist_party_reference: String
+  sequence_number: BigInt
+  display_artist_roles: [String!]
 }
 
 type DisplayArtistName @entity {
