@@ -9,7 +9,7 @@ Resources:
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: g4dn.xlarge
+      InstanceType: t2.micro
       ImageId: ami-084568db4383264d4
       SubnetId: !Ref ValidatorSubnet
       KeyName: validator-ec2
@@ -18,7 +18,7 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
-            VolumeSize: 150
+            VolumeSize: 100
             VolumeType: gp3
             DeleteOnTermination: true
       SecurityGroupIds:
