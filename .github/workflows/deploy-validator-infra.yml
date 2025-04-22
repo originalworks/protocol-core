@@ -23,7 +23,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-east-1
-          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE }}
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE_PROTOCOL }}
           role-session-name: protocol-core-validator-infra-${{ github.run_id }}
           role-duration-seconds: 1200
 
