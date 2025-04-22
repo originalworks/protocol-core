@@ -20,21 +20,65 @@ export function handleAssetMetadata(content: Bytes): void {
     if (jsonValue) {
       const releaseList = getObject(jsonValue.get('release_list'));
       if (releaseList) {
-        const releaseData = releaseList.get('release');
+        const releaseData = getObject(releaseList.get('release'));
         if (releaseData) {
-          const releaseObj = getObject(releaseData);
-          if (!releaseObj) return;
+          release.release_reference = getValueIfExist(releaseData, 'release_reference');
 
-          const releaseId = releaseObj.get('release_id');
+          const releaseTypes = getArray(releaseData.get('release_types'));
+          if (releaseTypes) {
+            let types: string[] = []
+            for (let i = 0; i < releaseTypes.length; i++) {
+              const type = getObject(releaseTypes[i]);
+              if (type) {
+                const value = getValueIfExist(type, 'content')
+                if (value) types.push(value)
+              }
+            }
+            release.release_types = types;
+          }
+
+          const displayTitles = getArray(releaseData.get('display_titles'));
+          if (displayTitles) {
+            const titleElement = getFirstElement(displayTitles);
+            if (titleElement) {
+              const title = getObject(titleElement);
+              if (!title) return;
+
+              release.title_text = getValueIfExist(title, 'title_text')
+              const subtitles = getArray(title.get('sub_titles'));
+              if (subtitles) {
+                const subtitleElement = getFirstElement(subtitles);
+                if (subtitleElement) {
+                  const subtitle = getObject(subtitleElement);
+                  if (!subtitle) return;
+
+                  release.subtitle = getValueIfExist(subtitle, 'content');
+                }
+              }
+            }
+          }
+
+          const displayTitleTexts = getArray(releaseData.get('display_title_texts'));
+          if (displayTitleTexts) {
+            const titleTextElement = getFirstElement(displayTitleTexts);
+            if (titleTextElement) {
+              const titleText = getObject(titleTextElement);
+              if (!titleText) return;
+
+              release.display_title_text = getValueIfExist(titleText, 'content');
+            }
+          }
+
+          const releaseId = getObject(releaseData.get('release_id'));
           if (releaseId) {
-            const releaseIdObject = releaseId.toObject();
-            release.grid = getValueIfExist(releaseIdObject,'grid');
-            release.icpn = getValueIfExist(releaseIdObject,'icpn');
-            const proprietary_ids = releaseIdObject.get('proprietary_ids');
-            if (proprietary_ids) {
-              const ids = proprietary_ids.toArray();
+            release.grid = getValueIfExist(releaseId,'grid');
+            release.icpn = getValueIfExist(releaseId,'icpn');
+            const ids = getArray(releaseId.get('proprietary_ids'));
+            if (ids) {
               if (ids.length > 0) {
                 release.proprietary_ids = ids.map<string>(id => id.toString());
+              } else {
+                release.proprietary_ids = [];
               }
             }
           }
