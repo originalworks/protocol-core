@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - "aws/validator_node/**"
+      - "aws/validator-infra/**"
 
 permissions:
   id-token: write
