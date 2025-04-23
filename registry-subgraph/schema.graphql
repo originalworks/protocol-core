@@ -1,4 +1,4 @@
-type HealthStatus @entity {
+type HealthStatus @entity(immutable: false) {
   id: String!
   txAmount: BigInt!
   owenTxAmount: BigInt!
@@ -10,7 +10,7 @@ type HealthStatus @entity {
   validationTxHash: Bytes
 }
 
-type ValidatorTxPerDay @entity {
+type ValidatorTxPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -18,21 +18,21 @@ type ValidatorTxPerDay @entity {
   amount: BigInt!
 }
 
-type ValidatorTxPerMonth @entity {
+type ValidatorTxPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type BlobsStatus @entity {
+type BlobsStatus @entity(immutable: false) {
   id: String! # status
   amount: BigInt!
   latestEventTimestamp: BigInt
   latestEventTxHash: Bytes
 }
 
-type BlobsSubmittedPerDay @entity {
+type BlobsSubmittedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -40,29 +40,14 @@ type BlobsSubmittedPerDay @entity {
   amount: BigInt!
 }
 
-type BlobsSubmittedPerMonth @entity {
+type BlobsSubmittedPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type BlobsProcessedPerDay @entity {
-  id: String! # date
-  month: String!
-  day: String!
-  year: String!
-  amount: BigInt!
-}
-
-type BlobsProcessedPerMonth @entity {
-  id: String! # date
-  month: String!
-  year: String!
-  amount: BigInt!
-}
-
-type BlobsRejectedPerDay @entity {
+type BlobsProcessedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -70,14 +55,14 @@ type BlobsRejectedPerDay @entity {
   amount: BigInt!
 }
 
-type BlobsRejectedPerMonth @entity {
+type BlobsProcessedPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type MessagesProcessedPerDay @entity {
+type BlobsRejectedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -85,21 +70,37 @@ type MessagesProcessedPerDay @entity {
   amount: BigInt!
 }
 
-type ProvedMessage @entity {
+type BlobsRejectedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
+type MessagesProcessedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ProvedMessage @entity(immutable: false) {
   id: ID!
   message_id: String!
   timestamp: BigInt!
   validator: Bytes!
 }
 
-type AssetMetadata @entity {
+type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
   release: Release
+  partyList: [PartyElement!]
 }
 
-type BlobMetadata @entity {
+type BlobMetadata @entity(immutable: true) {
   id: ID!
   versioned_hash: String
   transaction_hash: String
@@ -110,13 +111,15 @@ type BlobMetadata @entity {
   blob_ipfs_cid: String
 }
 
-type Release @entity {
+type Release @entity(immutable: true) {
   id: ID!
   title_text: String
   subtitle: String
   display_title_text: String
   release_reference: String
   release_types: [String!]
+  release_label_references: [String!]
+  genres: [String!]
   display_artists: [DisplayArtist!]
   display_artist_names: [DisplayArtistName!]
   grid: String
@@ -124,16 +127,22 @@ type Release @entity {
   proprietary_ids: [String!]
 }
 
-type DisplayArtist @entity {
+type DisplayArtist @entity(immutable: true) {
   id: ID!
   artist_party_reference: String
   sequence_number: BigInt
   display_artist_roles: [String!]
 }
 
-type DisplayArtistName @entity {
+type DisplayArtistName @entity(immutable: true) {
   id: ID!
   applicable_territory_code: String
   language_and_script_type: String
   display_artist_name: String
+}
+
+type PartyElement @entity(immutable: true) {
+  id: ID!
+  party_reference: String
+  party_name: String
 }

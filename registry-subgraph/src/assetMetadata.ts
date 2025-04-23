@@ -1,6 +1,6 @@
 import { BigInt, Bytes, dataSource, json, JSONValue, log } from '@graphprotocol/graph-ts';
 
-import { AssetMetadata, DisplayArtist, DisplayArtistName, Release } from './types/schema';
+import { AssetMetadata, DisplayArtist, DisplayArtistName, PartyElement, Release } from './types/schema';
 import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
 import { getNumberIfExist, getValueIfExist } from './helpers';
 import { TypedMap } from '@graphprotocol/graph-ts/common/collections';
@@ -18,39 +18,36 @@ export function handleAssetMetadata(content: Bytes): void {
   if (jsonResult.isOk) {
     const jsonValue = getObject(jsonResult.value);
     if (jsonValue) {
-      let partyNames: string[] = [];
-      let partyReferences: string[] = [];
-
       const partyList = getObject(jsonValue.get('party_list'));
       if (partyList) {
+        let partyListMetadata: string[] = []
         const partys = getArray(partyList.get('partys'));
         if (partys) {
           for (let i = 0; i < partys.length; i++) {
+            const partyEl = new PartyElement(`${cid}-${i}`)
             const party = getObject(partys[i]);
             if (!party) return;
 
-            const reference = getValueIfExist(party, 'party_reference');
-            if (reference) {
-              const partyNamesArray = getArray(party.get('parties_names'));
-              if (partyNamesArray) {
-                const nameElement = getFirstElement(partyNamesArray);
-                if (!nameElement) return;
+            partyEl.party_reference = getValueIfExist(party, 'party_reference');;
 
-                const name = getObject(nameElement);
-                if (!name) return;
+            const partyNamesArray = getArray(party.get('parties_names'));
+            if (partyNamesArray) {
+              const nameElement = getFirstElement(partyNamesArray);
+              if (!nameElement) return;
 
-                const fullName = getObject(name.get('full_name'));
-                if (!fullName) return;
+              const name = getObject(nameElement);
+              if (!name) return;
 
-                const content = getValueIfExist(fullName, 'content');
-                if (content) {
-                  partyReferences.push(reference);
-                  partyNames.push(content);
-                }
-              }
+              const fullName = getObject(name.get('full_name'));
+              if (!fullName) return;
+
+              partyEl.party_name = getValueIfExist(fullName, 'content');
             }
+            partyEl.save()
+            partyListMetadata.push(partyEl.id);
           }
         }
+        assetMetadata.partyList = partyListMetadata;
       }
 
       const releaseList = getObject(jsonValue.get('release_list'));
@@ -70,6 +67,32 @@ export function handleAssetMetadata(content: Bytes): void {
               }
             }
             release.release_types = types;
+          }
+
+          const releaseLabelReferences = getArray(releaseData.get('release_label_references'));
+          if (releaseLabelReferences) {
+            let labels: string[] = []
+            for (let i = 0; i < releaseLabelReferences.length; i++) {
+              const label = getObject(releaseLabelReferences[i]);
+              if (label) {
+                const value = getValueIfExist(label, 'content')
+                if (value) labels.push(value)
+              }
+            }
+            release.release_label_references = labels;
+          }
+
+          const genres = getArray(releaseData.get('genres'));
+          if (genres) {
+            let genresList: string[] = []
+            for (let i = 0; i < genres.length; i++) {
+              const genre = getObject(genres[i]);
+              if (genre) {
+                const value = getValueIfExist(genre, 'genre_text')
+                if (value) genresList.push(value)
+              }
+            }
+            release.genres = genresList;
           }
 
           const displayTitles = getArray(releaseData.get('display_titles'));

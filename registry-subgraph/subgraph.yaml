@@ -72,6 +72,7 @@ templates:
         - Release
         - DisplayArtist
         - DisplayArtistName
+        - PartyElement
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
