@@ -73,6 +73,11 @@ templates:
         - DisplayArtist
         - DisplayArtistName
         - PartyElement
+        - ResourceList
+        - SoundRecording
+        - Image
+        - ResourceId
+        - TechnicalDetail
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json

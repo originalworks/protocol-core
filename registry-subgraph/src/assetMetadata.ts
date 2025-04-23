@@ -1,14 +1,22 @@
+import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
+import { TypedMap } from '@graphprotocol/graph-ts/common/collections';
 import { BigInt, Bytes, dataSource, json, JSONValue, log } from '@graphprotocol/graph-ts';
 
-import { AssetMetadata, DisplayArtist, DisplayArtistName, PartyElement, Release } from './types/schema';
-import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
+import {
+  Image,
+  Release,
+  PartyElement,
+  AssetMetadata,
+  DisplayArtist,
+  DisplayArtistName, ResourceId, TechnicalDetail, ResourceList,
+} from './types/schema';
 import { getNumberIfExist, getValueIfExist } from './helpers';
-import { TypedMap } from '@graphprotocol/graph-ts/common/collections';
 
 export function handleAssetMetadata(content: Bytes): void {
   const cid = dataSource.stringParam();
   const assetMetadata = new AssetMetadata(cid);
   const release = new Release(cid);
+  const resourceList = new ResourceList(cid);
 
   assetMetadata.rawContent = content.toString();
   assetMetadata.blobMetadata = cid.split("/")[0] + "/blob/metadata.json";
@@ -187,13 +195,104 @@ export function handleAssetMetadata(content: Bytes): void {
           }
         }
       }
+
+      const resourceListObject = getObject(jsonValue.get('resource_list'));
+      if (resourceListObject) {
+        const imagesData = getArray(resourceListObject.get('images'));
+        if (imagesData) {
+          const imagesList: string[] = []
+          for (let i = 0; i < imagesData.length; i++) {
+            const imageObject = getObject(imagesData[i]);
+            if (imageObject) {
+              const image = new Image(`${cid}-${i}`);
+
+              image.resource_reference = getValueIfExist(imageObject, 'resource_reference');
+
+              const kind = getObject(imageObject.get('kind'));
+              if (kind) {
+                image.kind = getValueIfExist(kind, 'content');
+              }
+
+              const resourceIdsList: string[] = []
+              const resourcesIds = getArray(imageObject.get('resource_ids'));
+              if (resourcesIds) {
+                for (let j = 0; j < resourcesIds.length; j++) {
+                  const resourceIdObject = getObject(resourcesIds[j]);
+                  if (resourceIdObject) {
+                    const resourceId = new ResourceId(`${cid}-${i}-${j}`);
+
+                    const proprietaryIds = getArray(resourceIdObject.get('proprietary_ids'));
+                    if (proprietaryIds) {
+                      const proprietaryId = getFirstElement(proprietaryIds);
+                      if (proprietaryId) {
+                        const proprietaryIdObject = getObject(proprietaryId);
+                        if (proprietaryIdObject) {
+                          resourceId.content = getValueIfExist(proprietaryIdObject, 'content');
+                          resourceId.namespace = getValueIfExist(proprietaryIdObject, 'namespace');
+                        }
+                      }
+                    }
+
+                    resourceId.save();
+                    resourceIdsList.push(resourceId.id);
+                  }
+                }
+              }
+              image.resource_ids = resourceIdsList;
+
+              const warningTypesList: string[] = []
+              const warningTypes = getArray(imageObject.get('parental_warning_types'));
+              if (warningTypes) {
+                for (let j = 0; j < warningTypes.length; j++) {
+                  const warningTypeObject = getObject(warningTypes[j]);
+                  if (warningTypeObject) {
+                    const warningType = getValueIfExist(warningTypeObject, 'content');
+                    if (warningType) {
+                      warningTypesList.push(warningType);
+                    }
+                  }
+                }
+              }
+              image.parental_warning_types = warningTypesList;
+
+              const technicalDetailsList: string[] = []
+              const technicalDetails = getArray(imageObject.get('technical_details'));
+              if (technicalDetails) {
+                for (let j = 0; j < technicalDetails.length; j++) {
+                  const technicalDetailObject = getObject(technicalDetails[j]);
+                  if (technicalDetailObject) {
+                    const technicalDetail = new TechnicalDetail(`${cid}-${i}-${j}`);
+                    technicalDetail.technical_resource_details_reference = getValueIfExist(technicalDetailObject, 'technical_resource_details_reference');
+
+                    const file = getObject(technicalDetailObject.get('file'));
+                    if (file) {
+                      technicalDetail.fileUri = getValueIfExist(file, 'uri');
+                    }
+
+                    technicalDetail.save();
+                    technicalDetailsList.push(technicalDetail.id);
+                  }
+                }
+              }
+              image.technical_details = technicalDetailsList;
+
+              image.save();
+              imagesList.push(image.id);
+            }
+            resourceList.images = imagesList;
+          }
+        }
+      }
     }
   } else {
     log.warning("Failed to parse JSON from Bytes: {}, CID: {}", [content.toHexString(), cid]);
   }
 
+  assetMetadata.resourceList = resourceList.id;
+
   assetMetadata.save();
   release.save();
+  resourceList.save();
 }
 
 function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {

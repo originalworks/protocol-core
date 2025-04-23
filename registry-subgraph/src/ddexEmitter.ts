@@ -20,7 +20,7 @@ import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
 // Just an example: we create a data source up to 70 files.
-const maxFiles = 5;
+const maxFiles = 70;
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
@@ -29,53 +29,8 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
 
-  log.info("rejected message: {}", [proverPublicOutputs.rejected_messages.toString()]);
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
-    // const messageRelease = message.release;
-    // const messageSoundRecordings = message.sound_recordings;
-
-    // const displayArtists: string[] = []
-    // for (let j = 0; j < messageRelease.display_artists.length; j++) {
-    //   const displayArtist = new DisplayArtist(`${messageRelease.release_id.icpn}-${messageRelease.display_artists[j].artist_party_reference}`)
-    //   displayArtist.artist_party_reference = messageRelease.display_artists[j].artist_party_reference;
-    //   displayArtist.sequence_number = BigInt.fromI32(messageRelease.display_artists[j].sequence_number);
-    //   displayArtist.display_artist_roles = messageRelease.display_artists[j].display_artist_roles;
-    //   displayArtist.save();
-    //   displayArtists.push(displayArtist.id);
-    // }
-
-    // const displayArtistNames: string[] = []
-    // for (let j = 0; j < messageRelease.display_artist_names.length; j++) {
-    //   const displayArtistName = new DisplayArtistName(`${messageRelease.release_id.icpn}-${messageRelease.display_artist_names[j].display_artist_name}`)
-    //   displayArtistName.applicable_territory_code = messageRelease.display_artist_names[j].applicable_territory_code;
-    //   displayArtistName.language_and_script_type = messageRelease.display_artist_names[j].language_and_script_type;
-    //   displayArtistName.display_artist_name = messageRelease.display_artist_names[j].display_artist_name;
-    //   displayArtistName.save();
-    //   displayArtistNames.push(displayArtistName.id);
-    // }
-
-    // const release = new Release(messageRelease.release_id.icpn);
-    // release.title_text = messageRelease.title_text;
-    // release.subtitle = messageRelease.subtitle;
-    // release.display_title_text = messageRelease.display_title_text;
-    // release.release_types = messageRelease.release_types;
-    // release.display_artists = displayArtists;
-    // release.display_artist_names = displayArtistNames;
-    // release.grid = messageRelease.release_id.grid;
-    // release.icpn = messageRelease.release_id.icpn;
-    // release.proprietary_ids = messageRelease.release_id.proprietary_ids;
-    // release.save();
-
-    // const soundRecordings: string[] = []
-    // for (let j = 0; j < messageSoundRecordings.length; j++) {
-    //   const soundRecording = new SoundRecording(messageSoundRecordings[j].track_release_id.icpn)
-    //   soundRecording.display_title = messageSoundRecordings[j].display_title;
-    //   soundRecording.subtitle = messageSoundRecordings[j].subtitle;
-    //   soundRecording.display_title_text = messageSoundRecordings[j].display_title_text;
-    //   soundRecording.save();
-    //   soundRecordings.push(soundRecording.id);
-    // }
 
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`

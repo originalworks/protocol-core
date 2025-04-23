@@ -96,8 +96,9 @@ type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
-  release: Release
   partyList: [PartyElement!]
+  release: Release
+  resourceList: ResourceList
 }
 
 type BlobMetadata @entity(immutable: true) {
@@ -145,4 +146,35 @@ type PartyElement @entity(immutable: true) {
   id: ID!
   party_reference: String
   party_name: String
+}
+
+type ResourceList @entity(immutable: true) {
+  id: ID!
+  sound_recordings: [SoundRecording!]
+  images: [Image!]
+}
+
+type SoundRecording @entity(immutable: true) {
+  id: ID!
+}
+
+type Image @entity(immutable: true) {
+  id: ID!
+  resource_reference: String
+  kind: String
+  resource_ids: [ResourceId!]
+  parental_warning_types: [String!]
+  technical_details: [TechnicalDetail!]
+}
+
+type ResourceId @entity(immutable: true) {
+  id: ID!
+  content: String
+  namespace: String
+}
+
+type TechnicalDetail @entity(immutable: true) {
+  id: ID!
+  technical_resource_details_reference: String
+  fileUri: String
 }
