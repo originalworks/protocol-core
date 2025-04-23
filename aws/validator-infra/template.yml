@@ -15,6 +15,9 @@ Resources:
       KeyName: validator-ec2
       IamInstanceProfile: !Ref CloudWatchInstanceProfile
       AvailabilityZone: us-east-1a
+      Tags:
+        - Key: ValidatorTag
+          Value: ValidatorNodeEc2
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
