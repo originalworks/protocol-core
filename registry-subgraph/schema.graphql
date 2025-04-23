@@ -156,6 +156,14 @@ type ResourceList @entity(immutable: true) {
 
 type SoundRecording @entity(immutable: true) {
   id: ID!
+  resource_reference: String
+  kind: String
+  work_ids: [String!]
+  display_title: String
+  subtitle: String
+  display_title_text: String
+  sound_recording_editions: [SoundRecordingEdition!]
+  contributors: [Contributor!]
 }
 
 type Image @entity(immutable: true) {
@@ -177,4 +185,31 @@ type TechnicalDetail @entity(immutable: true) {
   id: ID!
   technical_resource_details_reference: String
   fileUri: String
+}
+
+type SoundRecordingEdition @entity(immutable: true) {
+  id: ID!
+  isrc: String
+  p_lines: [PLine!]
+  fingerprints: [Fingerprint!]
+}
+
+type PLine @entity(immutable: true) {
+  id: ID!
+  year: BigInt
+  namespace: String
+}
+
+type Fingerprint @entity(immutable: true) {
+  id: ID!
+  namespace: String
+  user_defined_value: String
+  parameter: String
+}
+
+type Contributor @entity(immutable: true) {
+  id: ID!
+  contributor_party_reference: String
+  sequence_number: BigInt
+  contributor_roles: [String!]
 }
