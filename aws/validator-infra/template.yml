@@ -13,7 +13,7 @@ Resources:
       ImageId: ami-084568db4383264d4
       SubnetId: !Ref ValidatorSubnet
       KeyName: validator-ec2
-      IamInstanceProfile: !Ref CloudWatchInstanceProfile
+      IamInstanceProfile: !Ref ValidatorInstanceProfile
       AvailabilityZone: us-east-1a
       Tags:
         - Key: ValidatorTag
@@ -52,13 +52,13 @@ Resources:
     Properties:
       CidrBlock: "10.0.0.0/16"
 
-  CloudWatchInstanceProfile:
+  ValidatorInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
-        - !Ref CloudWatchLogsRole
+        - !Ref ValidatorRole
 
-  CloudWatchLogsRole:
+  ValidatorRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -68,6 +68,8 @@ Resources:
             Principal:
               Service: ["ec2.amazonaws.com"]
             Action: ["sts:AssumeRole"]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
       Policies:
         - PolicyName: CloudWatchLogsPolicy
           PolicyDocument:
