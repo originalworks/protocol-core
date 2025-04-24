@@ -40,7 +40,7 @@ To run this project on a GPU, you'll need a graphics card with sufficient memory
 
 1.  Install dependencies: `apt install curl build-essential libssl-dev git pkg-config npm`
 2.  [Rust](https://www.rust-lang.org/tools/install) - Can be installed with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and shell refreshed with `. "$HOME/.cargo/env"`
-3. [Foundry](https://book.getfoundry.sh/getting-started/installation) - Can be installed with:
+3.  [Foundry](https://book.getfoundry.sh/getting-started/installation) - Can be installed with:
 
 ```bash
 curl -L https://foundry.paradigm.xyz | bash
@@ -66,6 +66,7 @@ git clone --recursive https://github.com/originalworks/protocol-core && cd proto
 ```
 
 7. Compile contracts with
+
 ```
 cd contracts
 npm install hardhat
@@ -110,7 +111,7 @@ cp .env.template .env
 - `SEGMENT_LIMIT_PO2`: Please see next point
 - `ENVIRONMENT`: Used for sentry logging
 - `USERNAME`: Used for sentry logging
-- `DDEX_SEQUENCER_ADDRESS`: Used to set ddex sequencer address for testing purposes. When unset it defaults to hardcoded protocol sequencer. 
+- `DDEX_SEQUENCER_ADDRESS`: Used to set ddex sequencer address for testing purposes. When unset it defaults to hardcoded protocol sequencer.
 
 ### Adjusting the `segment_limit_po2` Value
 
@@ -121,13 +122,14 @@ Before running make sure that your validator node is properly configured for you
 - For GPU with 24GB VRAM or higher for optimal performance set it to `0` (turn it off). Alternatively, you can slightly increase the value to the highest one that your system supports, as determined through testing.
 - For CPU Mode (no GPU), its recommened to set `0` to increase perfomance.
 
-
-
 ## Running a test enviornment locally
+
 You can run `../setup_local.sh` to prepare local environment. After using it remember to run validator with `LOCAL=1` flag.
 
 #### Notes
+
 If you feel that your GPU should perform better, you can set NVCC flags to fine tune performance of your Nvidia GPU:
+
 ```bash
 COMPUTE_CAP=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader | awk -F'.' '{print $1$2}')
 export NVCC_APPEND_FLAGS="--gpu-architecture=compute_${COMPUTE_CAP} --gpu-code=compute_${COMPUTE_CAP},sm_${COMPUTE_CAP} --generate-code arch=compute_${COMPUTE_CAP},code=sm_${COMPUTE_CAP}"
@@ -135,7 +137,22 @@ export NVCC_APPEND_FLAGS="--gpu-architecture=compute_${COMPUTE_CAP} --gpu-code=c
 
 To run risc0 additional resources are required. Full installation guide can be found at https://dev.risczero.com/api/zkvm/install
 
-
 ## Recompile contracts if needed
 
 Run `npx hardhat compile` from the contracts folder
+
+# Run as Docker container:
+
+requirements:
+
+- docker
+- nvidia docker toolkit: [link](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- nvidia driver with support of CUDA 12.8 (570.124.06 or higher)
+
+## BUILD
+
+inside `/validator_node`:
+
+```
+docker build -t validator-node-image .
+```

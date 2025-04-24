@@ -29,7 +29,13 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          git clone https://github.com/originalworks/protocol-core.git >> /var/log/preconfiguration.log 2>&1
+
+          mkdir workspace
+          cd workspace
+
+          git clone https://github.com/originalworks/protocol-core.git >> /var/log/instance-config.log 2>&1
+
+          cd protocol-core/aws/validator-infra && ./instance-config.sh >> /var/log/instance-config.log 2>&1
 
   ValidatorSecurityGroup:
     Type: AWS::EC2::SecurityGroup
