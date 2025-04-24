@@ -96,6 +96,8 @@ type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
+  message_id: String
+  message_created_date_time: String
   partyList: [PartyElement!]
   release: Release
   resourceList: ResourceList
@@ -111,6 +113,13 @@ type BlobMetadata @entity(immutable: true) {
   network_name: String
   blob_ipfs_cid: String
 }
+
+type PartyElement @entity(immutable: true) {
+  id: ID!
+  party_reference: String
+  party_name: String
+}
+
 
 type Release @entity(immutable: true) {
   id: ID!
@@ -142,12 +151,6 @@ type DisplayArtistName @entity(immutable: true) {
   display_artist_name: String
 }
 
-type PartyElement @entity(immutable: true) {
-  id: ID!
-  party_reference: String
-  party_name: String
-}
-
 type ResourceList @entity(immutable: true) {
   id: ID!
   sound_recordings: [SoundRecording!]
@@ -164,27 +167,6 @@ type SoundRecording @entity(immutable: true) {
   display_title_text: String
   sound_recording_editions: [SoundRecordingEdition!]
   contributors: [Contributor!]
-}
-
-type Image @entity(immutable: true) {
-  id: ID!
-  resource_reference: String
-  kind: String
-  resource_ids: [ResourceId!]
-  parental_warning_types: [String!]
-  technical_details: [TechnicalDetail!]
-}
-
-type ResourceId @entity(immutable: true) {
-  id: ID!
-  content: String
-  namespace: String
-}
-
-type TechnicalDetail @entity(immutable: true) {
-  id: ID!
-  technical_resource_details_reference: String
-  fileUri: String
 }
 
 type SoundRecordingEdition @entity(immutable: true) {
@@ -212,4 +194,25 @@ type Contributor @entity(immutable: true) {
   contributor_party_reference: String
   sequence_number: BigInt
   contributor_roles: [String!]
+}
+
+type Image @entity(immutable: true) {
+  id: ID!
+  resource_reference: String
+  kind: String
+  resource_ids: [ResourceId!]
+  parental_warning_types: [String!]
+  technical_details: [TechnicalDetail!]
+}
+
+type ResourceId @entity(immutable: true) {
+  id: ID!
+  content: String
+  namespace: String
+}
+
+type TechnicalDetail @entity(immutable: true) {
+  id: ID!
+  technical_resource_details_reference: String
+  fileUri: String
 }

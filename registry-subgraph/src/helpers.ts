@@ -1,7 +1,12 @@
-import { BigInt, Bytes, JSONValue, TypedMap, } from '@graphprotocol/graph-ts';
+import {
+  Bytes,
+  BigInt,
+  TypedMap,
+  JSONValue,
+  JSONValueKind,
+} from "@graphprotocol/graph-ts";
 
-import { BlobsStatus, HealthStatus } from './types/schema';
-import { JSONValueKind } from '@graphprotocol/graph-ts/common/value';
+import { BlobsStatus, HealthStatus } from "./types/schema";
 
 export const BlobsSubmittedEventId = "submitted";
 export const BlobProcessedEventId = "processed";
@@ -38,10 +43,10 @@ export function recordBlobsStatuses(id: string, timestamp: BigInt, txHash: Bytes
 }
 
 export function initializeHealthStatus(): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
     healthStatus.txAmount = BigInt.zero();
     healthStatus.owenTxAmount = BigInt.zero();
     healthStatus.validatorTxAmount = BigInt.zero();
@@ -52,10 +57,10 @@ export function initializeHealthStatus(): void {
 }
 
 export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash: Bytes): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.owenTxAmount = healthStatus.owenTxAmount.plus(BigInt.fromI32(1));
@@ -67,10 +72,10 @@ export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash:
 }
 
 export function recordHealthStatusValidatorData(validationTimestamp: BigInt, validationTxHash: Bytes): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.validatorTxAmount = healthStatus.validatorTxAmount.plus(BigInt.fromI32(1));
@@ -103,4 +108,16 @@ export function getNumberIfExist(
   } else {
     return null;
   }
+}
+
+export function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {
+  return value && value.kind == JSONValueKind.OBJECT ? value.toObject() : null;
+}
+
+export function getArray(value: JSONValue | null): JSONValue[] | null {
+  return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
+}
+
+export function getFirstElement(arr: JSONValue[] | null): JSONValue | null {
+  return arr && arr.length > 0 ? arr[0] : null;
 }

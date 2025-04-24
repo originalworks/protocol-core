@@ -1,13 +1,12 @@
-import {
-  log,
-  json,
-  Bytes,
-  TypedMap,
-  JSONValue,
-  dataSource,
-  JSONValueKind,
-} from "@graphprotocol/graph-ts";
+import { log, json, Bytes, dataSource } from "@graphprotocol/graph-ts";
 
+import {
+  getArray,
+  getObject,
+  getFirstElement,
+  getValueIfExist,
+  getNumberIfExist,
+} from './helpers';
 import {
   Image,
   PLine,
@@ -24,7 +23,6 @@ import {
   DisplayArtistName,
   SoundRecordingEdition,
 } from "./types/schema";
-import { getNumberIfExist, getValueIfExist } from "./helpers";
 
 export function handleAssetMetadata(content: Bytes): void {
   const cid = dataSource.stringParam();
@@ -40,17 +38,23 @@ export function handleAssetMetadata(content: Bytes): void {
   if (jsonResult.isOk) {
     const jsonValue = getObject(jsonResult.value);
     if (jsonValue) {
+      const messageHeader = getObject(jsonValue.get("message_header"));
+      if (messageHeader) {
+        assetMetadata.message_id = getValueIfExist(messageHeader, "message_id");
+        assetMetadata.message_created_date_time = getValueIfExist(messageHeader, "message_created_date_time");
+      }
+
       const partyList = getObject(jsonValue.get("party_list"));
       if (partyList) {
-        let partyListMetadata: string[] = []
+        let partyListMetadata: string[] = [];
         const partys = getArray(partyList.get("partys"));
         if (partys) {
           for (let i = 0; i < partys.length; i++) {
-            const partyEl = new PartyElement(`${cid}-${i}`)
+            const partyEl = new PartyElement(`${cid}-${i}`);
             const party = getObject(partys[i]);
             if (!party) return;
 
-            partyEl.party_reference = getValueIfExist(party, "party_reference");;
+            partyEl.party_reference = getValueIfExist(party, "party_reference");
 
             const partyNamesArray = getArray(party.get("parties_names"));
             if (partyNamesArray) {
@@ -65,7 +69,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
               partyEl.party_name = getValueIfExist(fullName, "content");
             }
-            partyEl.save()
+            partyEl.save();
             partyListMetadata.push(partyEl.id);
           }
         }
@@ -80,12 +84,12 @@ export function handleAssetMetadata(content: Bytes): void {
 
           const releaseTypes = getArray(releaseData.get("release_types"));
           if (releaseTypes) {
-            let types: string[] = []
+            let types: string[] = [];
             for (let i = 0; i < releaseTypes.length; i++) {
               const type = getObject(releaseTypes[i]);
               if (type) {
-                const value = getValueIfExist(type, "content")
-                if (value) types.push(value)
+                const value = getValueIfExist(type, "content");
+                if (value) types.push(value);
               }
             }
             release.release_types = types;
@@ -93,12 +97,12 @@ export function handleAssetMetadata(content: Bytes): void {
 
           const releaseLabelReferences = getArray(releaseData.get("release_label_references"));
           if (releaseLabelReferences) {
-            let labels: string[] = []
+            let labels: string[] = [];
             for (let i = 0; i < releaseLabelReferences.length; i++) {
               const label = getObject(releaseLabelReferences[i]);
               if (label) {
-                const value = getValueIfExist(label, "content")
-                if (value) labels.push(value)
+                const value = getValueIfExist(label, "content");
+                if (value) labels.push(value);
               }
             }
             release.release_label_references = labels;
@@ -106,12 +110,12 @@ export function handleAssetMetadata(content: Bytes): void {
 
           const genres = getArray(releaseData.get("genres"));
           if (genres) {
-            let genresList: string[] = []
+            let genresList: string[] = [];
             for (let i = 0; i < genres.length; i++) {
               const genre = getObject(genres[i]);
               if (genre) {
-                const value = getValueIfExist(genre, "genre_text")
-                if (value) genresList.push(value)
+                const value = getValueIfExist(genre, "genre_text");
+                if (value) genresList.push(value);
               }
             }
             release.genres = genresList;
@@ -124,7 +128,7 @@ export function handleAssetMetadata(content: Bytes): void {
               const title = getObject(titleElement);
               if (!title) return;
 
-              release.title_text = getValueIfExist(title, "title_text")
+              release.title_text = getValueIfExist(title, "title_text");
               const subtitles = getArray(title.get("sub_titles"));
               if (subtitles) {
                 const subtitleElement = getFirstElement(subtitles);
@@ -165,7 +169,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
           const displayArtists = getArray(releaseData.get("display_artists"));
           if (displayArtists) {
-            let artistsList: string[] = []
+            let artistsList: string[] = [];
             for (let i = 0; i < displayArtists.length; i++) {
               const displayArtist = getObject(displayArtists[i]);
               if (displayArtist) {
@@ -191,7 +195,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
           const displayArtistNames = getArray(releaseData.get("display_artist_names"));
           if (displayArtistNames) {
-            let artistsList: string[] = []
+            let artistsList: string[] = [];
             for (let i = 0; i < displayArtistNames.length; i++) {
               const displayArtist = getObject(displayArtistNames[i]);
               if (displayArtist) {
@@ -214,7 +218,7 @@ export function handleAssetMetadata(content: Bytes): void {
       if (resourceListObject) {
         const soundRecordingData = getArray(resourceListObject.get("sound_recordings"));
         if (soundRecordingData) {
-          const soundRecordingsList: string[] = []
+          const soundRecordingsList: string[] = [];
           for (let i = 0; i < soundRecordingData.length; i++) {
             const soundRecordingObject = getObject(soundRecordingData[i]);
             if (soundRecordingObject) {
@@ -229,7 +233,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
               const workIdsArray = getArray(soundRecordingObject.get("work_ids"));
               if (workIdsArray) {
-                const workIdsList: string[] = []
+                const workIdsList: string[] = [];
                 for (let j = 0; j < workIdsArray.length; j++) {
                   const workId = getObject(workIdsArray[j]);
                   if (workId) {
@@ -247,7 +251,7 @@ export function handleAssetMetadata(content: Bytes): void {
                   const title = getObject(titleElement);
                   if (!title) return;
 
-                  soundRecording.display_title = getValueIfExist(title, "title_text")
+                  soundRecording.display_title = getValueIfExist(title, "title_text");
                   const subtitles = getArray(title.get("sub_titles"));
                   if (subtitles) {
                     const subtitleElement = getFirstElement(subtitles);
@@ -274,7 +278,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
               const soundRecordingEditions = getArray(soundRecordingObject.get("sound_recording_editions"));
               if (soundRecordingEditions) {
-                const soundRecordingEditionsList: string[] = []
+                const soundRecordingEditionsList: string[] = [];
                 for (let j = 0; j < soundRecordingEditions.length; j++) {
                   const soundRecordingEdition = new SoundRecordingEdition(`${cid}-${i}-${j}`);
                   const edition = getObject(soundRecordingEditions[j]);
@@ -292,12 +296,12 @@ export function handleAssetMetadata(content: Bytes): void {
 
                     const plinesArray = getArray(edition.get("p_lines"));
                     if (plinesArray) {
-                      const plinesList: string[] = []
+                      const plinesList: string[] = [];
                       for (let k = 0; k < plinesArray.length; k++) {
                         const pline = new PLine(`${cid}-${i}-${j}-${k}`);
                         const plineObject = getObject(plinesArray[j]);
                         if (plineObject) {
-                          pline.year = getNumberIfExist(plineObject, "year")
+                          pline.year = getNumberIfExist(plineObject, "year");
                           pline.namespace = getValueIfExist(plineObject, "namespace");
                         }
                         pline.save();
@@ -318,7 +322,7 @@ export function handleAssetMetadata(content: Bytes): void {
                               if (deliveryFile) {
                                 const fingerprintsArray = getArray(deliveryFile.get("fingerprints"));
                                 if (fingerprintsArray) {
-                                  const fingerprintsList: string[] = []
+                                  const fingerprintsList: string[] = [];
                                   for (let m = 0; m < fingerprintsArray.length; m++) {
                                     const fingerprint = new Fingerprint(`${cid}-${i}-${j}-${k}-${l}-${m}`);
                                     const fingerprintObject = getObject(fingerprintsArray[m]);
@@ -347,7 +351,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
               const contributors = getArray(soundRecordingObject.get("contributors"));
               if (contributors) {
-                const contributorsList: string[] = []
+                const contributorsList: string[] = [];
                 for (let j = 0; j < contributors.length; j++) {
                   const contributor = new Contributor(`${cid}-${i}-${j}`);
                   const contributorObject = getObject(contributors[j]);
@@ -356,7 +360,7 @@ export function handleAssetMetadata(content: Bytes): void {
                     contributor.sequence_number = getNumberIfExist(contributorObject, "sequence_number");
                     const roles = getArray(contributorObject.get("roles"));
                     if (roles) {
-                      const rolesList: string[] = []
+                      const rolesList: string[] = [];
                       for (let k = 0; k < roles.length; k++) {
                         const role = getObject(roles[k]);
                         if (role) {
@@ -384,7 +388,7 @@ export function handleAssetMetadata(content: Bytes): void {
 
         const imagesData = getArray(resourceListObject.get("images"));
         if (imagesData) {
-          const imagesList: string[] = []
+          const imagesList: string[] = [];
           for (let i = 0; i < imagesData.length; i++) {
             const imageObject = getObject(imagesData[i]);
             if (imageObject) {
@@ -397,7 +401,7 @@ export function handleAssetMetadata(content: Bytes): void {
                 image.kind = getValueIfExist(kind, "content");
               }
 
-              const resourceIdsList: string[] = []
+              const resourceIdsList: string[] = [];
               const resourcesIds = getArray(imageObject.get("resource_ids"));
               if (resourcesIds) {
                 for (let j = 0; j < resourcesIds.length; j++) {
@@ -424,7 +428,7 @@ export function handleAssetMetadata(content: Bytes): void {
               }
               image.resource_ids = resourceIdsList;
 
-              const warningTypesList: string[] = []
+              const warningTypesList: string[] = [];
               const warningTypes = getArray(imageObject.get("parental_warning_types"));
               if (warningTypes) {
                 for (let j = 0; j < warningTypes.length; j++) {
@@ -439,7 +443,7 @@ export function handleAssetMetadata(content: Bytes): void {
               }
               image.parental_warning_types = warningTypesList;
 
-              const technicalDetailsList: string[] = []
+              const technicalDetailsList: string[] = [];
               const technicalDetails = getArray(imageObject.get("technical_details"));
               if (technicalDetails) {
                 for (let j = 0; j < technicalDetails.length; j++) {
@@ -477,16 +481,4 @@ export function handleAssetMetadata(content: Bytes): void {
   assetMetadata.save();
   release.save();
   resourceList.save();
-}
-
-function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {
-  return value && value.kind == JSONValueKind.OBJECT ? value.toObject() : null;
-}
-
-function getArray(value: JSONValue | null): JSONValue[] | null {
-  return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
-}
-
-function getFirstElement(arr: JSONValue[] | null): JSONValue | null {
-  return arr && arr.length > 0 ? arr[0] : null;
 }
