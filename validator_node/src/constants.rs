@@ -20,3 +20,6 @@ pub const fn network_name(chain_id: &u64) -> &'static str {
         _ => panic!("Unrecognized chain"),
     }
 }
+
+pub static REQWEST_CLIENT: once_cell::sync::Lazy<reqwest::Client> =
+    once_cell::sync::Lazy::new(|| reqwest::Client::new());

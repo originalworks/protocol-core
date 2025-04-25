@@ -1,12 +1,11 @@
-use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
+use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE, REQWEST_CLIENT};
 use crate::contracts::QueueHeadData;
 use anyhow::{anyhow, Context};
 use blob_codec::BlobCodec;
 use cid::Cid;
 use ddex_parser::DdexParser; // only import what you need
-use log_macros::{format_error, log_error, log_info, log_warn};
+use log_macros::{log_error, log_info, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
-use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
 use std::{
@@ -28,29 +27,9 @@ struct BlobMetadata {
     image_id: String,
 }
 
-/// Fully synchronous check for each CID (via POST to /api/v0/cat).
-#[allow(dead_code)]
-pub fn check_file_accessibility(cids: Vec<String>) -> anyhow::Result<()> {
-    println!("Checking these CIDs for accessibility: {:?}", cids);
-    let client = Client::new(); // blocking client
-
-    for cid in cids {
-        let response = client
-            .post(format!("{}{}{}", IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid))
-            .send()
-            .with_context(|| format!("Failed to POST cat request for CID={}", cid))?;
-
-        if response.status() != 200 {
-            return Err(format_error!("Image file not found in IPFS: {}", cid));
-        }
-    }
-
-    Ok(())
-}
-
 /// Decodes the blob, writes JSON out, downloads any images to `images/`,
 /// stores the raw blob in `blob/`, and writes `metadata.json` (all synchronously).
-pub fn prepare_blob_folder(
+pub async fn prepare_blob_folder(
     blob: [u8; 131072],
     queue_head_data: &QueueHeadData,
 ) -> anyhow::Result<()> {
@@ -67,8 +46,6 @@ pub fn prepare_blob_folder(
     // Decode the blob
     let blob_codec = BlobCodec::from_vec(blob.into())?;
     let message_vecs = blob_codec.decode()?;
-
-    let client = Client::new(); // We'll reuse this blocking client
 
     // We'll store images with sequential filenames: 0.avif, 1.avif, etc.
     let mut image_counter = 0usize;
@@ -121,9 +98,10 @@ pub fn prepare_blob_folder(
                     let url = format!("{}{}{}", IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid);
                     log_info!("Downloading image CID: {} from {}", cid, url);
 
-                    let response = client
+                    let response = REQWEST_CLIENT
                         .get(&url)
                         .send()
+                        .await
                         .with_context(|| format!("Failed to download CID={}", cid))?;
 
                     if response.status() != 200 {
@@ -135,7 +113,7 @@ pub fn prepare_blob_folder(
                         continue;
                     }
 
-                    let bytes = response.bytes().with_context(|| {
+                    let bytes = response.bytes().await.with_context(|| {
                         format!("Failed to read bytes from IPFS for CID={}", cid)
                     })?;
 
