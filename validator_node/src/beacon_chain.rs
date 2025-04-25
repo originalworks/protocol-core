@@ -1,10 +1,9 @@
-use crate::constants;
+use crate::constants::{self, REQWEST_CLIENT};
 use alloy::{
     eips::eip4844::BYTES_PER_BLOB,
     primitives::{Bytes, FixedBytes},
 };
 use log_macros::{format_error, log_info, log_warn};
-use reqwest;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -46,7 +45,7 @@ async fn get_parent_beacon_block_slot(
 
     log_info!("Fetching initial beacon block slot...");
 
-    let response = reqwest::get(url).await?;
+    let response = REQWEST_CLIENT.get(url).send().await?;
     let slot;
 
     if response.status().is_success() {
@@ -76,7 +75,7 @@ async fn find_commitment_in_sidecars(
         beacon_slot
     );
 
-    let response = reqwest::get(url).await?;
+    let response = REQWEST_CLIENT.get(url).send().await?;
     let status_code = response.status().as_u16();
 
     if status_code == 200 {

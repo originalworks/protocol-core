@@ -8,3 +8,6 @@ pub const DEFAULT_DATABASE_NAME: &str = "sqlite";
 
 #[cfg(any(feature = "local-s3"))]
 pub const DEFAULT_TABLE_NAME: &str = "message_folders";
+
+pub static REQWEST_CLIENT: once_cell::sync::Lazy<reqwest::Client> =
+    once_cell::sync::Lazy::new(|| reqwest::Client::new());

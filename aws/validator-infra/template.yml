@@ -62,6 +62,7 @@ Resources:
 
           cd protocol-core/aws/validator-infra/instance-config
 
+          ./cloudwatch/run.sh >> /var/log/instance-config.log 2>&1
           ./install-nvidia-driver.sh >> /var/log/instance-config.log 2>&1
           ./install-docker.sh >> /var/log/instance-config.log 2>&1
           ./install-nvidia-container-toolkit.sh >> /var/log/instance-config.log 2>&1

@@ -1,4 +1,4 @@
-use crate::constants::{IPFS_API_ADD_FILE, IPFS_API_BASE_URL};
+use crate::constants::{IPFS_API_ADD_FILE, IPFS_API_BASE_URL, REQWEST_CLIENT};
 use anyhow::Context;
 use log_macros::{format_error, log_info};
 use reqwest::{multipart, Body};
@@ -31,9 +31,8 @@ async fn file_to_multipart_form(file_path: &String) -> anyhow::Result<multipart:
 pub async fn pin_file_ipfs_kubo(file_path: &String) -> anyhow::Result<String> {
     log_info!("Pinning {} to IPFS using KUBO...", file_path);
     let multipart_form = file_to_multipart_form(file_path).await?;
-    let client = reqwest::Client::new();
 
-    let response = client
+    let response = REQWEST_CLIENT
         .post(format!("{}{}", IPFS_API_BASE_URL, IPFS_API_ADD_FILE))
         .multipart(multipart_form)
         .send()
@@ -84,8 +83,7 @@ pub async fn pin_file_pinata(file_path: &String, pinata_jwt: &String) -> anyhow:
         .text("pinataOptions", options.to_string());
 
     // Send the request
-    let client = reqwest::Client::new();
-    let response = client
+    let response = REQWEST_CLIENT
         .post("https://api.pinata.cloud/pinning/pinFileToIPFS")
         .header("Authorization", format!("Bearer {}", pinata_jwt))
         .multipart(multipart_form)
@@ -106,8 +104,7 @@ mod tests {
     use crate::constants::IPFS_API_CAT_FILE;
 
     async fn fetch_ipfs_file(cid: &String) -> anyhow::Result<tokio_util::bytes::Bytes> {
-        let client = reqwest::Client::new();
-        let response = client
+        let response = REQWEST_CLIENT
             .post(format!(
                 "{}{}?arg={}",
                 IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid
