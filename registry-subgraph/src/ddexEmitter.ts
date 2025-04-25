@@ -15,7 +15,7 @@ import {
   BlobsRejectedPerMonth,
   BlobsProcessedPerMonth,
   MessagesProcessedPerDay,
-} from './types/schema';
+} from "./types/schema";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 

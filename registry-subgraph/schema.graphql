@@ -1,4 +1,4 @@
-type HealthStatus @entity {
+type HealthStatus @entity(immutable: false) {
   id: String!
   txAmount: BigInt!
   owenTxAmount: BigInt!
@@ -10,7 +10,7 @@ type HealthStatus @entity {
   validationTxHash: Bytes
 }
 
-type ValidatorTxPerDay @entity {
+type ValidatorTxPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -18,21 +18,21 @@ type ValidatorTxPerDay @entity {
   amount: BigInt!
 }
 
-type ValidatorTxPerMonth @entity {
+type ValidatorTxPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type BlobsStatus @entity {
+type BlobsStatus @entity(immutable: false) {
   id: String! # status
   amount: BigInt!
   latestEventTimestamp: BigInt
   latestEventTxHash: Bytes
 }
 
-type BlobsSubmittedPerDay @entity {
+type BlobsSubmittedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -40,29 +40,14 @@ type BlobsSubmittedPerDay @entity {
   amount: BigInt!
 }
 
-type BlobsSubmittedPerMonth @entity {
+type BlobsSubmittedPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type BlobsProcessedPerDay @entity {
-  id: String! # date
-  month: String!
-  day: String!
-  year: String!
-  amount: BigInt!
-}
-
-type BlobsProcessedPerMonth @entity {
-  id: String! # date
-  month: String!
-  year: String!
-  amount: BigInt!
-}
-
-type BlobsRejectedPerDay @entity {
+type BlobsProcessedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -70,14 +55,14 @@ type BlobsRejectedPerDay @entity {
   amount: BigInt!
 }
 
-type BlobsRejectedPerMonth @entity {
+type BlobsProcessedPerMonth @entity(immutable: false) {
   id: String! # date
   month: String!
   year: String!
   amount: BigInt!
 }
 
-type MessagesProcessedPerDay @entity {
+type BlobsRejectedPerDay @entity(immutable: false) {
   id: String! # date
   month: String!
   day: String!
@@ -85,20 +70,40 @@ type MessagesProcessedPerDay @entity {
   amount: BigInt!
 }
 
-type ProvedMessage @entity {
+type BlobsRejectedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
+type MessagesProcessedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ProvedMessage @entity(immutable: false) {
   id: ID!
   message_id: String!
   timestamp: BigInt!
   validator: Bytes!
 }
 
-type AssetMetadata @entity {
+type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
+  message_id: String
+  message_created_date_time: String
+  partyList: [PartyElement!]
+  release: Release
+  resourceList: ResourceList
 }
 
-type BlobMetadata @entity {
+type BlobMetadata @entity(immutable: true) {
   id: ID!
   versioned_hash: String
   transaction_hash: String
@@ -107,4 +112,107 @@ type BlobMetadata @entity {
   chain_id: String
   network_name: String
   blob_ipfs_cid: String
+}
+
+type PartyElement @entity(immutable: true) {
+  id: ID!
+  party_reference: String
+  party_name: String
+}
+
+
+type Release @entity(immutable: true) {
+  id: ID!
+  title_text: String
+  subtitle: String
+  display_title_text: String
+  release_reference: String
+  release_types: [String!]
+  release_label_references: [String!]
+  genres: [String!]
+  display_artists: [DisplayArtist!]
+  display_artist_names: [DisplayArtistName!]
+  grid: String
+  icpn: String
+  proprietary_ids: [String!]
+}
+
+type DisplayArtist @entity(immutable: true) {
+  id: ID!
+  artist_party_reference: String
+  sequence_number: BigInt
+  display_artist_roles: [String!]
+}
+
+type DisplayArtistName @entity(immutable: true) {
+  id: ID!
+  applicable_territory_code: String
+  language_and_script_type: String
+  display_artist_name: String
+}
+
+type ResourceList @entity(immutable: true) {
+  id: ID!
+  sound_recordings: [SoundRecording!]
+  images: [Image!]
+}
+
+type SoundRecording @entity(immutable: true) {
+  id: ID!
+  resource_reference: String
+  kind: String
+  work_ids: [String!]
+  display_title: String
+  subtitle: String
+  display_title_text: String
+  sound_recording_editions: [SoundRecordingEdition!]
+  contributors: [Contributor!]
+}
+
+type SoundRecordingEdition @entity(immutable: true) {
+  id: ID!
+  isrc: String
+  p_lines: [PLine!]
+  fingerprints: [Fingerprint!]
+}
+
+type PLine @entity(immutable: true) {
+  id: ID!
+  year: BigInt
+  namespace: String
+}
+
+type Fingerprint @entity(immutable: true) {
+  id: ID!
+  namespace: String
+  user_defined_value: String
+  parameter: String
+}
+
+type Contributor @entity(immutable: true) {
+  id: ID!
+  contributor_party_reference: String
+  sequence_number: BigInt
+  contributor_roles: [String!]
+}
+
+type Image @entity(immutable: true) {
+  id: ID!
+  resource_reference: String
+  kind: String
+  resource_ids: [ResourceId!]
+  parental_warning_types: [String!]
+  technical_details: [TechnicalDetail!]
+}
+
+type ResourceId @entity(immutable: true) {
+  id: ID!
+  content: String
+  namespace: String
+}
+
+type TechnicalDetail @entity(immutable: true) {
+  id: ID!
+  technical_resource_details_reference: String
+  fileUri: String
 }

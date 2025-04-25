@@ -3,6 +3,7 @@ import {
   BigInt,
   TypedMap,
   JSONValue,
+  JSONValueKind,
 } from "@graphprotocol/graph-ts";
 
 import { BlobsStatus, HealthStatus } from "./types/schema";
@@ -42,10 +43,10 @@ export function recordBlobsStatuses(id: string, timestamp: BigInt, txHash: Bytes
 }
 
 export function initializeHealthStatus(): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
     healthStatus.txAmount = BigInt.zero();
     healthStatus.owenTxAmount = BigInt.zero();
     healthStatus.validatorTxAmount = BigInt.zero();
@@ -56,10 +57,10 @@ export function initializeHealthStatus(): void {
 }
 
 export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash: Bytes): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.owenTxAmount = healthStatus.owenTxAmount.plus(BigInt.fromI32(1));
@@ -71,10 +72,10 @@ export function recordHealthStatusBatchData(batchTimestamp: BigInt, batchTxHash:
 }
 
 export function recordHealthStatusValidatorData(validationTimestamp: BigInt, validationTxHash: Bytes): void {
-  let healthStatus = HealthStatus.load('status');
+  let healthStatus = HealthStatus.load("status");
 
   if (healthStatus == null) {
-    healthStatus = new HealthStatus('status');
+    healthStatus = new HealthStatus("status");
   }
   healthStatus.txAmount = healthStatus.txAmount.plus(BigInt.fromI32(1));
   healthStatus.validatorTxAmount = healthStatus.validatorTxAmount.plus(BigInt.fromI32(1));
@@ -90,9 +91,33 @@ export function getValueIfExist(
   parameterName: string,
 ): string | null {
   const jsonValue = sourceObject.get(parameterName);
-  if (jsonValue) {
+  if (jsonValue && jsonValue.kind == JSONValueKind.STRING) {
     return jsonValue.toString();
   } else {
     return null;
   }
+}
+
+export function getNumberIfExist(
+  sourceObject: TypedMap<string, JSONValue>,
+  parameterName: string,
+): BigInt | null {
+  const jsonValue = sourceObject.get(parameterName);
+  if (jsonValue && jsonValue.kind == JSONValueKind.NUMBER) {
+    return jsonValue.toBigInt();
+  } else {
+    return null;
+  }
+}
+
+export function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {
+  return value && value.kind == JSONValueKind.OBJECT ? value.toObject() : null;
+}
+
+export function getArray(value: JSONValue | null): JSONValue[] | null {
+  return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
+}
+
+export function getFirstElement(arr: JSONValue[] | null): JSONValue | null {
+  return arr && arr.length > 0 ? arr[0] : null;
 }
