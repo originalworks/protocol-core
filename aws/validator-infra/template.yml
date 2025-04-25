@@ -3,8 +3,27 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   ValidatorLogGroupName:
     Type: String
+  ValidatorSecretsName:
+    Type: String
+  ValidatorUsername:
+    Type: String
+  Environment:
+    Type: String
+  SegmentLimitPO2:
+    Type: String
+  StartBlock:
+    Type: String
 
 Resources:
+  ValidatorSecrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Ref ValidatorSecretsName
+      Description: "Environmental variables with sensitive data for Validator"
+      # !!! Set those manually in your AWS Console after the deployment!!!
+      # !!! Do not edit this line here directly !!!
+      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "WS_URL": "your-ws-url", "BEACON_RPC_URL": "your-beacon-rpc-url" }'
+
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -32,6 +51,13 @@ Resources:
           mkdir workspace
           cd workspace
 
+          echo ValidatorLogGroupName=${ValidatorLogGroupName} >> /etc/validator.env
+          echo ValidatorSecretsName=${ValidatorSecretsName} >> /etc/validator.env
+          echo ValidatorUsername=${ValidatorUsername} >> /etc/validator.env
+          echo Environment=${Environment} >> /etc/validator.env
+          echo SegmentLimitPO2=${SegmentLimitPO2} >> /etc/validator.env
+          echo StartBlock=${StartBlock} >> /etc/validator.env
+
           git clone https://github.com/originalworks/protocol-core.git >> /var/log/instance-config.log 2>&1
 
           cd protocol-core/aws/validator-infra/instance-config
@@ -39,6 +65,8 @@ Resources:
           ./install-nvidia-driver.sh >> /var/log/instance-config.log 2>&1
           ./install-docker.sh >> /var/log/instance-config.log 2>&1
           ./install-nvidia-container-toolkit.sh >> /var/log/instance-config.log 2>&1
+
+          snap enable amazon-ssm-agent
 
   ValidatorSecurityGroup:
     Type: AWS::EC2::SecurityGroup
