@@ -19,7 +19,7 @@ Resources:
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: g4dn.xlarge
       ImageId: ami-084568db4383264d4
       SubnetId: !Ref ValidatorSubnet
       KeyName: validator-ec2
@@ -98,7 +98,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
       Policies:
-        - PolicyName: CloudWatchLogsPolicy
+        - PolicyName: ValidatorPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -111,7 +111,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - "secretsmanager:GetSecretValue"
-                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ValidatorSecretsName}
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ValidatorSecretsName}-*
               - Effect: Allow
                 Action:
                   - "ec2-instance-connect:SendSSHPublicKey"
