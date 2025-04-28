@@ -476,6 +476,7 @@ export function handleAssetMetadata(content: Bytes): void {
     log.warning("Failed to parse JSON from Bytes: {}, CID: {}", [content.toHexString(), cid]);
   }
 
+  assetMetadata.release = release.id;
   assetMetadata.resourceList = resourceList.id;
 
   assetMetadata.save();

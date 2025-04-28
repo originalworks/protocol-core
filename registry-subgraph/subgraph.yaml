@@ -51,6 +51,12 @@ dataSources:
         - ValidatorTxPerDay
         - ValidatorTxPerMonth
         - ProvedMessage
+        - Artist
+        - ArtistsAddedPerDay
+        - ArtistsAddedPerMonth
+        - Track
+        - TracksAddedPerDay
+        - TracksAddedPerMonth
         - MessagesProcessedPerDay
         - Release
       abis:
