@@ -19,7 +19,7 @@ Resources:
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
+      InstanceType: g4dn.xlarge
       ImageId: ami-084568db4383264d4
       SubnetId: !Ref ValidatorSubnet
       KeyName: validator-ec2
