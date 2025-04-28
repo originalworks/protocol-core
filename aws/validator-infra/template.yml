@@ -98,7 +98,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
       Policies:
-        - PolicyName: CloudWatchLogsPolicy
+        - PolicyName: ValidatorPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -111,7 +111,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - "secretsmanager:GetSecretValue"
-                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ValidatorSecretsName}
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ValidatorSecretsName}-*
               - Effect: Allow
                 Action:
                   - "ec2-instance-connect:SendSSHPublicKey"
