@@ -14,7 +14,7 @@ Resources:
       Description: "Environmental variables with sensitive data for Validator"
       # !!! Set those manually in your AWS Console after the deployment!!!
       # !!! Do not edit this line here directly !!!
-    SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "WS_URL": "your-ws-url", "BEACON_RPC_URL": "your-beacon-rpc-url" }'
+      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "WS_URL": "your-ws-url", "BEACON_RPC_URL": "your-beacon-rpc-url" }'
 
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
