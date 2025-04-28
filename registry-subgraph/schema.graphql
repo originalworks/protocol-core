@@ -90,6 +90,29 @@ type ProvedMessage @entity(immutable: false) {
   message_id: String!
   timestamp: BigInt!
   validator: Bytes!
+  cid: String!
+}
+
+type Artist @entity(immutable: true) {
+  id: ID!
+  name: String!
+  timestamp: BigInt!
+  cid: String!
+}
+
+type ArtistsAddedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ArtistsAddedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
 }
 
 type AssetMetadata @entity(immutable: true) {
