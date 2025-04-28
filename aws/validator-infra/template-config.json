@@ -1,10 +1,6 @@
 {
     "Parameters": {
         "ValidatorLogGroupName": "ValidatorLogGroup2",
-        "ValidatorSecretsName": "ValidatorSecrets",
-        "ValidatorUsername": "validator-ec2-docker",
-        "Environment": "stage",
-        "SegmentLimitPO2": "0",
-        "StartBlock": "14028310"
+        "ValidatorSecretsName": "ValidatorSecrets"
     }
 }
