@@ -43,9 +43,6 @@ Resources:
           mkdir workspace
           cd workspace
 
-          echo ValidatorLogGroupName=${ValidatorLogGroupName} >> instance.env
-          echo ValidatorSecretsName=${ValidatorSecretsName} >> instance.env
-
           git clone https://github.com/originalworks/protocol-core.git >> /var/log/instance-config.log 2>&1
 
           cd protocol-core/aws/validator-infra/instance-config

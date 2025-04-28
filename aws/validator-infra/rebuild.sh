@@ -3,11 +3,12 @@ docker stop $(docker ps -q)
 git pull
 
 # recreate .env file
+secret_name=$(jq -r '.Parameters.ValidatorSecretsName' /workspace/protocol-core/aws/validator-infra/template-config.json)
 rm -f ./validator_node/.env
 cp ./aws/validator-infra/.env ./validator_node/.env
 echo >> ./validator_node/.env
 aws secretsmanager get-secret-value \
-    --secret-id ValidatorSecrets \
+    --secret-id $secret_name \
     --query SecretString \
     --output text | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> ./validator_node/.env
 
