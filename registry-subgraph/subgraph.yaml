@@ -54,6 +54,9 @@ dataSources:
         - Artist
         - ArtistsAddedPerDay
         - ArtistsAddedPerMonth
+        - Track
+        - TracksAddedPerDay
+        - TracksAddedPerMonth
         - MessagesProcessedPerDay
         - Release
       abis:

@@ -7,11 +7,14 @@ import {
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
+  Track,
   Artist,
   ProvedMessage,
+  TracksAddedPerDay,
   ValidatorTxPerDay,
   ArtistsAddedPerDay,
   BlobsRejectedPerDay,
+  TracksAddedPerMonth,
   ValidatorTxPerMonth,
   ArtistsAddedPerMonth,
   BlobsProcessedPerDay,
@@ -99,6 +102,47 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                   artistsPerMonth.save();
                 }
               }
+            }
+          }
+        }
+      }
+    }
+
+    const soundRecordings = message.sound_recordings;
+    if (soundRecordings.length > 0) {
+      for (let j = 0; j < soundRecordings.length; j++) {
+        const soundRecordingEditions = soundRecordings[j].sound_recording_editions;
+        for (let k = 0; k < soundRecordingEditions.length; k++) {
+          const isrc = soundRecordingEditions[k].isrc;
+          if (isrc) {
+            let track = Track.load(isrc);
+            if (track == null) {
+              track = new Track(isrc);
+              track.isrc = isrc;
+              track.timestamp = event.block.timestamp;
+              track.cid = event.params.cid;
+              track.save();
+
+              let tracksPerDay = TracksAddedPerDay.load(id);
+              if (tracksPerDay == null) {
+                tracksPerDay = new TracksAddedPerDay(id);
+                tracksPerDay.amount = BigInt.zero();
+              }
+              tracksPerDay.month = (date.getUTCMonth() + 1).toString();
+              tracksPerDay.day = date.getUTCDate().toString();
+              tracksPerDay.year = date.getUTCFullYear().toString();
+              tracksPerDay.amount = tracksPerDay.amount.plus(BigInt.fromI32(1));
+              tracksPerDay.save();
+
+              let tracksPerMonth = TracksAddedPerMonth.load(idPerMonth);
+              if (tracksPerMonth == null) {
+                tracksPerMonth = new TracksAddedPerMonth(idPerMonth);
+                tracksPerMonth.amount = BigInt.zero();
+              }
+              tracksPerMonth.month = (date.getUTCMonth() + 1).toString();
+              tracksPerMonth.year = date.getUTCFullYear().toString();
+              tracksPerMonth.amount = tracksPerMonth.amount.plus(BigInt.fromI32(1));
+              tracksPerMonth.save();
             }
           }
         }

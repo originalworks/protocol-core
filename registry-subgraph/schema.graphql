@@ -115,6 +115,28 @@ type ArtistsAddedPerMonth @entity(immutable: false) {
   amount: BigInt!
 }
 
+type Track @entity(immutable: true) {
+  id: ID!
+  isrc: String!
+  timestamp: BigInt!
+  cid: String!
+}
+
+type TracksAddedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type TracksAddedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
 type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
