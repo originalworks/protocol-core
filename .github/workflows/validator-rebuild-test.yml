@@ -28,4 +28,4 @@ jobs:
             --region us-east-1 \
             --document-name "AWS-RunShellScript" \
             --targets Key=tag:ValidatorTag,Values=ValidatorNodeEc2 \
-            --parameters commands=["bash /home/ubuntu/my-script.sh"]
+            --parameters commands=["bash /workspace/protocol-core/aws/validator-infra/rebuild.sh"],workingDirectory=["/workspace/protocol-core"]
