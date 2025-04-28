@@ -22,7 +22,13 @@ Resources:
       Description: "Environmental variables with sensitive data for Validator"
       # !!! Set those manually in your AWS Console after the deployment!!!
       # !!! Do not edit this line here directly !!!
-      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "WS_URL": "your-ws-url", "BEACON_RPC_URL": "your-beacon-rpc-url" }'
+    SecretString: !Sub |
+      {
+        "RPC_URL": "your-rpc-url",
+        "PRIVATE_KEY": "your-private-key",
+        "WS_URL": "your-ws-url",
+        "BEACON_RPC_URL": "your-beacon-rpc-url"
+      }
 
   ValidatorEc2Instance:
     Type: AWS::EC2::Instance
@@ -51,12 +57,8 @@ Resources:
           mkdir workspace
           cd workspace
 
-          echo ValidatorLogGroupName=${ValidatorLogGroupName} >> /etc/validator.env
-          echo ValidatorSecretsName=${ValidatorSecretsName} >> /etc/validator.env
-          echo ValidatorUsername=${ValidatorUsername} >> /etc/validator.env
-          echo Environment=${Environment} >> /etc/validator.env
-          echo SegmentLimitPO2=${SegmentLimitPO2} >> /etc/validator.env
-          echo StartBlock=${StartBlock} >> /etc/validator.env
+          echo ValidatorLogGroupName=${ValidatorLogGroupName} >> instance.env
+          echo ValidatorSecretsName=${ValidatorSecretsName} >> instance.env
 
           git clone https://github.com/originalworks/protocol-core.git >> /var/log/instance-config.log 2>&1
 
@@ -66,6 +68,7 @@ Resources:
           ./install-nvidia-driver.sh >> /var/log/instance-config.log 2>&1
           ./install-docker.sh >> /var/log/instance-config.log 2>&1
           ./install-nvidia-container-toolkit.sh >> /var/log/instance-config.log 2>&1
+          ./install-awscli.sh >> /var/log/instance-config.log 2>&1
 
           snap enable amazon-ssm-agent
 
@@ -119,6 +122,10 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ValidatorSecretsName}
               - Effect: Allow
                 Action:
                   - "ec2-instance-connect:SendSSHPublicKey"
