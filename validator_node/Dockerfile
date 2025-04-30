@@ -34,6 +34,7 @@ RUN rzup install r0vm 1.2.0
 
 
 RUN git clone https://github.com/originalworks/protocol-core.git
+COPY .env protocol-core/validator_node/.env
 
 # initiate w3
 # !!! it will ask to click the e-mail link during the build
@@ -44,3 +45,5 @@ RUN w3 login cezary.stroczynski@rumblefish.pl && w3 space use did:key:z6Mkeq9K7n
 # compile contracts and build validator
 RUN cd protocol-core/contracts && npm i && forge build && npx hardhat compile
 RUN cd protocol-core/validator_node && cargo build --release -F cuda
+
+CMD ["RISC0_WORK_DIR=/docker-mnt", "cargo", "run", "--release" , "-F", "cuda"]
