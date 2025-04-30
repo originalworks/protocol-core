@@ -32,6 +32,12 @@
                         "log_group_name": "{{ValidatorLogGroupName}}",
                         "log_stream_name": "internal/cloud-init-output",
                         "timezone": "UTC"
+                    },
+                    {
+                        "file_path": "/var/log/rebuild.log",
+                        "log_group_name": "{{ValidatorLogGroupName}}",
+                        "log_stream_name": "rebuild",
+                        "timezone": "UTC"
                     }
                 ]
             }

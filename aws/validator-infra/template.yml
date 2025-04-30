@@ -52,8 +52,13 @@ Resources:
           ./install-docker.sh >> /var/log/instance-config.log 2>&1
           ./install-nvidia-container-toolkit.sh >> /var/log/instance-config.log 2>&1
           ./install-awscli.sh >> /var/log/instance-config.log 2>&1
+          snap enable amazon-ssm-agent >> /var/log/instance-config.log 2>&1
+          echo "---Preconfig finished---" >> /var/log/instance-config.log
 
-          snap enable amazon-ssm-agent
+          cd ..
+          ./rebuild.sh >> /var/log/rebuild.log 2>&1
+
+          ./run-validator
 
   ValidatorSecurityGroup:
     Type: AWS::EC2::SecurityGroup
