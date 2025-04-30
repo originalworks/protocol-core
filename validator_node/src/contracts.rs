@@ -8,9 +8,8 @@ use alloy::{
             BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller,
             WalletFiller,
         },
-        Identity, Provider, RootProvider,
+        Identity, Provider, ProviderBuilder, RootProvider, WsConnect,
     },
-    providers::{ProviderBuilder, WsConnect},
     rpc::types::{Filter, TransactionReceipt},
     signers::local::PrivateKeySigner,
     sol,
@@ -78,6 +77,7 @@ pub struct ContractsManager {
     pub previous_image_id: alloy::primitives::FixedBytes<32>,
     pub provider: HardlyTypedProvider,
     pub chain_id: u64,
+    pub signer: PrivateKeySigner,
 }
 
 impl ContractsManager {
@@ -89,7 +89,7 @@ impl ContractsManager {
         let private_key_signer: PrivateKeySigner = private_key
             .parse()
             .with_context(|| "Failed to parse PRIVATE_KEY")?;
-        let wallet = EthereumWallet::from(private_key_signer);
+        let wallet = EthereumWallet::from(private_key_signer.clone());
 
         let provider = ProviderBuilder::new()
             .with_recommended_fillers()
@@ -97,7 +97,6 @@ impl ContractsManager {
             .on_http(rpc_url.parse()?);
 
         let chain_id = provider.get_chain_id().await?;
-
         let sequencer = DdexSequencer::new(ddex_sequencer_address, provider.clone());
 
         let emitter_address = sequencer.ddexEmitter().call().await?._0;
@@ -122,6 +121,7 @@ impl ContractsManager {
             previous_image_id: previous_image_id_parsed,
             provider,
             chain_id,
+            signer: private_key_signer,
         })
     }
 

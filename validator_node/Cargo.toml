@@ -8,7 +8,7 @@ alloy = { version = "0.3.0", features = ["full"] }
 dotenvy = { workspace = true }
 futures-util = "0.3.30"
 blob_codec = { workspace = true }
-reqwest = { workspace = true }
+reqwest = { workspace = true, features = ["multipart"]}
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 sha2 = "0.10.8"
@@ -36,6 +36,8 @@ multihash-codetable = { version = "0.1.4", default-features = false, features = 
     "sha2",
 ] }
 once_cell = { workspace = true }
+zip = { workspace = true }
+walkdir = { workspace = true }
 
 [features]
 cuda = ["risc0-zkvm/cuda"]

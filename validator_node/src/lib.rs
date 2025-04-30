@@ -3,6 +3,7 @@ mod constants;
 mod contracts;
 mod ipfs;
 pub mod prover_wrapper;
+mod zip;
 use alloy::primitives::Address;
 use constants::EMPTY_QUEUE_HEAD;
 use contracts::ContractsManager;
@@ -132,7 +133,7 @@ async fn validate_blobs(
 
     ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
 
-    let cid = ipfs::upload_blob_folder_and_cleanup()?;
+    let cid = ipfs::upload_blob_folder_and_cleanup(&contracts_manager.signer).await?;
 
     span.finish();
 

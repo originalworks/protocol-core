@@ -303,7 +303,7 @@ fn main() -> anyhow::Result<()> {
 
     // E) Build & run your validator_node logic
     let config = Config::build();
-    let _guard = init_sentry(&config);
+    // let _guard = init_sentry(&config);
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
