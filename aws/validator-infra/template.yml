@@ -58,7 +58,7 @@ Resources:
           cd ..
           ./rebuild.sh >> /var/log/rebuild.log 2>&1
 
-          ./run-validator
+          ./run-validator.sh
 
   ValidatorSecurityGroup:
     Type: AWS::EC2::SecurityGroup

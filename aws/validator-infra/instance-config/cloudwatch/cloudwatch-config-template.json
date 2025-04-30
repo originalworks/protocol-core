@@ -38,6 +38,12 @@
                         "log_group_name": "{{ValidatorLogGroupName}}",
                         "log_stream_name": "rebuild",
                         "timezone": "UTC"
+                    },
+                    {
+                        "file_path": "/var/log/validator-run.log",
+                        "log_group_name": "{{ValidatorLogGroupName}}",
+                        "log_stream_name": "validator-run",
+                        "timezone": "UTC"
                     }
                 ]
             }
