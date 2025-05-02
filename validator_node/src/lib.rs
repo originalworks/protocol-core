@@ -3,6 +3,7 @@ mod constants;
 mod contracts;
 mod ipfs;
 pub mod prover_wrapper;
+mod zip;
 use alloy::primitives::Address;
 use constants::EMPTY_QUEUE_HEAD;
 use contracts::ContractsManager;
@@ -32,6 +33,8 @@ pub struct Config {
     pub username: String,
     pub segment_limit_po2: u32,
     pub ddex_sequencer_address: Address,
+    pub disable_telemetry: bool,
+    pub storacha_bridge_url: String,
 }
 
 impl Config {
@@ -68,6 +71,18 @@ impl Config {
                 .as_str(),
         )
         .expect("Could not parse ddex sequencer address");
+        let disable_telemetry: bool = matches!(
+            std::env::var("DISABLE_TELEMETRY")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+        let mut storacha_bridge_url = env::var("STORACHA_BRIDGE_URL")
+            .unwrap_or_else(|_| constants::DEFAULT_STORACHA_BRIDGE_URL.to_string());
+
+        if !storacha_bridge_url.ends_with("/") {
+            storacha_bridge_url = format!("{}/", storacha_bridge_url)
+        }
 
         Config {
             rpc_url,
@@ -79,6 +94,8 @@ impl Config {
             username,
             segment_limit_po2,
             ddex_sequencer_address,
+            disable_telemetry,
+            storacha_bridge_url,
         }
     }
 }
@@ -132,7 +149,11 @@ async fn validate_blobs(
 
     ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
 
-    let cid = ipfs::upload_blob_folder_and_cleanup()?;
+    let cid = ipfs::upload_blob_folder_and_cleanup(
+        &contracts_manager.signer,
+        &config.storacha_bridge_url,
+    )
+    .await?;
 
     span.finish();
 

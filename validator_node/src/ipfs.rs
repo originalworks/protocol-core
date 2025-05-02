@@ -1,19 +1,23 @@
 use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE, REQWEST_CLIENT};
 use crate::contracts::QueueHeadData;
-use anyhow::{anyhow, Context};
+use crate::zip::zip_directory;
+use alloy::signers::local::PrivateKeySigner;
+use alloy::signers::Signer;
+use anyhow::Context;
 use blob_codec::BlobCodec;
 use cid::Cid;
-use ddex_parser::DdexParser; // only import what you need
-use log_macros::{log_error, log_info, log_warn};
+use ddex_parser::DdexParser;
+use log_macros::{format_error, log_info, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
+
+use reqwest::multipart;
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
     path::Path,
-    process::Command,
-}; // synchronous
+};
 
 #[derive(Serialize, Deserialize)]
 struct BlobMetadata {
@@ -25,6 +29,12 @@ struct BlobMetadata {
     network_name: String,
     blob_ipfs_cid: String,
     image_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct StorachaBridgeResponse {
+    cid: String,
+    url: String,
 }
 
 /// Decodes the blob, writes JSON out, downloads any images to `images/`,
@@ -82,15 +92,10 @@ pub async fn prepare_blob_folder(
             }
         };
 
-        // -------------------------------------------------
-        //   Download images from resource_list.images
-        // -------------------------------------------------
         let resource_list = &parsed.resource_list;
 
-        // If `resource_list.images` is a Vec, loop directly:
         for image in &resource_list.images {
             for tech_detail in &image.technical_details {
-                // tech_detail.file is an Option<File>, so do:
                 if let Some(file) = &tech_detail.file {
                     let cid = &file.uri;
                     log_info!("Found image CID: {}", cid);
@@ -133,11 +138,9 @@ pub async fn prepare_blob_folder(
         }
     }
 
-    // Write the raw blob to disk
     let mut blob_file = File::create(blob_folder_path.join("blob/blob_data.bin"))?;
     blob_file.write_all(&blob)?;
 
-    // Write metadata
     let blob_metadata = BlobMetadata {
         versioned_hash: queue_head_data.versioned_blobhash.to_string(),
         transaction_hash: queue_head_data.transaction_hash.to_string(),
@@ -157,7 +160,6 @@ pub async fn prepare_blob_folder(
     Ok(())
 }
 
-/// Compute a CID for the file at `TEMP_FOLDER/blob/blob_data.bin`
 fn calculate_blob_data_cid() -> anyhow::Result<String> {
     const RAW: u64 = 0x55;
     let blob_path = Path::new(constants::TEMP_FOLDER).join("blob/blob_data.bin");
@@ -167,60 +169,57 @@ fn calculate_blob_data_cid() -> anyhow::Result<String> {
     Ok(cid.to_string())
 }
 
-/// Upload the contents of `TEMP_FOLDER` to IPFS via `w3 up <folder>`, parse the CID,
-/// log it, then remove all files in `TEMP_FOLDER`.
-pub fn upload_blob_folder_and_cleanup() -> anyhow::Result<String> {
-    let folder_path = Path::new(constants::TEMP_FOLDER);
+pub async fn upload_blob_folder_and_cleanup(
+    signer: &PrivateKeySigner,
+    storacha_bridge_url: &String,
+) -> anyhow::Result<String> {
+    log::info!("Zipping files...");
+    let src_path = Path::new(constants::TEMP_FOLDER);
+    let zip_file_name = format!("{}.zip", constants::TEMP_FOLDER);
+    let zip_path = Path::new(&zip_file_name);
 
-    let output = Command::new("w3")
-        .args(["up", folder_path.to_str().unwrap()])
-        .output()
-        .with_context(|| format!("Failed to run `w3 up {}`", folder_path.display()))?;
-
-    if !output.status.success() {
-        let msg = format!(
-            "`w3 up` command failed with status: {:?}\nStdout: {}\nStderr: {}",
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        log_error!("{}", msg);
-        return Err(anyhow!(msg));
+    if zip_path.exists() {
+        fs::remove_file(zip_path)?;
     }
 
-    let stdout_str = String::from_utf8_lossy(&output.stdout);
+    zip_directory(src_path, zip_path, zip::CompressionMethod::Deflated)?;
 
-    let mut cid: Option<String> = None;
-    for line in stdout_str.lines() {
-        if line.starts_with("⁂ https://") {
-            let tokens: Vec<_> = line.split_whitespace().collect();
-            if tokens.len() >= 2 {
-                if let Some(url) = tokens.get(1) {
-                    if let Some(pos) = url.rfind('/') {
-                        cid = Some(url[(pos + 1)..].to_string());
-                        break;
-                    }
-                }
-            }
-        }
+    let signed_message = signer.sign_message(constants::CLIENT).await?;
+
+    let authorization = format!(
+        "{}::0x{}",
+        "VALIDATOR",
+        hex::encode(signed_message.as_bytes())
+    );
+
+    let file_part = multipart::Part::file(zip_path)
+        .await?
+        .file_name("temp.zip")
+        .mime_str("application/zip")?;
+    let form = multipart::Form::new().part("file", file_part);
+
+    log::info!("Uploading zip to Storacha Bridge...");
+
+    let response = REQWEST_CLIENT
+        .post(format!("{}w3up/dir", storacha_bridge_url))
+        .header("authorization", authorization)
+        .multipart(form)
+        .send()
+        .await?;
+
+    let res: StorachaBridgeResponse;
+
+    if response.status().is_success() {
+        res = response.json().await?;
+    } else {
+        let reason = response.text().await?;
+        return Err(format_error!("Storacha Bridge returned error: {}", reason));
     }
 
-    let cid = match cid {
-        Some(c) => c,
-        None => {
-            let msg = format!(
-                "Could not parse the CID from w3 output.\nFull output:\n{}",
-                stdout_str
-            );
-            log_error!("{}", msg);
-            return Err(anyhow!(msg));
-        }
-    };
+    log_info!("Successfully uploaded folder to IPFS. CID: {}", res.cid);
+    log_info!("URL: {}", res.url);
 
-    log_info!("Successfully uploaded folder to IPFS. CID: {}", cid);
-    log_info!("URL: https://{}.ipfs.w3s.link/", cid);
-
-    for entry in fs::read_dir(folder_path)? {
+    for entry in fs::read_dir(src_path)? {
         let path = entry?.path();
         if path.is_dir() {
             fs::remove_dir_all(&path)?;
@@ -229,5 +228,7 @@ pub fn upload_blob_folder_and_cleanup() -> anyhow::Result<String> {
         }
     }
 
-    Ok(cid)
+    fs::remove_file(zip_path)?;
+
+    Ok(res.cid)
 }
