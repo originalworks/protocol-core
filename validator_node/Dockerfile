@@ -10,7 +10,6 @@ RUN echo \
     $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN apt-get update && apt install wget npm pkg-config docker-ce-cli -y
-RUN npm install -g @web3-storage/w3cli
 
 # cuda
 RUN wget -q https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_570.124.06_linux.run
