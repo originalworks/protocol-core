@@ -1,4 +1,4 @@
-STACK_NAME=validator-infra-testing
+STACK_NAME=validator-infra
 ARTIFACTS_BUCKET=validator-artifacts
 PARAMETERS_FILE=template-config.json
 

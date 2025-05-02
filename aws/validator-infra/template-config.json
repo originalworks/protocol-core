@@ -1,5 +1,6 @@
 {
     "Parameters": {
-        "ValidatorLogGroupName": "ValidatorLogGroup2"
+        "ValidatorLogGroupName": "ValidatorLogGroup",
+        "ValidatorSecretsName": "ValidatorSecrets"
     }
 }

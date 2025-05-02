@@ -7,10 +7,16 @@ import {
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
+  Track,
+  Artist,
   ProvedMessage,
+  TracksAddedPerDay,
   ValidatorTxPerDay,
+  ArtistsAddedPerDay,
   BlobsRejectedPerDay,
+  TracksAddedPerMonth,
   ValidatorTxPerMonth,
+  ArtistsAddedPerMonth,
   BlobsProcessedPerDay,
   BlobsRejectedPerMonth,
   BlobsProcessedPerMonth,
@@ -28,6 +34,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
   const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
@@ -38,6 +45,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     provedMessage.message_id = message.release.release_id.icpn.toString();
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
+    provedMessage.cid = event.params.cid;
     provedMessage.save();
 
     let messagesProcessed = MessagesProcessedPerDay.load(id);
@@ -53,6 +61,93 @@ export function handleBlobProcessed(event: BlobProcessed): void {
     messagesProcessed.amount = messagesProcessed.amount.plus(BigInt.fromI32(1));
 
     messagesProcessed.save();
+
+    const displayArtistNames = message.release.display_artist_names;
+    if (displayArtistNames.length > 0) {
+      for (let j = 0; j < displayArtistNames.length; j++) {
+        const artistName = displayArtistNames[j].display_artist_name;
+        if (artistName) {
+          const namesArray = artistName.split(" feat. ").join(" , ").split(" & ").join(" , ").split(" , ");
+          if (namesArray.length > 0) {
+            for (let k = 0; k < namesArray.length; k++) {
+              const name = namesArray[k];
+              if (name) {
+                let artist = Artist.load(name);
+                if (artist == null) {
+                  artist = new Artist(name);
+                  artist.name = name;
+                  artist.timestamp = event.block.timestamp;
+                  artist.cid = event.params.cid;
+                  artist.save();
+
+                  let artistsPerDay = ArtistsAddedPerDay.load(id);
+                  if (artistsPerDay == null) {
+                    artistsPerDay = new ArtistsAddedPerDay(id);
+                    artistsPerDay.amount = BigInt.zero();
+                  }
+                  artistsPerDay.month = (date.getUTCMonth() + 1).toString();
+                  artistsPerDay.day = date.getUTCDate().toString();
+                  artistsPerDay.year = date.getUTCFullYear().toString();
+                  artistsPerDay.amount = artistsPerDay.amount.plus(BigInt.fromI32(1));
+                  artistsPerDay.save();
+
+                  let artistsPerMonth = ArtistsAddedPerMonth.load(idPerMonth);
+                  if (artistsPerMonth == null) {
+                    artistsPerMonth = new ArtistsAddedPerMonth(idPerMonth);
+                    artistsPerMonth.amount = BigInt.zero();
+                  }
+                  artistsPerMonth.month = (date.getUTCMonth() + 1).toString();
+                  artistsPerMonth.year = date.getUTCFullYear().toString();
+                  artistsPerMonth.amount = artistsPerMonth.amount.plus(BigInt.fromI32(1));
+                  artistsPerMonth.save();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const soundRecordings = message.sound_recordings;
+    if (soundRecordings.length > 0) {
+      for (let j = 0; j < soundRecordings.length; j++) {
+        const soundRecordingEditions = soundRecordings[j].sound_recording_editions;
+        for (let k = 0; k < soundRecordingEditions.length; k++) {
+          const isrc = soundRecordingEditions[k].isrc;
+          if (isrc) {
+            let track = Track.load(isrc);
+            if (track == null) {
+              track = new Track(isrc);
+              track.isrc = isrc;
+              track.timestamp = event.block.timestamp;
+              track.cid = event.params.cid;
+              track.save();
+
+              let tracksPerDay = TracksAddedPerDay.load(id);
+              if (tracksPerDay == null) {
+                tracksPerDay = new TracksAddedPerDay(id);
+                tracksPerDay.amount = BigInt.zero();
+              }
+              tracksPerDay.month = (date.getUTCMonth() + 1).toString();
+              tracksPerDay.day = date.getUTCDate().toString();
+              tracksPerDay.year = date.getUTCFullYear().toString();
+              tracksPerDay.amount = tracksPerDay.amount.plus(BigInt.fromI32(1));
+              tracksPerDay.save();
+
+              let tracksPerMonth = TracksAddedPerMonth.load(idPerMonth);
+              if (tracksPerMonth == null) {
+                tracksPerMonth = new TracksAddedPerMonth(idPerMonth);
+                tracksPerMonth.amount = BigInt.zero();
+              }
+              tracksPerMonth.month = (date.getUTCMonth() + 1).toString();
+              tracksPerMonth.year = date.getUTCFullYear().toString();
+              tracksPerMonth.amount = tracksPerMonth.amount.plus(BigInt.fromI32(1));
+              tracksPerMonth.save();
+            }
+          }
+        }
+      }
+    }
   }
 
   recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp, event.transaction.hash);
@@ -73,7 +168,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   blobsProcessed.save();
 
-  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
   let processedPerMonth = BlobsProcessedPerMonth.load(idPerMonth);
 
   if (processedPerMonth == null) {
