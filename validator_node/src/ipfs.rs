@@ -169,7 +169,11 @@ fn calculate_blob_data_cid() -> anyhow::Result<String> {
     Ok(cid.to_string())
 }
 
-pub async fn upload_blob_folder_and_cleanup(signer: &PrivateKeySigner) -> anyhow::Result<String> {
+pub async fn upload_blob_folder_and_cleanup(
+    signer: &PrivateKeySigner,
+    storacha_bridge_url: &String,
+) -> anyhow::Result<String> {
+    log::info!("Zipping files...");
     let src_path = Path::new(constants::TEMP_FOLDER);
     let zip_file_name = format!("{}.zip", constants::TEMP_FOLDER);
     let zip_path = Path::new(&zip_file_name);
@@ -192,10 +196,12 @@ pub async fn upload_blob_folder_and_cleanup(signer: &PrivateKeySigner) -> anyhow
         .await?
         .file_name("temp.zip")
         .mime_str("application/zip")?;
-
     let form = multipart::Form::new().part("file", file_part);
+
+    log::info!("Uploading zip to Storacha Bridge...");
+
     let response = REQWEST_CLIENT
-        .post("https://p1o0h55rwh.execute-api.us-east-1.amazonaws.com/devel/w3up/dir")
+        .post(format!("{}w3up/dir", storacha_bridge_url))
         .header("authorization", authorization)
         .multipart(form)
         .send()
