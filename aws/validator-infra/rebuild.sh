@@ -5,7 +5,7 @@ git pull
 
 # recreate .env file
 secret_name=$(jq -r '.Parameters.ValidatorSecretsName' /workspace/protocol-core/aws/validator-infra/template-config.json)
-rm -f /workspace/.env
+rm -f /workspace/protocol-core/validator_node/.env
 cp /workspace/protocol-core/aws/validator-infra/validator.env /workspace/protocol-core/validator_node/.env
 echo >> /workspace/protocol-core/validator_node/.env
 aws secretsmanager get-secret-value \

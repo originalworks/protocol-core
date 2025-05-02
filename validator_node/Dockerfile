@@ -13,7 +13,7 @@ RUN apt-get update && apt install wget npm pkg-config docker-ce-cli -y
 RUN npm install -g @web3-storage/w3cli
 
 # cuda
-RUN wget https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_570.124.06_linux.run
+RUN wget -q https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_570.124.06_linux.run
 RUN sh cuda_12.8.1_570.124.06_linux.run --silent --toolkit
 ENV PATH="/usr/local/cuda-12.8/bin:$PATH"
 ENV LD_LIBRARY_PATH="/usr/local/cuda-12.8/lib64:$PATH"
@@ -34,16 +34,13 @@ RUN rzup install r0vm 1.2.0
 
 
 RUN git clone https://github.com/originalworks/protocol-core.git
-COPY .env protocol-core/validator_node/.env
-
-# initiate w3
-# !!! it will ask to click the e-mail link during the build
-# *temporary solution until we have an endpoint to upload files
-USER root
-RUN w3 login cezary.stroczynski@rumblefish.pl && w3 space use did:key:z6Mkeq9K7nxMYK3xu9SSnq6ova1xrLV8NyRLZL89NrS2RxTf
 
 # compile contracts and build validator
 RUN cd protocol-core/contracts && npm i && forge build && npx hardhat compile
 RUN cd protocol-core/validator_node && cargo build --release -F cuda
 
-CMD ["RISC0_WORK_DIR=/docker-mnt", "cargo", "run", "--release" , "-F", "cuda"]
+COPY .env protocol-core/validator_node/.env
+ENV RISC0_WORK_DIR="/docker-mnt"
+WORKDIR /protocol-core/validator_node
+
+CMD ["cargo", "run", "--release" , "-F", "cuda"]
