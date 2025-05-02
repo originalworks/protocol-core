@@ -141,18 +141,46 @@ To run risc0 additional resources are required. Full installation guide can be f
 
 Run `npx hardhat compile` from the contracts folder
 
-# Run as Docker container:
+## GPU mode in Docker
 
-requirements:
+To run the Validator Node with GPU support, you can build a custom Docker image optimized for your environment. Use the provided Dockerfile in `/validator_node` and run the container with GPU access.
 
-- docker
-- nvidia docker toolkit: [link](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-- nvidia driver with support of CUDA 12.8 (570.124.06 or higher)
+**Requirements**
+Ensure your host machine has the following:
 
-## BUILD
+- Docker [link] https://docs.docker.com/engine/install/
+- NVIDIA Container Toolkit: [link](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+- NVIDIA driver with support of CUDA 12.8 (570.124.06 or higher)
 
-inside `/validator_node`:
+### Build the Docker Image
+
+Navigate to the `/validator_node` directory and run:
 
 ```
 docker build -t validator-node-image .
+```
+
+**Warning:** Building GPU image may take up to few hours!
+
+### Run the Container
+
+1. Create a local folder for temporary files (must be root level):
+
+```
+sudo mkdir /docker-mnt
+```
+
+2. Run the container with GPU support:
+
+```
+sudo docker run \
+    --runtime=nvidia \
+    --gpus all \
+    --privileged \
+    -it \
+    -v /docker-mnt:/docker-mnt \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /usr/bin/docker:/usr/bin/docker \
+    --rm \
+    validator-node-image:latest
 ```
