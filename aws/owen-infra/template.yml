@@ -133,7 +133,7 @@ Resources:
   OwenLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../target/lambda/owen_lambda
+      CodeUri: ../../target/lambda/owen_lambda
       Runtime: "provided.al2023"
       Architectures:
         - x86_64
@@ -199,7 +199,7 @@ Resources:
   QueueConsumerLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../target/lambda/aws_queue_consumer
+      CodeUri: ../../target/lambda/aws_queue_consumer
       Runtime: "provided.al2023"
       Architectures:
         - x86_64

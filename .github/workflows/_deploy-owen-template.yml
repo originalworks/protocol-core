@@ -100,5 +100,5 @@ jobs:
           role-duration-seconds: 1200
 
       - name: "Deploy AWS Cloud Formation template"
-        working-directory: owen/aws/deploy-infra
+        working-directory: aws/owen-infra
         run: make deploy-infra-${{ inputs.env }}
