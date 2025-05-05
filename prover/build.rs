@@ -45,10 +45,6 @@ fn main() {
         return ();
     }
 
-    // let use_docker = env::var("RISC0_USE_DOCKER").ok().map(|_| DockerOptions {
-    //     root_dir: Some("../".into()),
-    // });
-
     let mut builder = GuestOptionsBuilder::default();
 
     if env::var("RISC0_USE_DOCKER").is_ok() {
