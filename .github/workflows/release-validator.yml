@@ -5,9 +5,32 @@ on:
     tags:
       - "validator_node@*"
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   release:
     uses: ./.github/workflows/_release-template.yml
     with:
       tag: ${{ github.ref }}
     secrets: inherit
+
+  rebuild-ec2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE_PROTOCOL }}
+          role-session-name: protocol-core-session-id-${{ github.run_id }}
+          role-duration-seconds: 1200
+
+      - name: "Trigger rebuild via SSM"
+        run: |
+          aws ssm send-command \
+            --region us-east-1 \
+            --document-name "AWS-RunShellScript" \
+            --targets Key=tag:ValidatorTag,Values=ValidatorNodeEc2 \
+            --parameters commands=["bash /workspace/protocol-core/aws/validator-infra/rebuild-and-run.sh"]
