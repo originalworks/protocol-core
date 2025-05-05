@@ -160,7 +160,7 @@ Navigate to the `/validator_node` directory and run:
 docker build -t validator-node-image .
 ```
 
-**Warning:** Building GPU image may take up to few hours!
+**Warning:** Building GPU image may take up to few hours!!!
 
 ### Run the Container
 
