@@ -1,12 +1,12 @@
 use dotenvy::dotenv;
-use risc0_build;
-use risc0_build::{embed_methods_with_options, DockerOptions, GuestOptions};
+use risc0_build::{self, embed_methods_with_options, DockerOptionsBuilder, GuestOptionsBuilder};
 use risc0_build_ethereum::generate_solidity_files;
 use std::{
     collections::HashMap,
     env,
     fs::{self, File},
     io::Write,
+    path::Path,
 };
 
 const SOLIDITY_IMAGE_ID_PATH: &str = "../contracts/contracts/ImageID.sol";
@@ -45,17 +45,23 @@ fn main() {
         return ();
     }
 
-    let use_docker = env::var("RISC0_USE_DOCKER").ok().map(|_| DockerOptions {
-        root_dir: Some("../".into()),
-    });
+    // let use_docker = env::var("RISC0_USE_DOCKER").ok().map(|_| DockerOptions {
+    //     root_dir: Some("../".into()),
+    // });
 
-    let list = embed_methods_with_options(HashMap::from([(
-        "ddex_guest",
-        GuestOptions {
-            features: Vec::new(),
-            use_docker,
-        },
-    )]));
+    let mut builder = GuestOptionsBuilder::default();
+
+    if env::var("RISC0_USE_DOCKER").is_ok() {
+        let root_dir = Path::new("../").to_path_buf();
+        let docker_options = DockerOptionsBuilder::default()
+            .root_dir(root_dir)
+            .build()
+            .unwrap();
+        builder.use_docker(docker_options);
+    }
+
+    let guest_options = builder.build().unwrap();
+    let list = embed_methods_with_options(HashMap::from([("ddex_guest", guest_options)]));
     let entry = list.first().unwrap();
 
     // Archive previous version
@@ -78,7 +84,7 @@ fn main() {
     lib_content.push(format!(
         "#[rustfmt::skip]\npub const {}_ID: [u32; 8] = {:?};",
         CURRENT_BIN_NAME.to_uppercase(),
-        &entry.image_id
+        &entry.image_id.as_words()
     ));
 
     lib_content.push(format!(
