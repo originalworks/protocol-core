@@ -1,10 +1,15 @@
-use crate::constants::{IPFS_API_ADD_FILE, IPFS_API_BASE_URL, REQWEST_CLIENT};
+use crate::{
+    constants::{self, IPFS_API_ADD_FILE, IPFS_API_BASE_URL, REQWEST_CLIENT},
+    Config,
+};
+use alloy::{
+    hex,
+    signers::{local::PrivateKeySigner, Signer},
+};
 use anyhow::Context;
 use log_macros::{format_error, log_info};
 use reqwest::{multipart, Body};
-use serde::Deserialize;
-use serde_json::json;
-use std::path::Path;
+use serde::{Deserialize, Serialize};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 #[derive(Deserialize, Debug)]
@@ -13,24 +18,40 @@ struct IpfsKuboResponse {
     Hash: String,
 }
 
-#[derive(Deserialize, Debug)]
-#[allow(non_snake_case)]
-struct IpfsPinataResponse {
-    IpfsHash: String,
+#[derive(Debug, Serialize, Deserialize)]
+struct StorachaBridgeResponse {
+    cid: String,
+    url: String,
 }
 
-async fn file_to_multipart_form(file_path: &String) -> anyhow::Result<multipart::Form> {
+pub async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
+    if config.local_ipfs {
+        Ok(pin_file_ipfs_kubo(path).await?)
+    } else {
+        Ok(pin_file_storacha(path, &config.storacha_bridge_url, &config.private_key).await?)
+    }
+}
+
+async fn file_to_multipart_form(
+    file_path: &String,
+    mime_type: Option<&str>,
+) -> anyhow::Result<multipart::Form> {
     let file = tokio::fs::File::open(file_path).await?;
     let file_stream = FramedRead::new(file, BytesCodec::new());
-    let multipart_stream =
+    let mut multipart_stream =
         multipart::Part::stream(Body::wrap_stream(file_stream)).file_name("filename");
+
+    if let Some(mime_str) = mime_type {
+        multipart_stream = multipart_stream.mime_str(&mime_str)?;
+    }
+
     let multipart_form = multipart::Form::new().part("file", multipart_stream);
     Ok(multipart_form)
 }
 
-pub async fn pin_file_ipfs_kubo(file_path: &String) -> anyhow::Result<String> {
+async fn pin_file_ipfs_kubo(file_path: &String) -> anyhow::Result<String> {
     log_info!("Pinning {} to IPFS using KUBO...", file_path);
-    let multipart_form = file_to_multipart_form(file_path).await?;
+    let multipart_form = file_to_multipart_form(file_path, None).await?;
 
     let response = REQWEST_CLIENT
         .post(format!("{}{}", IPFS_API_BASE_URL, IPFS_API_ADD_FILE))
@@ -44,56 +65,43 @@ pub async fn pin_file_ipfs_kubo(file_path: &String) -> anyhow::Result<String> {
     Ok(result.Hash)
 }
 
-pub async fn pin_file_pinata(file_path: &String, pinata_jwt: &String) -> anyhow::Result<String> {
-    log_info!("Pinning {} to IPFS using PINATA...", file_path);
-    // Extract the filename from the file path
-    let filename = Path::new(file_path)
-        .file_name() // Extracts the final component of the path
-        .and_then(|name| name.to_str()) // Converts OsStr to &str
-        .ok_or_else(|| {
-            format_error!("Failed to extract filename from {}", {
-                file_path.to_string()
-            })
-        })?;
+async fn pin_file_storacha(
+    file_path: &String,
+    storacha_bridge_url: &String,
+    private_key: &String,
+) -> anyhow::Result<String> {
+    log_info!("Pinning {} to IPFS using STORACHA...", file_path);
 
-    // Open the file and prepare the multipart form
-    let file = tokio::fs::File::open(file_path).await?;
-    let file_stream = FramedRead::new(file, BytesCodec::new());
-    let file_part =
-        multipart::Part::stream(Body::wrap_stream(file_stream)).file_name(filename.to_string());
+    let form = file_to_multipart_form(&file_path, Some("image/avif")).await?;
 
-    // Add metadata
-    let metadata = json!({
-            "name": filename, // Use the extracted filename
-            "keyvalues": {
-                "status": "firstpin",
-                "customField2": "customValue2" // Future use for ERN?
-            }
-    });
+    let signer: PrivateKeySigner = private_key
+        .parse()
+        .with_context(|| "Failed to parse PRIVATE_KEY")?;
 
-    //Add options
-    let options = json!({
-        "cidVersion": 1
-    });
+    let signed_message = signer.sign_message(constants::CLIENT).await?;
 
-    // Create the multipart form
-    let multipart_form = multipart::Form::new()
-        .part("file", file_part)
-        .text("pinataMetadata", metadata.to_string())
-        .text("pinataOptions", options.to_string());
+    let authorization = format!("{}::0x{}", "OWEN", hex::encode(signed_message.as_bytes()));
 
-    // Send the request
     let response = REQWEST_CLIENT
-        .post("https://api.pinata.cloud/pinning/pinFileToIPFS")
-        .header("Authorization", format!("Bearer {}", pinata_jwt))
-        .multipart(multipart_form)
+        .post(format!("{}w3up/file", storacha_bridge_url))
+        .header("authorization", authorization)
+        .multipart(form)
         .send()
         .await
-        .with_context(|| format_error!("Pinning to IPFS failed"))?;
+        .with_context(|| format_error!("Pinning to Storacha failed"))?;
 
-    let result = response.json::<IpfsPinataResponse>().await?;
-    log_info!("Pinned! CID: {}", result.IpfsHash);
-    Ok(result.IpfsHash)
+    let res: StorachaBridgeResponse;
+
+    if response.status().is_success() {
+        res = response.json().await?;
+    } else {
+        let reason = response.text().await?;
+        return Err(format_error!("Storacha Bridge returned error: {}", reason));
+    }
+
+    log_info!("Pinned! CID: {}", res.cid);
+
+    Ok(res.cid)
 }
 
 #[cfg(test)]

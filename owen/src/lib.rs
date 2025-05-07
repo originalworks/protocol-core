@@ -40,13 +40,13 @@ pub struct Config {
     pub rpc_url: String,
     pub private_key: String,
     pub folder_path: String,
-    pub default_ipfs_interface: IpfsInterface,
-    pub ipfs_kubo_url: String,
-    pub pinata_jwt: String,
+    pub local_ipfs: bool,
     pub output_files_dir: String,
     pub username: String,
     pub environment: String,
     pub ddex_sequencer_address: Address,
+    pub disable_telemetry: bool,
+    pub storacha_bridge_url: String,
 }
 
 impl Config {
@@ -71,18 +71,15 @@ impl Config {
 
         let rpc_url = Config::get_env_var("RPC_URL");
         let private_key = Config::get_env_var("PRIVATE_KEY");
-        let ipfs_kubo_url = Config::get_env_var("IPFS_KUBO_URL");
-        let pinata_jwt = Config::get_env_var("PINATA_JWT");
+        let local_ipfs = matches!(
+            std::env::var("LOCAL_IPFS")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
         let output_files_dir = Config::get_env_var("OUTPUT_FILES_DIR");
         let username = Config::get_env_var("USERNAME");
         let environment = Config::get_env_var("ENVIRONMENT");
-        let default_ipfs_interface = match Config::get_env_var("DEFAULT_IPFS_INTERFACE").as_str() {
-            "PINATA" => IpfsInterface::PINATA,
-            "KUBO" => IpfsInterface::KUBO,
-            _ => {
-                panic!("Invalid DEFAULT_IPFS_INTERFACE. Supported values: KUBO/PINATA")
-            }
-        };
         let ddex_sequencer_address = Address::from_str(
             std::env::var("DDEX_SEQUENCER_ADDRESS")
                 .unwrap_or_else(|_| constants::DDEX_SEQUENCER_ADDRESS.to_string())
@@ -90,17 +87,30 @@ impl Config {
         )
         .expect("Could not parse ddex sequencer address");
 
+        let disable_telemetry: bool = matches!(
+            std::env::var("DISABLE_TELEMETRY")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+        let mut storacha_bridge_url = env::var("STORACHA_BRIDGE_URL")
+            .unwrap_or_else(|_| constants::DEFAULT_STORACHA_BRIDGE_URL.to_string());
+
+        if !storacha_bridge_url.ends_with("/") {
+            storacha_bridge_url = format!("{}/", storacha_bridge_url)
+        }
+
         let config = Config {
             rpc_url,
             private_key,
             folder_path,
-            default_ipfs_interface,
-            pinata_jwt,
-            ipfs_kubo_url,
+            local_ipfs,
             output_files_dir,
             environment,
             username,
             ddex_sequencer_address,
+            disable_telemetry,
+            storacha_bridge_url,
         };
 
         config
@@ -130,7 +140,6 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         }));
 
         let mut cloned_config = config.clone();
-        cloned_config.pinata_jwt = "***".to_string();
         cloned_config.private_key = "***".to_string();
         scope.set_extra("config", json!(cloned_config));
     });
