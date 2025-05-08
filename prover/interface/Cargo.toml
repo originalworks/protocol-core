@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = "1.2.0"
+risc0-zkvm = "2.0.2"
 serde = "1.0"
 ddex_parser = { path = "../../ddex_parser" }
 alloy-sol-types = "0.8.18"
