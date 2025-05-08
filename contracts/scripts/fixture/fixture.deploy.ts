@@ -14,6 +14,7 @@ import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/Dd
 import { deployFakeVerifier } from "../actions/contract-deployment/FakeVerifier/FakeVerifier.deploy";
 
 const SLASH_RATE = 1000;
+const DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS = 15;
 
 class ConsoleLog {
   constructor(private active: boolean) {}
@@ -51,6 +52,9 @@ export async function deployFixture(
       await dataProvidersWhitelistOutput.contract.getAddress(),
     validatorsWhitelist: await validatorsWhitelistOutput.contract.getAddress(),
     stakeVaultAddress: await stakeVaultOutput.contract.getAddress(),
+    headProcessingTimeInBlocks:
+      input.headProcessingTimeInBlocks ||
+      DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS,
   });
 
   if (input.disableWhitelist) {
@@ -76,7 +80,7 @@ export async function deployFixture(
     deployer: input.deployer,
     ddexSequencerAddress: await ddexSequencerOutput.contract.getAddress(),
     _riscZeroGroth16VerifierAddress: riscZeroGroth16VerifierAddress,
-    fakeImageId: !!input.fakeImageId
+    fakeImageId: !!input.fakeImageId,
   });
   await ddexSequencerOutput.contract.setDdexEmitter(
     await ddexEmitterOutput.contract.getAddress()

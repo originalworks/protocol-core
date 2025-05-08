@@ -1,11 +1,4 @@
-import {
-  BytesLike,
-  ethers,
-  parseEther,
-  randomBytes,
-  Signer,
-  Wallet,
-} from "ethers";
+import { BytesLike, ethers, parseEther, Signer } from "ethers";
 import { FixtureOutput } from "../scripts/fixture/fixture.types";
 import {
   deployFixture,
@@ -208,6 +201,7 @@ describe("DdexSequencer", () => {
     expect(await ddexSequencer.contract.blobQueueTail()).equal(blobhash);
 
     const blobDetailsBefore = await ddexSequencer.contract.blobs(blobhash);
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
     await (
       await ddexSequencer.contract
         .connect(validators[0])
@@ -246,11 +240,16 @@ describe("DdexSequencer", () => {
       imageId
     );
 
+    // assign both blobs to validator[0]
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
     // first blob
     expect(await ddexSequencer.contract.blobQueueHead()).equal(blobhash1);
     expect(await ddexSequencer.contract.blobQueueTail()).equal(blobhash2);
 
     const blob1DetailsBefore = await ddexSequencer.contract.blobs(blobhash1);
+
     await ddexSequencer.contract
       .connect(validators[0])
       .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
@@ -312,6 +311,11 @@ describe("DdexSequencer", () => {
       "./test/ddex-messages/new_release3.xml",
       imageId
     );
+
+    // assign all blobs to validator[0]
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
 
     // first blob
     expect(await ddexSequencer.contract.blobQueueHead()).equal(blobhash1);
@@ -457,6 +461,9 @@ describe("DdexSequencer", () => {
       ddexEmitter.imageId
     );
 
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
     // rejects: bytes32(0)
     await expect(
       ddexSequencer.contract
@@ -496,4 +503,211 @@ describe("DdexSequencer", () => {
         .submitProof(ddexEmitter.imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
     ).not.to.be.rejected;
   });
+  it("Assign different validators to BLOBs", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    const { blobhash: blobhash1 } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release.xml",
+      imageId
+    );
+
+    const { blobhash: blobhash2 } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release2.xml",
+      imageId
+    );
+    // this should assing blobhash1 to validator[0]
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
+    // this should assing blobhash2 to validator[1]
+    await ddexSequencer.contract.connect(validators[1]).assignBlob();
+
+    const blob1Details = await ddexSequencer.contract.blobs(blobhash1);
+    const blob2Details = await ddexSequencer.contract.blobs(blobhash2);
+
+    expect(blob1Details.assignedValidator).equal(
+      await validators[0].getAddress()
+    );
+    expect(blob2Details.assignedValidator).equal(
+      await validators[1].getAddress()
+    );
+  });
+  it("Only assigned validator can post proof for BLOB", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    const { blobhash } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release.xml",
+      imageId
+    );
+
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
+    const blobDetails = await ddexSequencer.contract.blobs(blobhash);
+    expect(blobDetails.assignedValidator).equal(
+      await validators[0].getAddress()
+    );
+
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[1])
+        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).to.rejected;
+
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).to.not.rejected;
+  });
+  it("Can't assign blob when queue is empty", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    await expect(ddexSequencer.contract.connect(validators[0]).assignBlob()).to
+      .rejected;
+  });
+  it("Emit event when blob is assigned", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    const { blobhash } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release.xml",
+      imageId
+    );
+
+    const tx = await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
+    const receipt = await tx.wait();
+
+    const filter = ddexSequencer.contract.filters.BlobAssigned;
+    const events = await ddexSequencer.contract.queryFilter(
+      filter,
+      receipt?.blockNumber,
+      receipt?.blockNumber
+    );
+
+    const blobFromEvent = events[0].args.blob;
+    const assignedValidator = events[0].args.assignedValidator;
+
+    expect(blobFromEvent).equal(blobhash);
+    expect(assignedValidator).equal(await validators[0].getAddress());
+  });
+  it("Reassign head after time for processing passed", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    const timeForProcessing =
+      await ddexSequencer.contract.headProcessingTimeInBlocks();
+
+    const { blobhash: blobQueueHead } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release.xml",
+      imageId
+    );
+
+    await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release2.xml",
+      imageId
+    );
+
+    // assign blob from queue head to validator[0]
+    // since now validator[0] has 'timeForProcessing' blocks to process the blob
+    await ddexSequencer.contract.connect(validators[0]).assignBlob();
+
+    // assign second blob to validator[1]
+    await ddexSequencer.contract.connect(validators[1]).assignBlob();
+
+    expect(
+      (await ddexSequencer.contract.blobs(blobQueueHead)).assignedValidator
+    ).equal(await validators[0].getAddress());
+
+    // mine 'timeForProcessing' blocks
+    for (let i = 0; i < timeForProcessing; i++) {
+      await hre.ethers.provider.send("evm_mine", []);
+    }
+
+    // validator[0] can no longer post proof for blobQueueHead
+    await expect(
+      ddexSequencer.contract
+        .connect(validators[0])
+        .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid")
+    ).to.rejected;
+
+    // validator[1] reclaim assignment to queue head
+    await ddexSequencer.contract.connect(validators[1]).assignBlob();
+
+    expect(
+      (await ddexSequencer.contract.blobs(blobQueueHead)).assignedValidator
+    ).equal(await validators[1].getAddress());
+  });
+
+  it.only("Clear processing time when queue is moved", async () => {
+    const {
+      ddexSequencer,
+      ddexEmitter: { imageId },
+    } = fixture;
+
+    const { blobhash: blobhash1 } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release.xml",
+      imageId
+    );
+
+    const { blobhash: blobhash2 } = await sendBlob(
+      ddexSequencer.contract,
+      dataProviders[0],
+      "./test/ddex-messages/new_release2.xml",
+      imageId
+    );
+
+    const headAssignmentTx = await ddexSequencer.contract
+      .connect(validators[0])
+      .assignBlob();
+    const headAssignmentTxReceipt = await headAssignmentTx.wait();
+    const blob1ProcessingTimeStartBlock = headAssignmentTxReceipt?.blockNumber;
+
+    expect(blob1ProcessingTimeStartBlock).equal(
+      await ddexSequencer.contract.headProcessingStartBlock()
+    );
+
+    const submitProofTx = await ddexSequencer.contract
+      .connect(validators[0])
+      .submitProof(imageId, JOURNAL_EXAMPLE, "0x00", "ipfscid");
+    const submitProofReceipt = await submitProofTx.wait();
+
+    // await ddexSequencer.contract.connect(validators[1]).assignBlob();
+  });
+  // clear head processing time after blob is processed
+  // BLOBs proofs still need to be sent in order
+  // validator can be assigned to more than one blob
+  // clear and repopulate queue
+  // cant assign blob when all blobs were assigned
+  // check different order. send blob, assign, send proof, etc
 });
+// async function increaseTime(timeRange: number) {
+//   await this.provider.send('evm_increaseTime', [timeRange])
+//   await this.provider.send('evm_mine', [])
+// }

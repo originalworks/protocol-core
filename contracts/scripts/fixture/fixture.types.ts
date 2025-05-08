@@ -16,6 +16,7 @@ export interface FixtureInput {
   printLogs?: boolean;
   fakeRisc0Groth16Verifier?: boolean;
   fakeImageId?: boolean;
+  headProcessingTimeInBlocks?: number;
 }
 
 export interface FixtureOutput {
@@ -24,7 +25,7 @@ export interface FixtureOutput {
   stakeVault: DeploymentOutput<StakeVault>;
   ddexSequencer: DeploymentOutput<DdexSequencer>;
   ddexEmitter: DeploymentOutput<DdexEmitter> & {
-    imageId: BytesLike
+    imageId: BytesLike;
   };
   dataProvidersWhitelist: DeploymentOutput<Whitelist>;
   validatorsWhitelist: DeploymentOutput<Whitelist>;
