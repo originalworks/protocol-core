@@ -29,7 +29,7 @@ RUN foundryup
 # risc0
 RUN curl -L https://risczero.com/install | bash 
 ENV PATH="/root/.risc0/bin:$PATH"
-RUN rzup install r0vm 1.2.0
+RUN rzup install r0vm 2.0.2
 
 
 RUN git clone https://github.com/originalworks/protocol-core.git
