@@ -41,7 +41,7 @@ contract DdexSequencer is
 
     mapping(bytes32 => Blob) public blobs;
 
-    bytes32 nextBlobAssignment;
+    bytes32 public nextBlobAssignment;
 
     uint256 public headProcessingStartBlock;
     uint256 public headProcessingTimeInBlocks;
@@ -213,6 +213,9 @@ contract DdexSequencer is
         blobs[blobQueueHead].submitted = false;
         blobs[blobQueueHead].nextBlob = bytes32(0);
         blobs[blobQueueHead].proposer = address(0);
+        blobs[blobQueueHead].assignedValidator = address(0);
+        blobs[blobQueueHead].imageId = bytes32(0);
+        blobs[blobQueueHead].blobId = bytes32(0);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
