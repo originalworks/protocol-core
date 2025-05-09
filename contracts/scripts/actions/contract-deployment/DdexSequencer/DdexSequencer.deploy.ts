@@ -9,7 +9,7 @@ export async function deployDdexSequencer(
 ): Promise<DeploymentOutput<DdexSequencer>> {
   const DdexSequencer = await ethers.getContractFactory("DdexSequencer");
 
-  const ddexSequencer = await upgrades.deployProxy(
+  const ddexSequencer = (await upgrades.deployProxy(
     DdexSequencer,
     [
       input.dataProvidersWhitelist,
@@ -19,7 +19,7 @@ export async function deployDdexSequencer(
     {
       kind: "uups",
     }
-  );
+  )) as unknown as DdexSequencer;
 
   await ddexSequencer.waitForDeployment();
 
@@ -31,8 +31,13 @@ export async function deployDdexSequencer(
     throw new Error("Implementation address not found");
   }
 
+  const tx = await ddexSequencer.setHeadProcessingTimeInBlocks(
+    input.headProcessingTimeInBlocks
+  );
+  await tx.wait();
+
   return {
-    contract: ddexSequencer as unknown as DdexSequencer,
+    contract: ddexSequencer,
     contractVerificationInput: {
       deployedContractAddress: implementationAddress,
     },

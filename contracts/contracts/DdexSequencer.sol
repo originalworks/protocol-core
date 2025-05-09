@@ -16,6 +16,7 @@ contract DdexSequencer is
 {
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
     event WhitelistingStatusChanged(bool current_status);
+    event BlobAssigned(bytes32 blob, address assignedValidator);
 
     struct Blob {
         bytes32 nextBlob;
@@ -23,6 +24,7 @@ contract DdexSequencer is
         address proposer;
         bytes32 blobId;
         bytes32 imageId;
+        address assignedValidator;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -39,7 +41,12 @@ contract DdexSequencer is
 
     mapping(bytes32 => Blob) public blobs;
 
-    uint256[50] __gap;
+    bytes32 public nextBlobAssignment;
+
+    uint256 public headProcessingStartBlock;
+    uint256 public headProcessingTimeInBlocks;
+
+    uint256[47] __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -113,6 +120,10 @@ contract DdexSequencer is
         blobs[newBlobhash].blobId = blobId;
         blobs[newBlobhash].imageId = _imageId;
 
+        if (nextBlobAssignment == bytes32(0)) {
+            nextBlobAssignment = newBlobhash;
+        }
+
         if (blobQueueHead == bytes32(0)) {
             blobQueueHead = newBlobhash;
             blobQueueTail = newBlobhash;
@@ -130,10 +141,55 @@ contract DdexSequencer is
         string memory _cid
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
+        require(
+            block.number <=
+                headProcessingStartBlock + headProcessingTimeInBlocks,
+            "DdexSequencer: Head processing time expired"
+        );
+        require(
+            msg.sender == blobs[blobQueueHead].assignedValidator,
+            "DdexSequencer: msg.sender must be assignmened to head blob"
+        );
 
         ddexEmitter.verifyAndEmit(_imageId, _journal, _seal, _cid);
 
         _moveQueue();
+    }
+
+    function assignBlob() external _isWhitelistedOn(VALIDATORS_WHITELIST) {
+        require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
+
+        if (blobQueueHead == nextBlobAssignment) {
+            blobs[nextBlobAssignment].assignedValidator = msg.sender;
+            headProcessingStartBlock = block.number;
+            emit BlobAssigned(nextBlobAssignment, msg.sender);
+            nextBlobAssignment = blobs[nextBlobAssignment].nextBlob;
+        } else if (
+            block.number > headProcessingStartBlock + headProcessingTimeInBlocks
+        ) {
+            // TODO! Slash previous blobs[blobQueueHead].assignedValidator here!
+            blobs[blobQueueHead].assignedValidator = msg.sender;
+            headProcessingStartBlock = block.number;
+            emit BlobAssigned(blobQueueHead, msg.sender);
+        } else {
+            require(
+                nextBlobAssignment != bytes32(0),
+                "DdexSequencer: All blobs assigned"
+            );
+            blobs[nextBlobAssignment].assignedValidator = msg.sender;
+            emit BlobAssigned(nextBlobAssignment, msg.sender);
+            nextBlobAssignment = blobs[nextBlobAssignment].nextBlob;
+        }
+    }
+
+    function setHeadProcessingTimeInBlocks(
+        uint256 newTimeInBlocks
+    ) public onlyOwner {
+        require(
+            newTimeInBlocks > 1,
+            "DdexSequencer: Head processing time must be greater than 1"
+        );
+        headProcessingTimeInBlocks = newTimeInBlocks;
     }
 
     function _moveQueue() private {
@@ -145,6 +201,7 @@ contract DdexSequencer is
             bytes32 newBlobQueueHead = blobs[blobQueueHead].nextBlob;
             _deleteBlobQueueHead();
             blobQueueHead = newBlobQueueHead;
+            headProcessingStartBlock = block.number;
         }
     }
 
@@ -156,6 +213,9 @@ contract DdexSequencer is
         blobs[blobQueueHead].submitted = false;
         blobs[blobQueueHead].nextBlob = bytes32(0);
         blobs[blobQueueHead].proposer = address(0);
+        blobs[blobQueueHead].assignedValidator = address(0);
+        blobs[blobQueueHead].imageId = bytes32(0);
+        blobs[blobQueueHead].blobId = bytes32(0);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
