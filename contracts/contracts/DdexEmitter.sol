@@ -93,7 +93,8 @@ contract DdexEmitter is
         bytes32 _imageId,
         bytes memory _journal,
         bytes calldata _seal,
-        string memory _cid
+        string memory _cid,
+        bytes32 _blobhash
     ) external returns (bytes32 blobSha2) {
         require(
             msg.sender == ddexSequencerAddress,
@@ -113,9 +114,9 @@ contract DdexEmitter is
         riscZeroGroth16Verifier.verify(_seal, _imageId, sha256(_journal));
 
         if (proverPublicOutputs.valid) {
-            emit BlobProcessed(proverPublicOutputs, _cid);
+            emit BlobProcessed(proverPublicOutputs, _cid, _blobhash);
         } else {
-            emit BlobRejected(proverPublicOutputs, _cid);
+            emit BlobRejected(proverPublicOutputs, _cid, _blobhash);
         }
 
         return proverPublicOutputs.digest;
