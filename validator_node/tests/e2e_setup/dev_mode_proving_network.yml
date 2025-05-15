@@ -1,0 +1,46 @@
+services:
+  builder:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    working_dir: /protocol-core
+    user: ${HOST_UID}:${HOST_GID}
+    volumes:
+      - ../../../:/protocol-core
+    environment:
+      - RPC_URL=${RPC_URL}
+      - FAKE_IMAGE_ID=true
+      - PROVING_SETUP=false
+    command: ["./validator_node/tests/e2e_setup/build.sh"]
+
+  validator_node_1:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    working_dir: /protocol-core
+    user: ${HOST_UID}:${HOST_GID}
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+    volumes:
+      - ../../../:/protocol-core
+    environment:
+      - PRIVATE_KEY=${VALIDATOR_1_PK}
+      - RPC_URL=${RPC_URL}
+      - WS_URL=${WS_URL}
+      - BEACON_RPC_URL=${BEACON_RPC_URL}
+      - START_BLOCK=${START_BLOCK}
+      - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - USERNAME=${USERNAME}
+      - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
+      - RISC0_DEV_MODE=1
+    command: ["./validator_node/tests/e2e_setup/launch-validator.sh"]
