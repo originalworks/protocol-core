@@ -1,7 +1,7 @@
 use crate::image_processor::optimize_image;
-use crate::ipfs::{pin_file_ipfs_kubo, pin_file_pinata};
+use crate::ipfs::pin_file;
 use crate::logger::report_validation_error;
-use crate::{Config, IpfsInterface};
+use crate::Config;
 use anyhow::Context;
 use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
@@ -120,14 +120,6 @@ async fn pin_and_write_cid(
 fn is_xml_file_empty(file_path: &Path) -> anyhow::Result<bool> {
     let content = fs::read_to_string(file_path)?;
     Ok(content.trim().is_empty())
-}
-
-async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
-    if config.default_ipfs_interface == IpfsInterface::KUBO {
-        Ok(pin_file_ipfs_kubo(path).await?)
-    } else {
-        Ok(pin_file_pinata(path, &config.pinata_jwt).await?)
-    }
 }
 
 async fn process_message_folder(
@@ -379,13 +371,13 @@ mod tests {
             rpc_url: String::new(),
             private_key: String::new(),
             folder_path: String::from_str("./tests").unwrap(),
-            default_ipfs_interface: IpfsInterface::KUBO,
-            ipfs_kubo_url: String::from_str("http://localhost:5001").unwrap(),
-            pinata_jwt: String::new(),
+            local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
             username: String::from_str("user").unwrap(),
             ddex_sequencer_address: Address::ZERO,
+            disable_telemetry: true,
+            storacha_bridge_url: "ABC".to_string(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -411,13 +403,13 @@ mod tests {
             rpc_url: String::new(),
             private_key: String::new(),
             folder_path: String::from_str("./tests/empty_dir").unwrap(),
-            default_ipfs_interface: IpfsInterface::KUBO,
-            ipfs_kubo_url: String::new(),
-            pinata_jwt: String::new(),
+            local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
             username: String::from_str("user").unwrap(),
             ddex_sequencer_address: Address::ZERO,
+            disable_telemetry: true,
+            storacha_bridge_url: "ABC".to_string(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 
