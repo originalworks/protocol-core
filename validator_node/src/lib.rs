@@ -5,9 +5,10 @@ mod ipfs;
 pub mod prover_wrapper;
 mod zip;
 use alloy::primitives::Address;
+use beacon_chain::BlobExpiredError;
 use constants::EMPTY_QUEUE_HEAD;
 use contracts::ContractsManager;
-use log_macros::{log_debug, log_error, log_info};
+use log_macros::{log_debug, log_error, log_info, log_warn};
 use serde_json::json;
 use std::cell::RefCell;
 use std::env;
@@ -133,12 +134,27 @@ async fn validate_blobs(
 
     span = tx.start_child("blob_discovery", "Get blob");
 
-    let blob = beacon_chain::find_blob(
+    let blob = match beacon_chain::find_blob(
         &config.beacon_rpc_url,
         &queue_head_data.commitment,
         &queue_head_data.parent_beacon_block_root,
     )
-    .await?;
+    .await
+    {
+        Ok(res) => res,
+        Err(e) => match e.downcast::<BlobExpiredError>() {
+            Ok(blob_expired_err) => {
+                if let Err(inner_e) = contracts_manager.report_stale_blob().await {
+                    log_warn!(
+                        "Failed to report expired blob, reason: {}",
+                        inner_e.to_string()
+                    );
+                };
+                Err(blob_expired_err)?
+            }
+            Err(other_error) => Err(other_error)?,
+        },
+    };
 
     span.finish();
 

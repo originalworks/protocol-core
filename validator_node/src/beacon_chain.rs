@@ -6,6 +6,10 @@ use alloy::{
 use log_macros::{format_error, log_info, log_warn};
 use serde::Deserialize;
 
+#[derive(thiserror::Error, Debug)]
+#[error("Blob committment not found in sidecar. Aborting")]
+pub struct BlobExpiredError;
+
 #[derive(Deserialize, Debug)]
 struct BeaconBlockDataMessage {
     slot: String,
@@ -127,9 +131,7 @@ pub async fn find_blob(
 
     while blob_sidecar_data.is_none() {
         if next_slot - slot >= 20 {
-            return Err(format_error!(
-                "Looked for commitment in 20 blocks. Aborting."
-            ));
+            return Err(BlobExpiredError.into());
         }
 
         log_info!(
