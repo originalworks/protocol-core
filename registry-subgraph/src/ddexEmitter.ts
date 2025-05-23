@@ -114,13 +114,21 @@ export function handleBlobProcessed(event: BlobProcessed): void {
         const soundRecordingEditions = soundRecordings[j].sound_recording_editions;
         for (let k = 0; k < soundRecordingEditions.length; k++) {
           const isrc = soundRecordingEditions[k].isrc;
+          const pLine = soundRecordings[j].sound_recording_editions[0].p_lines[0]
           if (isrc) {
+            const cid = event.params.cid + "/json/" + i.toString() + ".json";
+            const image = event.params.cid + "/images/" + i.toString() + ".avif";
             let track = Track.load(isrc);
             if (track == null) {
               track = new Track(isrc);
               track.isrc = isrc;
               track.timestamp = event.block.timestamp;
-              track.cid = event.params.cid;
+              track.cid = cid;
+              track.display_title = soundRecordings[j].display_title;
+              track.subtitle = soundRecordings[j].subtitle;
+              track.display_title_text = soundRecordings[j].display_title_text;
+              track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+              track.image = image;
               track.save();
 
               let tracksPerDay = TracksAddedPerDay.load(id);
@@ -143,6 +151,18 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               tracksPerMonth.year = date.getUTCFullYear().toString();
               tracksPerMonth.amount = tracksPerMonth.amount.plus(BigInt.fromI32(1));
               tracksPerMonth.save();
+            } else {
+              if (event.block.timestamp > track.timestamp) {
+                track.isrc = isrc;
+                track.timestamp = event.block.timestamp;
+                track.cid = cid;
+                track.display_title = soundRecordings[j].display_title;
+                track.subtitle = soundRecordings[j].subtitle;
+                track.display_title_text = soundRecordings[j].display_title_text;
+                track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+                track.image = image;
+                track.save();
+              }
             }
           }
         }
