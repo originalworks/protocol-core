@@ -75,19 +75,6 @@ templates:
       language: wasm/assemblyscript
       entities:
         - AssetMetadata
-        - Release
-        - DisplayArtist
-        - DisplayArtistName
-        - PartyElement
-        - ResourceList
-        - SoundRecording
-        - Image
-        - ResourceId
-        - TechnicalDetail
-        - SoundRecordingEdition
-        - PLine
-        - Fingerprint
-        - Contributor
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json
