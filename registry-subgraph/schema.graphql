@@ -125,6 +125,7 @@ type Track @entity(immutable: false) {
   label: String
   image: String!
   timestamp: BigInt!
+  metadata: AssetMetadata
 }
 
 type TracksAddedPerDay @entity(immutable: false) {

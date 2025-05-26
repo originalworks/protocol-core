@@ -38,11 +38,12 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
+    const release = message.release;
 
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
     );
-    provedMessage.message_id = message.release.release_id.icpn.toString();
+    provedMessage.message_id = release.release_id.icpn.toString();
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
     provedMessage.cid = event.params.cid;
@@ -62,7 +63,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
     messagesProcessed.save();
 
-    const displayArtistNames = message.release.display_artist_names;
+    const displayArtistNames = release.display_artist_names;
     if (displayArtistNames.length > 0) {
       for (let j = 0; j < displayArtistNames.length; j++) {
         const artistName = displayArtistNames[j].display_artist_name;
