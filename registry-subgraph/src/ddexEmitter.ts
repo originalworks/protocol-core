@@ -63,6 +63,10 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
     messagesProcessed.save();
 
+    const cid = event.params.cid + "/json/" + i.toString() + ".json";
+
+    AssetMetadataTemplate.create(cid);
+
     const displayArtistNames = release.display_artist_names;
     if (displayArtistNames.length > 0) {
       for (let j = 0; j < displayArtistNames.length; j++) {
@@ -117,19 +121,19 @@ export function handleBlobProcessed(event: BlobProcessed): void {
           const isrc = soundRecordingEditions[k].isrc;
           const pLine = soundRecordings[j].sound_recording_editions[0].p_lines[0]
           if (isrc) {
-            const cid = event.params.cid + "/json/" + i.toString() + ".json";
             const image = event.params.cid + "/images/" + i.toString() + ".avif";
             let track = Track.load(isrc);
             if (track == null) {
               track = new Track(isrc);
               track.isrc = isrc;
-              track.timestamp = event.block.timestamp;
               track.cid = cid;
               track.display_title = soundRecordings[j].display_title;
               track.subtitle = soundRecordings[j].subtitle;
               track.display_title_text = soundRecordings[j].display_title_text;
               track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
               track.image = image;
+              track.timestamp = event.block.timestamp;
+              track.metadata = cid;
               track.save();
 
               let tracksPerDay = TracksAddedPerDay.load(id);
@@ -155,13 +159,14 @@ export function handleBlobProcessed(event: BlobProcessed): void {
             } else {
               if (event.block.timestamp > track.timestamp) {
                 track.isrc = isrc;
-                track.timestamp = event.block.timestamp;
                 track.cid = cid;
                 track.display_title = soundRecordings[j].display_title;
                 track.subtitle = soundRecordings[j].subtitle;
                 track.display_title_text = soundRecordings[j].display_title_text;
                 track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
                 track.image = image;
+                track.timestamp = event.block.timestamp;
+                track.metadata = cid;
                 track.save();
               }
             }
@@ -206,14 +211,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json";
   BlobMetadataTemplate.create(blobMetadataIPFSPath);
-
-  // Now spin up sub‑dataSources for each JSON file in IPFS
-  for (let i = 1; i <= maxFiles; i++) {
-    const ipfsPath = event.params.cid + "/json/" + i.toString() + ".json";
-
-    // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
-    AssetMetadataTemplate.create(ipfsPath);
-  }
 }
 
 export function handleBlobRejected(event: BlobRejected): void {
