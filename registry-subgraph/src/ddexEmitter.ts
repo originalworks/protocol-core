@@ -7,6 +7,7 @@ import {
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
+  Cid,
   Track,
   Artist,
   Release,
@@ -85,9 +86,14 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
     messagesProcessed.save();
 
-    const cid = event.params.cid + "/json/" + i.toString() + ".json";
+    let cid = Cid.load(event.params.cid + "/json/" + i.toString() + ".json");
+    if (cid == null) {
+      cid = new Cid(event.params.cid + "/json/" + i.toString() + ".json");
+    }
+    cid.timestamp = event.block.timestamp;
+    cid.save();
 
-    AssetMetadataTemplate.create(cid);
+    AssetMetadataTemplate.create(cid.id);
 
     const displayArtistNames = mRelease.display_artist_names;
     if (displayArtistNames.length > 0) {
@@ -148,7 +154,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
             if (track == null) {
               track = new Track(isrc);
               track.isrc = isrc;
-              track.cids = [cid];
+              track.cids = [cid.id];
               track.display_title = soundRecordings[j].display_title;
               track.subtitle = soundRecordings[j].subtitle;
               track.display_title_text = soundRecordings[j].display_title_text;
@@ -182,9 +188,9 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               if (event.block.timestamp > track.timestamp) {
                 track.isrc = isrc;
                 if (track.cids == null) {
-                  track.cids = [cid];
+                  track.cids = [cid.id];
                 } else {
-                  track.cids = [cid].concat(track.cids!);
+                  track.cids = [cid.id].concat(track.cids!);
                 }
                 track.display_title = soundRecordings[j].display_title;
                 track.subtitle = soundRecordings[j].subtitle;

@@ -115,6 +115,11 @@ type ArtistsAddedPerMonth @entity(immutable: false) {
   amount: BigInt!
 }
 
+type Cid @entity(immutable: false) {
+  id: ID!
+  timestamp: BigInt!
+}
+
 type Release @entity(immutable: false) {
   id: ID!
   icpn: String!
@@ -130,7 +135,7 @@ type Release @entity(immutable: false) {
 type Track @entity(immutable: false) {
   id: ID!
   isrc: String!
-  cids: [String!]
+  cids: [Cid!]
   display_title: String!
   subtitle: String!
   display_title_text: String!
