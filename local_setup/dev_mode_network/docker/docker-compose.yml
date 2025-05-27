@@ -14,6 +14,7 @@ services:
     environment:
       - RPC_URL=${RPC_URL}
       - PROVING_SETUP=false
+      - KURTOSIS_MNEMONIC=${KURTOSIS_MNEMONIC}
     command: ["./local_setup/dev_mode_network/scripts/setup/build.sh"]
 
   validator_node_1:
@@ -48,6 +49,72 @@ services:
       - IPFS_API_BASE_URL=http://ipfs:5001
     command: ["tail", "-f", "/dev/null"]
 
+
+  validator_node_2:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    working_dir: /protocol-core
+    user: ${HOST_UID}:${HOST_GID}
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+      ipfs:
+        condition: service_started
+    volumes:
+      - ../../../:/protocol-core
+    environment:
+      - PRIVATE_KEY=${VALIDATOR_2_PK}
+      - RPC_URL=${RPC_URL}
+      - WS_URL=${WS_URL}
+      - BEACON_RPC_URL=${BEACON_RPC_URL}
+      - START_BLOCK=${START_BLOCK}
+      - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - USERNAME=${USERNAME}
+      - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
+      - RISC0_DEV_MODE=1
+      - LOCAL=true
+      - IPFS_API_BASE_URL=http://ipfs:5001
+    command: ["tail", "-f", "/dev/null"]
+
+  validator_node_3:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    working_dir: /protocol-core
+    user: ${HOST_UID}:${HOST_GID}
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+      ipfs:
+        condition: service_started
+    volumes:
+      - ../../../:/protocol-core
+    environment:
+      - PRIVATE_KEY=${VALIDATOR_3_PK}
+      - RPC_URL=${RPC_URL}
+      - WS_URL=${WS_URL}
+      - BEACON_RPC_URL=${BEACON_RPC_URL}
+      - START_BLOCK=${START_BLOCK}
+      - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - USERNAME=${USERNAME}
+      - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
+      - RISC0_DEV_MODE=1
+      - LOCAL=true
+      - IPFS_API_BASE_URL=http://ipfs:5001
+    command: ["tail", "-f", "/dev/null"]
+
+
   owen:
     build:
       context: .
@@ -66,7 +133,7 @@ services:
     volumes:
       - ../../../:/protocol-core
     environment:
-      - PRIVATE_KEY=${DATA_PROVIDER_1_PK}
+      - PRIVATE_KEY=${DATA_PROVIDER_PK}
       - RPC_URL=${RPC_URL}
       - ENVIRONMENT=${ENVIRONMENT}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}

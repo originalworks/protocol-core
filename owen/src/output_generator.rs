@@ -378,6 +378,7 @@ mod tests {
             ddex_sequencer_address: Address::ZERO,
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
+            ipfs_api_base_url: "ABC".to_string(),
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -410,6 +411,7 @@ mod tests {
             ddex_sequencer_address: Address::ZERO,
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
+            ipfs_api_base_url: "ABC".to_string(),
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 
