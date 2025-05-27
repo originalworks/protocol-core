@@ -68,6 +68,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
       }
     }
     release.sound_recordings = recordings;
+    release.timestamp = event.block.timestamp;
     release.save();
 
     let messagesProcessed = MessagesProcessedPerDay.load(id);
@@ -147,14 +148,14 @@ export function handleBlobProcessed(event: BlobProcessed): void {
             if (track == null) {
               track = new Track(isrc);
               track.isrc = isrc;
-              track.cid = cid;
+              track.cids = [cid];
               track.display_title = soundRecordings[j].display_title;
               track.subtitle = soundRecordings[j].subtitle;
               track.display_title_text = soundRecordings[j].display_title_text;
               track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
               track.image = image;
-              track.timestamp = event.block.timestamp;
               track.releases = [release.id];
+              track.timestamp = event.block.timestamp;
               track.save();
 
               let tracksPerDay = TracksAddedPerDay.load(id);
@@ -180,18 +181,22 @@ export function handleBlobProcessed(event: BlobProcessed): void {
             } else {
               if (event.block.timestamp > track.timestamp) {
                 track.isrc = isrc;
-                track.cid = cid;
+                if (track.cids == null) {
+                  track.cids = [cid];
+                } else {
+                  track.cids = [cid].concat(track.cids!);
+                }
                 track.display_title = soundRecordings[j].display_title;
                 track.subtitle = soundRecordings[j].subtitle;
                 track.display_title_text = soundRecordings[j].display_title_text;
                 track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
                 track.image = image;
-                track.timestamp = event.block.timestamp;
                 if (track.releases == null) {
                   track.releases = [release.id];
                 } else {
-                  track.releases = track.releases!.concat([release.id]);
+                  track.releases = [release.id].concat(track.releases!);
                 }
+                track.timestamp = event.block.timestamp;
                 track.save();
               }
             }

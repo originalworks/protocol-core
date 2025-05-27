@@ -124,19 +124,20 @@ type Release @entity(immutable: false) {
   release_types: [String!]
   display_artist_names: [String!]
   sound_recordings: [Track!]
+  timestamp: BigInt!
 }
 
 type Track @entity(immutable: false) {
   id: ID!
   isrc: String!
-  cid: String!
+  cids: [String!]
   display_title: String!
   subtitle: String!
   display_title_text: String!
   label: String
   image: String!
-  timestamp: BigInt!
   releases: [Release!]
+  timestamp: BigInt!
 }
 
 type TracksAddedPerDay @entity(immutable: false) {
