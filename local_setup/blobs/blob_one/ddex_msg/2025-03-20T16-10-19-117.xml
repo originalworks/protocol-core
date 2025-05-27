@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ern:NewReleaseMessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" AvsVersionId="4.3" LanguageAndScriptCode="en" xsi:schemaLocation="http://service.ddex.net/xml/ern/43/release-notification.xsd" xmlns:ern="http://ddex.net/xml/ern/43">
+  <MessageHeader>
+    <MessageId>1ae397a4-172a-41d2-a1fb-dd624edb281c</MessageId>
+    <MessageSender>
+      <PartyId>PADPIDA2014021302H</PartyId>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </MessageSender>
+    <MessageRecipient>
+      <PartyId>PADPIDA2024072201A</PartyId>
+      <PartyName>
+        <FullName>Original Works</FullName>
+      </PartyName>
+    </MessageRecipient>
+    <MessageCreatedDateTime>2025-03-20T16:09:38.7390637Z</MessageCreatedDateTime>
+  </MessageHeader>
+  <PartyList>
+    <Party>
+      <PartyReference>P1440622</PartyReference>
+      <PartyName>
+        <FullName>Dalsin</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P1440625</PartyReference>
+      <PartyName>
+        <FullName>Gioprod</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C1</PartyReference>
+      <PartyName>
+        <FullName>Philippe Fernandes Johonson dos Reis</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C2</PartyReference>
+      <PartyName>
+        <FullName>Giovani Ferreira de Medeiros</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0CC1</PartyReference>
+      <PartyName>
+        <FullName>Copyright Control</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLabel1</PartyReference>
+      <PartyName>
+        <FullName>Dalsin</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLicensor1</PartyReference>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </Party>
+  </PartyList>
+  <ResourceList>
+    <SoundRecording>
+      <ResourceReference>A1</ResourceReference>
+      <Type>MusicalWorkSoundRecording</Type>
+      <SoundRecordingEdition>
+        <ResourceId>
+          <ISRC>BXHP12500003</ISRC>
+        </ResourceId>
+        <PLine>
+          <Year>2025</Year>
+          <PLineText>2025 Dalsin</PLineText>
+        </PLine>
+        <RecordingMode>Stereo</RecordingMode>
+        <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+          <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+          <DeliveryFile>
+            <Type>AudioFile</Type>
+            <ContainerFormat>Ogg</ContainerFormat>
+            <AudioCodecType>FLAC</AudioCodecType>
+            <BitRate UnitOfMeasure="kbps">706648</BitRate>
+            <SamplingRate UnitOfMeasure="Hz">44100</SamplingRate>
+            <BitDepth>16</BitDepth>
+            <File>
+              <URI>a032684e-8c22-4547-bd47-5ef73ac339e0/file.flac</URI>
+            </File>
+          </DeliveryFile>
+        </TechnicalDetails>
+      </SoundRecordingEdition>
+      <DisplayTitleText>Sal e Água</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Sal e Água</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Dalsin</DisplayArtistName>
+      <DisplayArtist>
+        <ArtistPartyReference>P1440622</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <DisplayArtist SequenceNumber="2">
+        <ArtistPartyReference>P1440625</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <Contributor SequenceNumber="1">
+        <ContributorPartyReference>P1440625</ContributorPartyReference>
+        <Role>StudioProducer</Role>
+      </Contributor>
+      <Contributor SequenceNumber="2">
+        <ContributorPartyReference>P0C1</ContributorPartyReference>
+        <Role UserDefinedValue="Composer">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="3">
+        <ContributorPartyReference>P0C2</ContributorPartyReference>
+        <Role UserDefinedValue="Adapter">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="4">
+        <ContributorPartyReference>P0CC1</ContributorPartyReference>
+        <Role UserDefinedValue="MusicPublisher">UserDefined</Role>
+      </Contributor>
+      <ResourceRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+        <RightSharePercentage>100.00</RightSharePercentage>
+      </ResourceRightsController>
+      <WorkRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+      </WorkRightsController>
+      <Duration>PT0S</Duration>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+    </SoundRecording>
+    <Image>
+      <ResourceReference>A2</ResourceReference>
+      <Type>FrontCoverImage</Type>
+      <ResourceId>
+        <ProprietaryId Namespace="PADPIDA2014021302H">06ec315d-1d86-4c57-b261-bda16be5c042</ProprietaryId>
+      </ResourceId>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+        <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+        <ImageCodecType>JPEG</ImageCodecType>
+        <ImageHeight UnitOfMeasure="Pixel">3000</ImageHeight>
+        <ImageWidth UnitOfMeasure="Pixel">3000</ImageWidth>
+        <File>
+          <URI>06ec315d-1d86-4c57-b261-bda16be5c042/file.jpg</URI>
+        </File>
+      </TechnicalDetails>
+    </Image>
+  </ResourceList>
+  <ReleaseList>
+    <Release>
+      <ReleaseReference>R0</ReleaseReference>
+      <ReleaseType>SingleResourceRelease</ReleaseType>
+      <ReleaseId>
+        <ICPN>7316480209486</ICPN>
+      </ReleaseId>
+      <DisplayTitleText>Sal e Água</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Sal e Água</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Dalsin &amp; Gioprod</DisplayArtistName>
+      <DisplayArtist SequenceNumber="1">
+        <ArtistPartyReference>P1440622</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <DisplayArtist SequenceNumber="2">
+        <ArtistPartyReference>P1440625</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <ReleaseLabelReference>PLabel1</ReleaseLabelReference>
+      <PLine>
+        <Year>2025</Year>
+        <PLineText>2025 Dalsin</PLineText>
+      </PLine>
+      <CLine>
+        <Year>2025</Year>
+        <CLineText>2025 Dalsin</CLineText>
+      </CLine>
+      <Genre>
+        <GenreText>music style</GenreText>
+      </Genre>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <ResourceGroup>
+        <ResourceGroupContentItem>
+          <SequenceNumber>1</SequenceNumber>
+          <ReleaseResourceReference>A1</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+        <ResourceGroupContentItem>
+          <SequenceNumber>2</SequenceNumber>
+          <ReleaseResourceReference>A2</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+      </ResourceGroup>
+    </Release>
+  </ReleaseList>
+</ern:NewReleaseMessage>

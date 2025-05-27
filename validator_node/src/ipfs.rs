@@ -1,5 +1,6 @@
 use crate::constants::{self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE, REQWEST_CLIENT};
 use crate::contracts::QueueHeadData;
+use crate::is_local;
 use crate::zip::zip_directory;
 use alloy::signers::local::PrivateKeySigner;
 use alloy::signers::Signer;
@@ -198,26 +199,34 @@ pub async fn upload_blob_folder_and_cleanup(
         .mime_str("application/zip")?;
     let form = multipart::Form::new().part("file", file_part);
 
-    log::info!("Uploading zip to Storacha Bridge...");
-
-    let response = REQWEST_CLIENT
-        .post(format!("{}w3up/dir", storacha_bridge_url))
-        .header("authorization", authorization)
-        .multipart(form)
-        .send()
-        .await?;
-
     let res: StorachaBridgeResponse;
 
-    if response.status().is_success() {
-        res = response.json().await?;
+    if is_local() {
+        log::info!("Skipping upload to Storacha Bridge in local mode");
+        res = StorachaBridgeResponse {
+            cid: "test_cid".to_string(),
+            url: "test_url".to_string(),
+        };
     } else {
-        let reason = response.text().await?;
-        return Err(format_error!("Storacha Bridge returned error: {}", reason));
-    }
+        log::info!("Uploading zip to Storacha Bridge...");
 
-    log_info!("Successfully uploaded folder to IPFS. CID: {}", res.cid);
-    log_info!("URL: {}", res.url);
+        let response = REQWEST_CLIENT
+            .post(format!("{}w3up/dir", storacha_bridge_url))
+            .header("authorization", authorization)
+            .multipart(form)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            res = response.json().await?;
+        } else {
+            let reason = response.text().await?;
+            return Err(format_error!("Storacha Bridge returned error: {}", reason));
+        }
+
+        log_info!("Successfully uploaded folder to IPFS. CID: {}", res.cid);
+        log_info!("URL: {}", res.url);
+    }
 
     for entry in fs::read_dir(src_path)? {
         let path = entry?.path();

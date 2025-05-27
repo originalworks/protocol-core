@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{Read, Seek, Write},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 use anyhow::Context;
