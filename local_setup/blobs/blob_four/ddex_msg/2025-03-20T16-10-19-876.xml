@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ern:NewReleaseMessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" AvsVersionId="4.3" LanguageAndScriptCode="en" xsi:schemaLocation="http://service.ddex.net/xml/ern/43/release-notification.xsd" xmlns:ern="http://ddex.net/xml/ern/43">
+  <MessageHeader>
+    <MessageId>4492cc2b-d8c1-4d03-afe2-1cd7f9fbd060</MessageId>
+    <MessageSender>
+      <PartyId>PADPIDA2014021302H</PartyId>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </MessageSender>
+    <MessageRecipient>
+      <PartyId>PADPIDA2024072201A</PartyId>
+      <PartyName>
+        <FullName>Original Works</FullName>
+      </PartyName>
+    </MessageRecipient>
+    <MessageCreatedDateTime>2025-03-20T16:09:38.720283Z</MessageCreatedDateTime>
+  </MessageHeader>
+  <PartyList>
+    <Party>
+      <PartyReference>P1481067</PartyReference>
+      <PartyName>
+        <FullName>Rey Power GS</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P1490999</PartyReference>
+      <PartyName>
+        <FullName>Manu GX</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C1</PartyReference>
+      <PartyName>
+        <FullName>Gustavo Adolfo Silva Martinez</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C2</PartyReference>
+      <PartyName>
+        <FullName>Luis Manuel Gonzalez Hernandez</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0CC1</PartyReference>
+      <PartyName>
+        <FullName>Copyright Control</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLabel1</PartyReference>
+      <PartyName>
+        <FullName>ONEspoll</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLicensor1</PartyReference>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </Party>
+  </PartyList>
+  <ResourceList>
+    <SoundRecording>
+      <ResourceReference>A1</ResourceReference>
+      <Type>MusicalWorkSoundRecording</Type>
+      <SoundRecordingEdition>
+        <ResourceId>
+          <ISRC>CA5KR2440999</ISRC>
+        </ResourceId>
+        <PLine>
+          <Year>2025</Year>
+          <PLineText>2025 ONEspoll</PLineText>
+        </PLine>
+        <RecordingMode>Stereo</RecordingMode>
+        <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+          <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+          <DeliveryFile>
+            <Type>AudioFile</Type>
+            <ContainerFormat>Ogg</ContainerFormat>
+            <AudioCodecType>FLAC</AudioCodecType>
+            <BitRate UnitOfMeasure="kbps">836923</BitRate>
+            <SamplingRate UnitOfMeasure="Hz">44100</SamplingRate>
+            <BitDepth>16</BitDepth>
+            <File>
+              <URI>4a6ccbf2-9bcd-4afc-8015-1ea41d606cfe/file.flac</URI>
+            </File>
+          </DeliveryFile>
+        </TechnicalDetails>
+      </SoundRecordingEdition>
+      <DisplayTitleText>Condenado A Ser Un Rockstar</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Condenado A Ser Un Rockstar</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Rey Power GS</DisplayArtistName>
+      <DisplayArtist>
+        <ArtistPartyReference>P1481067</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <DisplayArtist SequenceNumber="2">
+        <ArtistPartyReference>P1490999</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <Contributor SequenceNumber="1">
+        <ContributorPartyReference>P0C1</ContributorPartyReference>
+        <Role UserDefinedValue="ComposerLyricist">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="2">
+        <ContributorPartyReference>P0C2</ContributorPartyReference>
+        <Role UserDefinedValue="ComposerLyricist">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="3">
+        <ContributorPartyReference>P0CC1</ContributorPartyReference>
+        <Role UserDefinedValue="MusicPublisher">UserDefined</Role>
+      </Contributor>
+      <ResourceRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+        <RightSharePercentage>100.00</RightSharePercentage>
+      </ResourceRightsController>
+      <WorkRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+      </WorkRightsController>
+      <Duration>PT0S</Duration>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+    </SoundRecording>
+    <Image>
+      <ResourceReference>A2</ResourceReference>
+      <Type>FrontCoverImage</Type>
+      <ResourceId>
+        <ProprietaryId Namespace="PADPIDA2014021302H">2c68e125-2358-4d0a-9841-64d48d9c0661</ProprietaryId>
+      </ResourceId>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+        <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+        <ImageCodecType>JPEG</ImageCodecType>
+        <ImageHeight UnitOfMeasure="Pixel">2560</ImageHeight>
+        <ImageWidth UnitOfMeasure="Pixel">2560</ImageWidth>
+        <File>
+          <URI>2c68e125-2358-4d0a-9841-64d48d9c0661/file.jpg</URI>
+        </File>
+      </TechnicalDetails>
+    </Image>
+  </ResourceList>
+  <ReleaseList>
+    <Release>
+      <ReleaseReference>R0</ReleaseReference>
+      <ReleaseType>SingleResourceRelease</ReleaseType>
+      <ReleaseId>
+        <ICPN>723277439983</ICPN>
+      </ReleaseId>
+      <DisplayTitleText>Condenado A Ser Un Rockstar</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Condenado A Ser Un Rockstar</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Rey Power GS &amp; Manu GX</DisplayArtistName>
+      <DisplayArtist SequenceNumber="1">
+        <ArtistPartyReference>P1481067</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <DisplayArtist SequenceNumber="2">
+        <ArtistPartyReference>P1490999</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <ReleaseLabelReference>PLabel1</ReleaseLabelReference>
+      <PLine>
+        <Year>2025</Year>
+        <PLineText>2025 ONEspoll</PLineText>
+      </PLine>
+      <CLine>
+        <Year>2025</Year>
+        <CLineText>2025 ONEspoll</CLineText>
+      </CLine>
+      <Genre>
+        <GenreText>music style</GenreText>
+      </Genre>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <ResourceGroup>
+        <ResourceGroupContentItem>
+          <SequenceNumber>1</SequenceNumber>
+          <ReleaseResourceReference>A1</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+        <ResourceGroupContentItem>
+          <SequenceNumber>2</SequenceNumber>
+          <ReleaseResourceReference>A2</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+      </ResourceGroup>
+    </Release>
+  </ReleaseList>
+</ern:NewReleaseMessage>
