@@ -9,6 +9,7 @@ import {
 import {
   Track,
   Artist,
+  Release,
   ProvedMessage,
   TracksAddedPerDay,
   ValidatorTxPerDay,
@@ -38,16 +39,36 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
-    const release = message.release;
+    const mRelease = message.release;
 
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
     );
-    provedMessage.message_id = release.release_id.icpn.toString();
+    provedMessage.message_id = mRelease.release_id.icpn.toString();
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
     provedMessage.cid = event.params.cid;
     provedMessage.save();
+
+    let release = Release.load(mRelease.release_id.icpn.toString());
+    if (release == null) {
+      release = new Release(mRelease.release_id.icpn.toString());
+    }
+    release.icpn = mRelease.release_id.icpn.toString();
+    release.title_text = mRelease.title_text.toString();
+    release.subtitle = mRelease.subtitle.toString();
+    release.display_title_text = mRelease.display_title_text.toString();
+    release.release_types = mRelease.release_types.map<string>((type) => type.toString());
+    release.display_artist_names = mRelease.display_artist_names.map<string>((artist) => artist.display_artist_name.toString());
+    const recordings: string[] = [];
+    for (let j = 0; j < message.sound_recordings.length; j++) {
+      const editions = message.sound_recordings[j].sound_recording_editions;
+      for (let k = 0; k < editions.length; k++) {
+        recordings.push(editions[k].isrc);
+      }
+    }
+    release.sound_recordings = recordings;
+    release.save();
 
     let messagesProcessed = MessagesProcessedPerDay.load(id);
 
@@ -67,7 +88,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
     AssetMetadataTemplate.create(cid);
 
-    const displayArtistNames = release.display_artist_names;
+    const displayArtistNames = mRelease.display_artist_names;
     if (displayArtistNames.length > 0) {
       for (let j = 0; j < displayArtistNames.length; j++) {
         const artistName = displayArtistNames[j].display_artist_name;
@@ -133,7 +154,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
               track.image = image;
               track.timestamp = event.block.timestamp;
-              track.metadata = cid;
+              track.releases = [release.id];
               track.save();
 
               let tracksPerDay = TracksAddedPerDay.load(id);
@@ -166,7 +187,11 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                 track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
                 track.image = image;
                 track.timestamp = event.block.timestamp;
-                track.metadata = cid;
+                if (track.releases == null) {
+                  track.releases = [release.id];
+                } else {
+                  track.releases = track.releases!.concat([release.id]);
+                }
                 track.save();
               }
             }

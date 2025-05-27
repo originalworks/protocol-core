@@ -54,6 +54,7 @@ dataSources:
         - Artist
         - ArtistsAddedPerDay
         - ArtistsAddedPerMonth
+        - Release
         - Track
         - TracksAddedPerDay
         - TracksAddedPerMonth
