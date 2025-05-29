@@ -41,6 +41,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
     const mRelease = message.release;
+    const image = event.params.cid + "/images/" + i.toString() + ".avif";
 
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
@@ -69,6 +70,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
       }
     }
     release.sound_recordings = recordings;
+    release.image = image;
     release.timestamp = event.block.timestamp;
     release.save();
 
@@ -149,7 +151,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
           const isrc = soundRecordingEditions[k].isrc;
           const pLine = soundRecordings[j].sound_recording_editions[0].p_lines[0]
           if (isrc) {
-            const image = event.params.cid + "/images/" + i.toString() + ".avif";
             let track = Track.load(isrc);
             if (track == null) {
               track = new Track(isrc);

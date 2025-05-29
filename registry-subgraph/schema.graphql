@@ -129,6 +129,7 @@ type Release @entity(immutable: false) {
   release_types: [String!]
   display_artist_names: [String!]
   sound_recordings: [Track!]
+  image: String!
   timestamp: BigInt!
 }
 
