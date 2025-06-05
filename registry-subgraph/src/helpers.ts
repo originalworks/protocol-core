@@ -97,27 +97,3 @@ export function getValueIfExist(
     return null;
   }
 }
-
-export function getNumberIfExist(
-  sourceObject: TypedMap<string, JSONValue>,
-  parameterName: string,
-): BigInt | null {
-  const jsonValue = sourceObject.get(parameterName);
-  if (jsonValue && jsonValue.kind == JSONValueKind.NUMBER) {
-    return jsonValue.toBigInt();
-  } else {
-    return null;
-  }
-}
-
-export function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {
-  return value && value.kind == JSONValueKind.OBJECT ? value.toObject() : null;
-}
-
-export function getArray(value: JSONValue | null): JSONValue[] | null {
-  return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
-}
-
-export function getFirstElement(arr: JSONValue[] | null): JSONValue | null {
-  return arr && arr.length > 0 ? arr[0] : null;
-}

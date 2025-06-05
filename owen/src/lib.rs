@@ -47,6 +47,7 @@ pub struct Config {
     pub ddex_sequencer_address: Address,
     pub disable_telemetry: bool,
     pub storacha_bridge_url: String,
+    pub ipfs_api_base_url: String,
 }
 
 impl Config {
@@ -100,11 +101,15 @@ impl Config {
             storacha_bridge_url = format!("{}/", storacha_bridge_url)
         }
 
+        let ipfs_api_base_url = env::var("IPFS_API_BASE_URL")
+            .unwrap_or_else(|_| constants::IPFS_API_BASE_URL.to_string());
+
         let config = Config {
             rpc_url,
             private_key,
             folder_path,
             local_ipfs,
+            ipfs_api_base_url,
             output_files_dir,
             environment,
             username,

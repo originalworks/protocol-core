@@ -115,11 +115,35 @@ type ArtistsAddedPerMonth @entity(immutable: false) {
   amount: BigInt!
 }
 
-type Track @entity(immutable: true) {
+type Cid @entity(immutable: false) {
+  id: ID!
+  timestamp: BigInt!
+}
+
+type Release @entity(immutable: false) {
+  id: ID!
+  icpn: String!
+  title_text: String!
+  subtitle: String!
+  display_title_text: String!
+  release_types: [String!]
+  display_artist_names: [String!]
+  sound_recordings: [Track!]
+  image: String!
+  timestamp: BigInt!
+}
+
+type Track @entity(immutable: false) {
   id: ID!
   isrc: String!
+  cids: [Cid!]
+  display_title: String!
+  subtitle: String!
+  display_title_text: String!
+  label: String
+  image: String!
+  releases: [Release!]
   timestamp: BigInt!
-  cid: String!
 }
 
 type TracksAddedPerDay @entity(immutable: false) {
@@ -141,11 +165,6 @@ type AssetMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   blobMetadata: BlobMetadata
-  message_id: String
-  message_created_date_time: String
-  partyList: [PartyElement!]
-  release: Release
-  resourceList: ResourceList
 }
 
 type BlobMetadata @entity(immutable: true) {
@@ -157,107 +176,4 @@ type BlobMetadata @entity(immutable: true) {
   chain_id: String
   network_name: String
   blob_ipfs_cid: String
-}
-
-type PartyElement @entity(immutable: true) {
-  id: ID!
-  party_reference: String
-  party_name: String
-}
-
-
-type Release @entity(immutable: true) {
-  id: ID!
-  title_text: String
-  subtitle: String
-  display_title_text: String
-  release_reference: String
-  release_types: [String!]
-  release_label_references: [String!]
-  genres: [String!]
-  display_artists: [DisplayArtist!]
-  display_artist_names: [DisplayArtistName!]
-  grid: String
-  icpn: String
-  proprietary_ids: [String!]
-}
-
-type DisplayArtist @entity(immutable: true) {
-  id: ID!
-  artist_party_reference: String
-  sequence_number: BigInt
-  display_artist_roles: [String!]
-}
-
-type DisplayArtistName @entity(immutable: true) {
-  id: ID!
-  applicable_territory_code: String
-  language_and_script_type: String
-  display_artist_name: String
-}
-
-type ResourceList @entity(immutable: true) {
-  id: ID!
-  sound_recordings: [SoundRecording!]
-  images: [Image!]
-}
-
-type SoundRecording @entity(immutable: true) {
-  id: ID!
-  resource_reference: String
-  kind: String
-  work_ids: [String!]
-  display_title: String
-  subtitle: String
-  display_title_text: String
-  sound_recording_editions: [SoundRecordingEdition!]
-  contributors: [Contributor!]
-}
-
-type SoundRecordingEdition @entity(immutable: true) {
-  id: ID!
-  isrc: String
-  p_lines: [PLine!]
-  fingerprints: [Fingerprint!]
-}
-
-type PLine @entity(immutable: true) {
-  id: ID!
-  year: BigInt
-  namespace: String
-}
-
-type Fingerprint @entity(immutable: true) {
-  id: ID!
-  namespace: String
-  user_defined_value: String
-  parameter: String
-}
-
-type Contributor @entity(immutable: true) {
-  id: ID!
-  contributor_party_reference: String
-  sequence_number: BigInt
-  contributor_roles: [String!]
-}
-
-type Image @entity(immutable: true) {
-  id: ID!
-  resource_reference: String
-  kind: String
-  resource_ids: [ResourceId!]
-  parental_warning_types: [String!]
-  technical_details: [TechnicalDetail!]
-}
-
-type ResourceId @entity(immutable: true) {
-  id: ID!
-  content: String
-  namespace: String
-}
-
-type TechnicalDetail @entity(immutable: true) {
-  id: ID!
-  technical_resource_details_reference: String
-  fileUri: String
 }

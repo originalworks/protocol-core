@@ -20,6 +20,7 @@ pub const fn network_name(chain_id: &u64) -> &'static str {
         10200 => "Chiado",
         17000 => "Holesky",
         11155111 => "Sepolia",
+        3151908 => "Kurtosis",
         _ => panic!("Unrecognized chain"),
     }
 }

@@ -7,8 +7,10 @@ import {
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
+  Cid,
   Track,
   Artist,
+  Release,
   ProvedMessage,
   TracksAddedPerDay,
   ValidatorTxPerDay,
@@ -38,15 +40,39 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
+    const mRelease = message.release;
+    const image = event.params.cid + "/images/" + i.toString() + ".avif";
 
     const provedMessage = new ProvedMessage(
       `${event.transaction.hash.toHex()}-${i}`
     );
-    provedMessage.message_id = message.release.release_id.icpn.toString();
+    provedMessage.message_id = mRelease.release_id.icpn.toString();
     provedMessage.timestamp = event.block.timestamp;
     provedMessage.validator = event.transaction.from;
     provedMessage.cid = event.params.cid;
     provedMessage.save();
+
+    let release = Release.load(mRelease.release_id.icpn.toString());
+    if (release == null) {
+      release = new Release(mRelease.release_id.icpn.toString());
+    }
+    release.icpn = mRelease.release_id.icpn.toString();
+    release.title_text = mRelease.title_text.toString();
+    release.subtitle = mRelease.subtitle.toString();
+    release.display_title_text = mRelease.display_title_text.toString();
+    release.release_types = mRelease.release_types.map<string>((type) => type.toString());
+    release.display_artist_names = mRelease.display_artist_names.map<string>((artist) => artist.display_artist_name.toString());
+    const recordings: string[] = [];
+    for (let j = 0; j < message.sound_recordings.length; j++) {
+      const editions = message.sound_recordings[j].sound_recording_editions;
+      for (let k = 0; k < editions.length; k++) {
+        recordings.push(editions[k].isrc);
+      }
+    }
+    release.sound_recordings = recordings;
+    release.image = image;
+    release.timestamp = event.block.timestamp;
+    release.save();
 
     let messagesProcessed = MessagesProcessedPerDay.load(id);
 
@@ -62,7 +88,16 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
     messagesProcessed.save();
 
-    const displayArtistNames = message.release.display_artist_names;
+    let cid = Cid.load(event.params.cid + "/json/" + i.toString() + ".json");
+    if (cid == null) {
+      cid = new Cid(event.params.cid + "/json/" + i.toString() + ".json");
+    }
+    cid.timestamp = event.block.timestamp;
+    cid.save();
+
+    AssetMetadataTemplate.create(cid.id);
+
+    const displayArtistNames = mRelease.display_artist_names;
     if (displayArtistNames.length > 0) {
       for (let j = 0; j < displayArtistNames.length; j++) {
         const artistName = displayArtistNames[j].display_artist_name;
@@ -114,13 +149,20 @@ export function handleBlobProcessed(event: BlobProcessed): void {
         const soundRecordingEditions = soundRecordings[j].sound_recording_editions;
         for (let k = 0; k < soundRecordingEditions.length; k++) {
           const isrc = soundRecordingEditions[k].isrc;
+          const pLine = soundRecordings[j].sound_recording_editions[0].p_lines[0]
           if (isrc) {
             let track = Track.load(isrc);
             if (track == null) {
               track = new Track(isrc);
               track.isrc = isrc;
+              track.cids = [cid.id];
+              track.display_title = soundRecordings[j].display_title;
+              track.subtitle = soundRecordings[j].subtitle;
+              track.display_title_text = soundRecordings[j].display_title_text;
+              track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+              track.image = image;
+              track.releases = [release.id];
               track.timestamp = event.block.timestamp;
-              track.cid = event.params.cid;
               track.save();
 
               let tracksPerDay = TracksAddedPerDay.load(id);
@@ -143,6 +185,27 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               tracksPerMonth.year = date.getUTCFullYear().toString();
               tracksPerMonth.amount = tracksPerMonth.amount.plus(BigInt.fromI32(1));
               tracksPerMonth.save();
+            } else {
+              if (event.block.timestamp > track.timestamp) {
+                track.isrc = isrc;
+                if (track.cids == null) {
+                  track.cids = [cid.id];
+                } else {
+                  track.cids = [cid.id].concat(track.cids!);
+                }
+                track.display_title = soundRecordings[j].display_title;
+                track.subtitle = soundRecordings[j].subtitle;
+                track.display_title_text = soundRecordings[j].display_title_text;
+                track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+                track.image = image;
+                if (track.releases == null) {
+                  track.releases = [release.id];
+                } else {
+                  track.releases = [release.id].concat(track.releases!);
+                }
+                track.timestamp = event.block.timestamp;
+                track.save();
+              }
             }
           }
         }
@@ -185,14 +248,6 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   const blobMetadataIPFSPath = event.params.cid + "/blob/metadata.json";
   BlobMetadataTemplate.create(blobMetadataIPFSPath);
-
-  // Now spin up sub‑dataSources for each JSON file in IPFS
-  for (let i = 1; i <= maxFiles; i++) {
-    const ipfsPath = event.params.cid + "/json/" + i.toString() + ".json";
-
-    // This will invoke the handleAssetMetadata() in "assetMetadata.ts"
-    AssetMetadataTemplate.create(ipfsPath);
-  }
 }
 
 export function handleBlobRejected(event: BlobRejected): void {
