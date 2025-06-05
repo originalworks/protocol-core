@@ -17,13 +17,12 @@ use alloy::{
     transports::http::{reqwest, Client, Http},
 };
 use anyhow::Context;
+use futures_util::StreamExt;
 use log_macros::{format_error, log_info, log_warn};
 use prover::{CURRENT_DDEX_GUEST_ELF, PREVIOUS_DDEX_GUEST_ELF};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use DdexEmitter::getSupportedVerifierImageIdsReturn;
-
-use futures_util::StreamExt;
 
 sol!(
     #[allow(missing_docs)]
@@ -266,16 +265,10 @@ impl ContractsManager {
             .provider
             .get_block_by_number(BlockNumberOrTag::Number(block_number), true)
             .await?
-            .ok_or_else(|| {
-                format_error!("Block {} not found", block_number)
-                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
-            })?
+            .ok_or_else(|| format_error!("Block {} not found", block_number))?
             .header
             .parent_beacon_block_root
-            .ok_or_else(|| {
-                format_error!("Block {} not found", block_number)
-                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
-            })?;
+            .ok_or_else(|| format_error!("Block {} not found", block_number))?;
 
         Ok(parent_beacon_block_root)
     }
@@ -301,10 +294,10 @@ impl ContractsManager {
         let mut blob_image_id = FixedBytes::<32>::new([0u8; 32]);
 
         while let Some(log) = stream.next().await {
-            println!("New blob detected!");
             let DdexSequencer::NewBlobSubmitted {
                 commitment,
                 image_id,
+                blobhash: _,
             } = log.log_decode()?.inner.data;
             block_number = log
                 .block_number
@@ -363,6 +356,7 @@ impl ContractsManager {
                     let DdexSequencer::NewBlobSubmitted {
                         commitment,
                         image_id,
+                        blobhash: _,
                     } = log.log_decode()?.inner.data;
                     transaction_hash = log
                         .transaction_hash
@@ -411,5 +405,23 @@ impl ContractsManager {
             timestamp,
             chain_id: self.chain_id,
         })
+    }
+
+    pub async fn report_stale_blob(&self) -> anyhow::Result<()> {
+        log_warn!("Reporting blob as expired...");
+
+        let mut tx_builder = self.sequencer.removeExpiredBlob();
+
+        if is_local() {
+            tx_builder = tx_builder
+                .max_priority_fee_per_gas(500000000)
+                .max_fee_per_gas(500000001);
+        }
+
+        tx_builder.send().await?.get_receipt().await?;
+
+        log_warn!("Blob succesfully reported");
+
+        Ok(())
     }
 }

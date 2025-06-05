@@ -90,16 +90,17 @@ rm -rf tmp.txt
 cd ..
 
 echo -e "PRIVATE_KEY=bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31\n\
+DISABLE_TELEMETRY=true\n\
+LOCAL_IPFS=true\n\
 IPFS_KUBO_URL=http://localhost:5001\n\
 DEFAULT_IPFS_INTERFACE=KUBO\n\
 OUTPUT_FILES_DIR=./output_files\n\
 ENVIRONMENT=local\n\
-PINATA_JWT=abc\n\
 RPC_URL=$RPC_URL\n\
 DDEX_SEQUENCER_ADDRESS=${DDEX_SEQUENCER_ADDRESS:2}" >| ./owen/.env.local
 
 echo -e "PRIVATE_KEY=bcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31\n\
-IPFS_KUBO_URL=http://localhost:5001\n\
+DISABLE_TELEMETRY=true\n\
 WS_URL=$WS_URL\n\
 BEACON_RPC_URL=$BEACON_RPC_URL\n\
 ENVIRONMENT=local\n\
