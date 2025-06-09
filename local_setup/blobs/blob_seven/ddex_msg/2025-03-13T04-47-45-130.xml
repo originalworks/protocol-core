@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ern:NewReleaseMessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" AvsVersionId="4.3" LanguageAndScriptCode="en" xsi:schemaLocation="http://service.ddex.net/xml/ern/43/release-notification.xsd" xmlns:ern="http://ddex.net/xml/ern/43">
+  <MessageHeader>
+    <MessageId>88881bb1-b008-4c1e-9ae1-14d70b475b01</MessageId>
+    <MessageSender>
+      <PartyId>PADPIDA2014021302H</PartyId>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </MessageSender>
+    <MessageRecipient>
+      <PartyId>PADPIDA2024072201A</PartyId>
+      <PartyName>
+        <FullName>Original Works</FullName>
+      </PartyName>
+    </MessageRecipient>
+    <MessageCreatedDateTime>2025-03-13T04:46:45.361786Z</MessageCreatedDateTime>
+  </MessageHeader>
+  <PartyList>
+    <Party>
+      <PartyReference>P1485026</PartyReference>
+      <PartyName>
+        <FullName>Pakuma</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0C1</PartyReference>
+      <PartyName>
+        <FullName>Andrés Mejía</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>P0CC1</PartyReference>
+      <PartyName>
+        <FullName>Copyright Control</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLabel1</PartyReference>
+      <PartyName>
+        <FullName>Pakuma</FullName>
+      </PartyName>
+    </Party>
+    <Party>
+      <PartyReference>PLicensor1</PartyReference>
+      <PartyName>
+        <FullName>Revelator Ltd.</FullName>
+      </PartyName>
+    </Party>
+  </PartyList>
+  <ResourceList>
+    <SoundRecording>
+      <ResourceReference>A1</ResourceReference>
+      <Type>MusicalWorkSoundRecording</Type>
+      <SoundRecordingEdition>
+        <ResourceId>
+          <ISRC>QZN882570060</ISRC>
+        </ResourceId>
+        <PLine>
+          <Year>2024</Year>
+          <PLineText>2024 Pakuma • Distributed by Draikotune</PLineText>
+        </PLine>
+        <RecordingMode>Stereo</RecordingMode>
+        <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+          <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+          <DeliveryFile>
+            <Type>AudioFile</Type>
+            <ContainerFormat>Ogg</ContainerFormat>
+            <AudioCodecType>FLAC</AudioCodecType>
+            <BitRate UnitOfMeasure="kbps">906339</BitRate>
+            <SamplingRate UnitOfMeasure="Hz">44100</SamplingRate>
+            <BitDepth>16</BitDepth>
+            <File>
+              <URI>02c580d6-641e-4d6e-9c3c-0aa2da80d90c/file.flac</URI>
+            </File>
+          </DeliveryFile>
+        </TechnicalDetails>
+      </SoundRecordingEdition>
+      <DisplayTitleText>Somos</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Somos</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Pakuma</DisplayArtistName>
+      <DisplayArtist>
+        <ArtistPartyReference>P1485026</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <Contributor SequenceNumber="1">
+        <ContributorPartyReference>P0C1</ContributorPartyReference>
+        <Role UserDefinedValue="ComposerLyricist">UserDefined</Role>
+      </Contributor>
+      <Contributor SequenceNumber="2">
+        <ContributorPartyReference>P0CC1</ContributorPartyReference>
+        <Role UserDefinedValue="MusicPublisher">UserDefined</Role>
+      </Contributor>
+      <ResourceRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+        <RightSharePercentage>100.00</RightSharePercentage>
+      </ResourceRightsController>
+      <WorkRightsController>
+        <RightsControllerPartyReference>PLicensor1</RightsControllerPartyReference>
+        <RightsControlType>RightsAdministrator</RightsControlType>
+      </WorkRightsController>
+      <Duration>PT0S</Duration>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+    </SoundRecording>
+    <Image>
+      <ResourceReference>A2</ResourceReference>
+      <Type>FrontCoverImage</Type>
+      <ResourceId>
+        <ProprietaryId Namespace="PADPIDA2014021302H">5646a98b-5dc8-4847-8768-dd5bf7d02061</ProprietaryId>
+      </ResourceId>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <TechnicalDetails ApplicableTerritoryCode="Worldwide">
+        <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+        <ImageCodecType>JPEG</ImageCodecType>
+        <ImageHeight UnitOfMeasure="Pixel">3000</ImageHeight>
+        <ImageWidth UnitOfMeasure="Pixel">3000</ImageWidth>
+        <File>
+          <URI>5646a98b-5dc8-4847-8768-dd5bf7d02061/file.jpg</URI>
+        </File>
+      </TechnicalDetails>
+    </Image>
+  </ResourceList>
+  <ReleaseList>
+    <Release>
+      <ReleaseReference>R0</ReleaseReference>
+      <ReleaseType>SingleResourceRelease</ReleaseType>
+      <ReleaseId>
+        <ICPN>7316480143308</ICPN>
+      </ReleaseId>
+      <DisplayTitleText>Somos</DisplayTitleText>
+      <DisplayTitle>
+        <TitleText>Somos</TitleText>
+      </DisplayTitle>
+      <DisplayArtistName>Pakuma</DisplayArtistName>
+      <DisplayArtist SequenceNumber="1">
+        <ArtistPartyReference>P1485026</ArtistPartyReference>
+        <DisplayArtistRole>MainArtist</DisplayArtistRole>
+      </DisplayArtist>
+      <ReleaseLabelReference>PLabel1</ReleaseLabelReference>
+      <PLine>
+        <Year>2024</Year>
+        <PLineText>2024 Pakuma • Distributed by Draikotune</PLineText>
+      </PLine>
+      <CLine>
+        <Year>2024</Year>
+        <CLineText>2024 Pakuma • Distributed by Draikotune</CLineText>
+      </CLine>
+      <Genre>
+        <GenreText>music style</GenreText>
+      </Genre>
+      <ParentalWarningType>NoAdviceAvailable</ParentalWarningType>
+      <ResourceGroup>
+        <ResourceGroupContentItem>
+          <SequenceNumber>1</SequenceNumber>
+          <ReleaseResourceReference>A1</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+        <ResourceGroupContentItem>
+          <SequenceNumber>2</SequenceNumber>
+          <ReleaseResourceReference>A2</ReleaseResourceReference>
+        </ResourceGroupContentItem>
+      </ResourceGroup>
+    </Release>
+  </ReleaseList>
+</ern:NewReleaseMessage>
