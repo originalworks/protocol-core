@@ -16,4 +16,4 @@ echo "BEACON_RPC_URL=$(kurtosis port print local-eth-testnet cl-1-lighthouse-get
 
 
 echo "Launching DEV MODE Protocol Network..."
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f $DOCKER_DIR/docker-compose.yml up --build
+docker compose -f $DOCKER_DIR/docker-compose.yml up --build

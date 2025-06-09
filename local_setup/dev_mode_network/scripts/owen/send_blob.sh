@@ -13,4 +13,4 @@ DOCKER_FOLDER=$SCRIPT_DIR/../../docker
 # BLOB_FOLDER=/protocol-core/local_setup/blobs/blob_one ./send_blob.sh
 
 
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f $DOCKER_FOLDER/docker-compose.yml exec owen sh -c "cd owen && cargo run ${BLOB_FOLDER:-/protocol-core/local_setup/blobs/blob_one}"
+docker compose -f $DOCKER_FOLDER/docker-compose.yml exec owen sh -c "cd owen && cargo run ${BLOB_FOLDER:-/protocol-core/local_setup/blobs/blob_one}"
