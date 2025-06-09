@@ -12,14 +12,16 @@ npx hardhat compile
 npx hardhat run scripts/execute/fixture/deployToKurtosis.ts --network kurtosis_testnet
 DDEX_SEQUENCER_ADDRESS=$(cat $PROJECT_ROOT/contracts/tmp.txt | cut -c3-)
 
-echo "Building validator..."
+echo "Setting DDEX_SEQUENCER_ADDRESS for validator..."
 cd ../validator_node
+echo "Building validator node..."
 cargo build
 echo "DDEX_SEQUENCER_ADDRESS=$DDEX_SEQUENCER_ADDRESS" >> $PROJECT_ROOT/validator_node/.env.local
 
-echo "Building owen..."
+echo "Setting DDEX_SEQUENCER_ADDRESS for owen..."
 cd ../owen
+echo "Building owen..."
 cargo build
 echo "DDEX_SEQUENCER_ADDRESS=$DDEX_SEQUENCER_ADDRESS" >> $PROJECT_ROOT/owen/.env.local
 
-echo "All builds complete"
+echo "All builds completed"

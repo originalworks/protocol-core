@@ -14,4 +14,4 @@ DOCKER_FOLDER=$SCRIPT_DIR/../../docker
 
 VALIDATOR_CONTAINER_NAME="validator_node_${VALIDATOR:-1}"
 
-HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f $DOCKER_FOLDER/docker-compose.yml exec $VALIDATOR_CONTAINER_NAME sh -c "pkill -f validator_node"
+docker compose -f $DOCKER_FOLDER/docker-compose.yml exec $VALIDATOR_CONTAINER_NAME sh -c "pkill -f validator_node"
