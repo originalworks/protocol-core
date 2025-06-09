@@ -3,8 +3,14 @@ use alloy::primitives::FixedBytes;
 pub const DDEX_SEQUENCER_ADDRESS: &str = "75AbeCf07C26368F0f4AA0b0d3637A732E25467e";
 pub const GET_BEACON_BLOCK_API_PATH: &str = "/eth/v2/beacon/blocks/";
 pub const GET_SIDECARS_API_PATH: &str = "/eth/v1/beacon/blob_sidecars/";
-pub const EMPTY_QUEUE_HEAD: FixedBytes<32> = FixedBytes::repeat_byte(0);
+pub const EMPTY_BYTES32: FixedBytes<32> = FixedBytes::repeat_byte(0);
 pub const TEMP_FOLDER: &str = "./temp";
+pub const BLOB_ASSIGNMENT_FOLDER_NAME: &str = "blob_assignment";
+pub const DOWNLOADED_BLOBS_FOLDER_NAME: &str = "downloaded_blobs";
+pub const BLOB_ASSIGNMENT_JSON_FILE_NAME: &str = "blob_assignments.json";
+pub const IPFS_TEMP_FILES_FOLDER_NAME: &str = "ipfs_temp_files";
+pub const MAX_BLOB_ASSIGNMENTS: usize = 2;
+pub const MAX_STORED_ASSIGNMENTS: usize = 20;
 #[allow(dead_code)]
 pub const IPFS_API_BASE_URL: &str = "https://ipfs.original.works";
 #[allow(dead_code)]
