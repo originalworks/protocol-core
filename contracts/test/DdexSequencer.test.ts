@@ -648,7 +648,7 @@ describe("DdexSequencer", () => {
       await hre.ethers.provider.send("evm_mine", []);
     }
 
-    // validator[0] can no longer post proof for blobQueueHead
+    // validator[0] can no longer submit proof for blobQueueHead
     await expect(
       ddexSequencer.contract
         .connect(validators[0])

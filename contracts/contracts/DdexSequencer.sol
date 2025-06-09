@@ -25,6 +25,7 @@ contract DdexSequencer is
         bytes32 blobId;
         bytes32 imageId;
         address assignedValidator;
+        uint256 submissionBlock;
     }
 
     bytes1 public constant DATA_PROVIDERS_WHITELIST = 0x01;
@@ -118,6 +119,7 @@ contract DdexSequencer is
         blobs[newBlobhash].submitted = true;
         blobs[newBlobhash].proposer = msg.sender;
         blobs[newBlobhash].blobId = blobId;
+        blobs[newBlobhash].submissionBlock = block.number;
         blobs[newBlobhash].imageId = _imageId;
 
         if (nextBlobAssignment == bytes32(0)) {
@@ -182,6 +184,20 @@ contract DdexSequencer is
         }
     }
 
+    function isQueueHeadExpired() public view returns (bool) {
+        if (
+            block.number > headProcessingStartBlock + headProcessingTimeInBlocks
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function getQueueHeadDetails() public view returns (Blob memory, bytes32) {
+        return (blobs[blobQueueHead], blobQueueHead);
+    }
+
     function setHeadProcessingTimeInBlocks(
         uint256 newTimeInBlocks
     ) public onlyOwner {
@@ -206,6 +222,9 @@ contract DdexSequencer is
     }
 
     function moveQueue() external onlyOwner {
+        if (blobQueueHead == nextBlobAssignment) {
+            nextBlobAssignment = blobs[blobQueueHead].nextBlob;
+        }
         _moveQueue();
     }
 
@@ -216,6 +235,7 @@ contract DdexSequencer is
         blobs[blobQueueHead].assignedValidator = address(0);
         blobs[blobQueueHead].imageId = bytes32(0);
         blobs[blobQueueHead].blobId = bytes32(0);
+        blobs[blobQueueHead].submissionBlock = 0;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
