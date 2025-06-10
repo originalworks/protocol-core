@@ -187,3 +187,9 @@ pub struct PrivateOutputs {
     pub full_content: Option<NewReleaseMessage>,
     pub error: Option<String>,
 }
+
+pub fn parse_guest_id(guest_id: &[u32; 8]) -> alloy_primitives::FixedBytes<32> {
+    alloy_primitives::FixedBytes::<32>::from_slice(
+        &guest_id.map(|word| word.to_le_bytes()).concat(),
+    )
+}
