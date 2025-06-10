@@ -2882,6 +2882,7 @@ name = "prover_interface"
 version = "0.1.0"
 dependencies = [
  "alloy-contract",
+ "alloy-primitives",
  "alloy-sol-types",
  "ddex_parser",
  "risc0-zkvm",
