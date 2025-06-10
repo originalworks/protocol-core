@@ -175,7 +175,7 @@ impl IpfsManager {
         let blob_metadata = BlobMetadata {
             versioned_hash: blob_assignment.blobhash.to_string(),
             transaction_hash: blob_assignment.blob_submission_tx_hash.to_string(),
-            block_number: blob_assignment.submission_block.to_string(),
+            block_number: blob_assignment.blob_submission_block.to_string(),
             timestamp: blob_assignment.blob_submission_timestamp.to_string(),
             chain_id: blob_assignment.chain_id.to_string(),
             network_name: network_name(&blob_assignment.chain_id).to_string(),

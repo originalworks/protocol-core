@@ -123,7 +123,7 @@ impl BlobProofManager {
             let prover_run_results =
                 Self::run_prover(&blob, local_image_elf, self.segment_limit_po2)?;
 
-            let submit_proof_input = SubmitProofInput {
+            let proof_submission_input = SubmitProofInput {
                 image_id: blob_assignment.image_id,
                 journal: prover_run_results.journal,
                 seal: prover_run_results.seal,
@@ -131,7 +131,8 @@ impl BlobProofManager {
             };
             {
                 let mut blob_assignment_files = self.blob_assignment_files.lock().await;
-                blob_assignment_files.save_proof(blob_assignment.blobhash, submit_proof_input)?;
+                blob_assignment_files
+                    .save_proof(blob_assignment.blobhash, proof_submission_input)?;
             }
         } else {
             return Err(format_error!(

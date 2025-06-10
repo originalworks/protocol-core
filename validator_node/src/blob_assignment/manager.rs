@@ -34,10 +34,10 @@ pub struct BlobAssignment {
     pub commitment: Bytes,
     pub status: BlobAssignmentStatus,
     pub assignment_tx_hash: FixedBytes<32>,
-    pub submission_block: u64,
+    pub blob_submission_block: u64,
     pub image_id: FixedBytes<32>,
-    pub submit_proof_tx_hash: Option<FixedBytes<32>>,
-    pub submit_proof_input: Option<SubmitProofInput>,
+    pub proof_submission_tx_hash: Option<FixedBytes<32>>,
+    pub proof_submission_input: Option<SubmitProofInput>,
     pub blob_submission_tx_hash: FixedBytes<32>,
     pub blob_submission_timestamp: u64,
     pub chain_id: u64,
@@ -128,10 +128,10 @@ impl BlobAssignmentManager {
                     return Ok(BlobAssignmentStartingPoint::CleanStart);
                 }
 
-                if let Some(submit_proof_input) = assigned_blob.submit_proof_input {
+                if let Some(proof_submission_input) = assigned_blob.proof_submission_input {
                     match self
                         .contracts_manager
-                        .submit_proof(submit_proof_input)
+                        .submit_proof(proof_submission_input)
                         .await
                     {
                         Ok(receipt) => {
@@ -188,7 +188,10 @@ impl BlobAssignmentManager {
                 "ASSIGNMENT LOOP: No blob file found for this priority assignment, fetching blob from beacon chain"
             );
             let blob_array = self
-                .find_blob(assigned_blob.commitment, assigned_blob.submission_block)
+                .find_blob(
+                    assigned_blob.commitment,
+                    assigned_blob.blob_submission_block,
+                )
                 .await?;
 
             assigned_blob = {
@@ -277,7 +280,10 @@ impl BlobAssignmentManager {
                 }
 
                 let blob_vec = self
-                    .find_blob(assigned_blob.commitment, assigned_blob.submission_block)
+                    .find_blob(
+                        assigned_blob.commitment,
+                        assigned_blob.blob_submission_block,
+                    )
                     .await?;
 
                 {

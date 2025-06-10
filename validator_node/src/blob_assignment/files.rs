@@ -148,10 +148,10 @@ impl BlobAssignmentFiles {
     pub fn save_proof(
         &mut self,
         blobhash: FixedBytes<32>,
-        submit_proof_input: SubmitProofInput,
+        proof_submission_input: SubmitProofInput,
     ) -> anyhow::Result<()> {
         if let Some(assignment) = self.assignments.get_mut(&blobhash) {
-            assignment.submit_proof_input = Some(submit_proof_input);
+            assignment.proof_submission_input = Some(proof_submission_input);
             assignment.status = BlobAssignmentStatus::Processed;
         } else {
             return Err(format_error!(
@@ -181,7 +181,7 @@ impl BlobAssignmentFiles {
         self.inner_queue.remove(0);
         if let Some(assignment) = self.assignments.get_mut(&inner_queue_head.blobhash) {
             assignment.status = BlobAssignmentStatus::Sent;
-            assignment.submit_proof_tx_hash = Some(tx_hash);
+            assignment.proof_submission_tx_hash = Some(tx_hash);
         }
         self.clear_old_archives()?;
 
