@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - "owen/**"
+      - "prover/**"
 
 jobs:
   deploy:
