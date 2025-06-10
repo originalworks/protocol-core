@@ -81,11 +81,7 @@ impl ContractsManager {
         let emitter_address = sequencer.ddexEmitter().call().await?._0;
         let emitter = DdexEmitter::new(emitter_address, provider);
 
-        let image_id_parsed = alloy::primitives::FixedBytes::<32>::from_slice(
-            &prover::CURRENT_DDEX_GUEST_ID
-                .map(|word| word.to_le_bytes())
-                .concat(),
-        );
+        let image_id_parsed = prover::parse_guest_id(&prover::CURRENT_DDEX_GUEST_ID);
 
         Ok(Self {
             sequencer,
