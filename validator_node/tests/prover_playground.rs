@@ -1,3 +1,5 @@
+use validator_node::blob_proofs::BlobProofManager;
+
 #[test]
 fn prover_playground() {
     std::env::set_var("RISC0_DEV_MODE", "1");
@@ -8,11 +10,8 @@ fn prover_playground() {
     std::fs::write(format!("{}.json", path).as_str(), parsed_json).unwrap();
 
     let blob = blob_codec::BlobCodec::from_file(format!("{}.json", path).as_str()).unwrap();
-    let result = validator_node::prover_wrapper::run(
-        &blob.to_bytes().into(),
-        prover::CURRENT_DDEX_GUEST_ELF,
-        18,
-    );
+    let result =
+        BlobProofManager::run_prover(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18);
 
     if let Ok(res) = result {
         println!("Is valid: {}", res.public_outputs.valid);

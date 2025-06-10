@@ -1,17 +1,22 @@
 mod beacon_chain;
+pub mod blob_assignment;
+pub mod blob_proofs;
 mod constants;
 mod contracts;
-mod ipfs;
-pub mod prover_wrapper;
+pub mod ipfs;
 mod zip;
 use alloy::primitives::Address;
-use constants::EMPTY_QUEUE_HEAD;
+use beacon_chain::BlobFinder;
+use blob_assignment::files::BlobAssignmentFiles;
+use blob_assignment::manager::{BlobAssignmentManager, BlobAssignmentStartingPoint};
+use blob_proofs::BlobProofManager;
 use contracts::ContractsManager;
-use log_macros::{log_debug, log_error, log_info};
-use serde_json::json;
-use std::cell::RefCell;
+use ipfs::IpfsManager;
+use log_macros::log_error;
 use std::env;
 use std::str::FromStr;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub fn is_local() -> bool {
     matches!(
@@ -27,7 +32,6 @@ pub struct Config {
     pub rpc_url: String,
     pub beacon_rpc_url: String,
     pub ws_url: String,
-    pub start_block: RefCell<u64>,
     pub private_key: String,
     pub environment: String,
     pub username: String,
@@ -54,11 +58,6 @@ impl Config {
         let rpc_url = Config::get_env_var("RPC_URL");
         let beacon_rpc_url = Config::get_env_var("BEACON_RPC_URL");
         let ws_url = Config::get_env_var("WS_URL");
-        let start_block = RefCell::new(
-            Config::get_env_var("START_BLOCK")
-                .parse::<u64>()
-                .expect("Failed to parse START_BLOCK"),
-        );
         let environment = Config::get_env_var("ENVIRONMENT");
         let username = Config::get_env_var("USERNAME");
         let segment_limit_po2: u32 = env::var("SEGMENT_LIMIT_PO2")
@@ -88,7 +87,6 @@ impl Config {
             rpc_url,
             beacon_rpc_url,
             ws_url,
-            start_block,
             private_key,
             environment,
             username,
@@ -100,91 +98,13 @@ impl Config {
     }
 }
 
-async fn validate_blobs(
-    config: &Config,
-    contracts_manager: &ContractsManager,
-) -> anyhow::Result<()> {
-    let tx_context = sentry::TransactionContext::new("blob_processing", "process_blob");
-    let tx = sentry::start_transaction(tx_context);
-
-    let mut span = tx.start_child("queue_head_processing", "Get queue head data");
-
-    let queue_head = contracts_manager.sequencer.blobQueueHead().call().await?._0;
-
-    let queue_head_data;
-
-    if queue_head == EMPTY_QUEUE_HEAD {
-        log_info!("Queue head is empty");
-        queue_head_data = contracts_manager.subscribe_to_queue(&config).await?;
-    } else {
-        log_info!("Queue head points to {}", queue_head.to_string());
-        queue_head_data = contracts_manager
-            .get_queue_head_data(&config, queue_head)
-            .await?;
-    }
-
-    log_debug!("**Queue head data: {}", json!(queue_head_data));
-
-    let image_elf = contracts_manager
-        .select_image_elf(&queue_head_data.image_id)
-        .await?;
-
-    span.finish();
-
-    span = tx.start_child("blob_discovery", "Get blob");
-
-    let blob = beacon_chain::find_blob(
-        &config.beacon_rpc_url,
-        &queue_head_data.commitment,
-        &queue_head_data.parent_beacon_block_root,
-    )
-    .await?;
-
-    span.finish();
-
-    span = tx.start_child(
-        "message_jsons_ipfs_pin",
-        "Pinning message JSON files to IPFS",
-    );
-
-    ipfs::prepare_blob_folder(blob, &queue_head_data).await?;
-
-    let cid = ipfs::upload_blob_folder_and_cleanup(
-        &contracts_manager.signer,
-        &config.storacha_bridge_url,
-    )
-    .await?;
-
-    span.finish();
-
-    span = tx.start_child("proving", "Proving");
-
-    let prover_run_results =
-        prover_wrapper::run(&blob.into(), image_elf, config.segment_limit_po2)?;
-
-    span.finish();
-
-    log_info!("Sending tx...");
-    span = tx.start_child("transaction_sending", "Sending transaction");
-
-    let _ = contracts_manager
-        .submit_proof(
-            queue_head_data.image_id,
-            prover_run_results.journal.into(),
-            prover_run_results.seal.into(),
-            cid,
-        )
-        .await?;
-
-    span.finish();
-    tx.finish();
-
-    Ok(())
-}
-
 pub async fn run(config: &Config) -> anyhow::Result<()> {
-    let mut consecutive_error_ct = 0;
+    let mut blob_assignments_consecutive_error_ct = 0;
+    let mut proof_calculation_consecutive_error_ct = 0;
     let threshold = 5;
+
+    let tokio_loop_config = config.clone();
+    let mut next_starting_point = BlobAssignmentStartingPoint::CleanStart;
 
     let contracts_manager = ContractsManager::build(
         config.ddex_sequencer_address,
@@ -193,20 +113,82 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     )
     .await?;
 
+    let blob_finder = BlobFinder::new(config.beacon_rpc_url.clone());
+
+    let ipfs_manager = IpfsManager::build(
+        config.storacha_bridge_url.clone(),
+        config.private_key.clone(),
+    )?;
+
+    let blob_assignment_files_ptr_1 = Arc::new(Mutex::new(BlobAssignmentFiles::build()?));
+    let blob_assignment_files_ptr_2 = Arc::clone(&blob_assignment_files_ptr_1);
+
+    let blob_assignment_manager =
+        BlobAssignmentManager::new(blob_assignment_files_ptr_2, contracts_manager, blob_finder);
+
+    let blob_proof_manager = BlobProofManager::new(
+        blob_assignment_files_ptr_1,
+        ipfs_manager,
+        config.segment_limit_po2.clone(),
+    );
+
+    let mut current_block_number = blob_assignment_manager.fetch_current_block().await.unwrap();
+    blob_assignment_manager.init_clear_inner_queue().await?;
+
+    tokio::spawn(async move {
+        loop {
+            if blob_assignments_consecutive_error_ct == threshold {
+                panic!(
+                    "{} consecutive errors occured. Proccess has been terminated",
+                    threshold
+                );
+            }
+            let res: Result<BlobAssignmentStartingPoint, anyhow::Error>;
+            match next_starting_point {
+                BlobAssignmentStartingPoint::NewBlobSubmitted { block_number } => {
+                    current_block_number = block_number;
+                    res = blob_assignment_manager
+                        .try_new_assignment(&tokio_loop_config, current_block_number)
+                        .await;
+                }
+                BlobAssignmentStartingPoint::BlobProcessedOrRejected { block_number } => {
+                    current_block_number = block_number;
+
+                    res = blob_assignment_manager
+                        .run(&tokio_loop_config, current_block_number)
+                        .await;
+                }
+                BlobAssignmentStartingPoint::CleanStart => {
+                    res = blob_assignment_manager
+                        .run(&tokio_loop_config, current_block_number)
+                        .await;
+                }
+            }
+
+            if let Err(e) = res {
+                log_error!("{e}");
+                blob_assignments_consecutive_error_ct += 1;
+            } else {
+                blob_assignments_consecutive_error_ct = 0;
+                next_starting_point = res.expect("Blob assignment manager failed");
+            }
+        }
+    });
+
     loop {
-        if consecutive_error_ct == threshold {
+        if proof_calculation_consecutive_error_ct == threshold {
             return Err(log_error!(
                 "{} consecutive errors occured. Proccess has been terminated",
                 threshold
             ));
         }
 
-        let res = validate_blobs(&config, &contracts_manager).await;
+        let res = blob_proof_manager.run().await;
         if let Err(e) = res {
             log_error!("{e}");
-            consecutive_error_ct += 1;
+            proof_calculation_consecutive_error_ct += 1;
         } else {
-            consecutive_error_ct = 0;
+            proof_calculation_consecutive_error_ct = 0;
         }
     }
 }
