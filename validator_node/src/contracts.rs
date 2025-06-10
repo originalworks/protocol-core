@@ -1,4 +1,7 @@
-use crate::{is_local, Config};
+use crate::{
+    blob_assignment::manager::{BlobAssignment, BlobAssignmentStartingPoint, BlobAssignmentStatus},
+    is_local, Config,
+};
 use alloy::{
     eips::BlockNumberOrTag,
     network::{Ethereum, EthereumWallet},
@@ -17,13 +20,13 @@ use alloy::{
     transports::http::{reqwest, Client, Http},
 };
 use anyhow::Context;
-use log_macros::{format_error, log_info, log_warn};
-use prover::{CURRENT_DDEX_GUEST_ELF, PREVIOUS_DDEX_GUEST_ELF};
+use futures_util::StreamExt;
+use log_macros::{format_error, log_error, log_info, log_warn};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use DdexEmitter::getSupportedVerifierImageIdsReturn;
-
-use futures_util::StreamExt;
+use DdexSequencer::getQueueHeadDetailsReturn;
 
 sol!(
     #[allow(missing_docs)]
@@ -38,6 +41,45 @@ sol!(
     DdexEmitter,
     "../contracts/artifacts/contracts/DdexEmitter.sol/DdexEmitter.json"
 );
+
+pub struct BlobSubmissionDetails {
+    pub commitment: Bytes,
+    pub timestamp: u64,
+    pub submission_tx_hash: FixedBytes<32>,
+}
+
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
+pub enum LocalImageVersion {
+    Current,
+    Previous,
+}
+
+impl From<DdexSequencer::blobsReturn> for DdexSequencer::Blob {
+    fn from(blob: DdexSequencer::blobsReturn) -> Self {
+        DdexSequencer::Blob {
+            assignedValidator: blob.assignedValidator,
+            imageId: blob.imageId,
+            submissionBlock: blob.submissionBlock,
+            nextBlob: blob.nextBlob,
+            submitted: blob.submitted,
+            proposer: blob.proposer,
+            blobId: blob.blobId,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct SubmitProofInput {
+    pub image_id: FixedBytes<32>,
+    pub journal: Vec<u8>,
+    pub seal: Vec<u8>,
+    pub ipfs_cid: String,
+}
+
+pub struct BlobOnchainData {
+    pub blob_data: DdexSequencer::Blob,
+    pub blobhash: FixedBytes<32>,
+}
 
 #[derive(Debug, serde::Serialize)]
 pub struct QueueHeadData {
@@ -125,15 +167,225 @@ impl ContractsManager {
         })
     }
 
-    pub async fn select_image_elf(&self, blob_image_id: &FixedBytes<32>) -> anyhow::Result<&[u8]> {
-        let selected_elf;
+    pub async fn is_queue_head_expired(&self) -> anyhow::Result<bool> {
+        Ok(self.sequencer.isQueueHeadExpired().call().await?._0)
+    }
+
+    pub async fn get_queue_head(&self) -> anyhow::Result<BlobOnchainData> {
+        let getQueueHeadDetailsReturn {
+            _0: queue_head_blob,
+            _1: queue_head_blobhash,
+        } = self.sequencer.getQueueHeadDetails().call().await?;
+
+        Ok(BlobOnchainData {
+            blob_data: queue_head_blob,
+            blobhash: queue_head_blobhash,
+        })
+    }
+
+    pub async fn get_blob_submission_details(
+        &self,
+        blobhash: FixedBytes<32>,
+        block_number: u64,
+    ) -> anyhow::Result<BlobSubmissionDetails> {
+        let logs = self
+            .provider
+            .get_logs(
+                &Filter::new()
+                    .address(self.sequencer.address().clone())
+                    .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
+                    .from_block(block_number)
+                    .to_block(block_number),
+            )
+            .await?;
+
+        for log in logs {
+            let DdexSequencer::NewBlobSubmitted {
+                commitment,
+                image_id: _,
+            } = log.log_decode()?.inner.data;
+
+            let blobhash_from_commitment = Self::commitment_to_blobhash(&commitment);
+
+            if blobhash_from_commitment == blobhash {
+                let timestamp = self
+                    .provider
+                    .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
+                    .await?
+                    .ok_or_else(|| format_error!("Cannot get block info"))?
+                    .header
+                    .timestamp;
+                let submission_tx_hash = log
+                    .transaction_hash
+                    .expect("Transaction hash not found in log");
+
+                return Ok(BlobSubmissionDetails {
+                    commitment,
+                    timestamp,
+                    submission_tx_hash,
+                });
+            }
+        }
+
+        return Err(format_error!(
+            "Event with commitment not found in the block {} for for blobhash: {}",
+            block_number,
+            blobhash.to_string()
+        ));
+    }
+
+    pub async fn fetch_current_block(&self) -> anyhow::Result<u64> {
+        let current_block = self
+            .provider
+            .get_block_number()
+            .await
+            .expect("Error while fetching current block number");
+        Ok(current_block)
+    }
+
+    pub async fn assign_blob(&self) -> anyhow::Result<BlobAssignment> {
+        let mut tx_builder = self.sequencer.assignBlob();
+
+        if is_local() {
+            tx_builder = tx_builder.gas(1000000);
+        }
+
+        let receipt = tx_builder.send().await?.get_receipt().await?;
+
+        if receipt.status() == false {
+            return Err(log_error!(
+                "assignBlob tx was rejected: {:?}",
+                receipt.transaction_hash
+            ));
+        }
+        let logs = receipt.inner.logs();
+        let blob_assignment_tx_hash = receipt.transaction_hash;
+
+        for log in logs {
+            match log.topic0().expect("Event log signature not found") {
+                &DdexSequencer::BlobAssigned::SIGNATURE_HASH => {
+                    let DdexSequencer::BlobAssigned {
+                        blob,
+                        assignedValidator,
+                    } = log.log_decode()?.inner.data;
+
+                    if assignedValidator == self.signer.address() {
+                        let blob_assignment = self
+                            .build_new_assignment(
+                                blob,
+                                log.transaction_hash.expect("Tx hash not found in log"),
+                            )
+                            .await?;
+
+                        return Ok(blob_assignment);
+                    }
+                }
+
+                _ => (),
+            }
+        }
+        return Err(log_error!(
+            "Assignment not found in tx hash: {}",
+            blob_assignment_tx_hash
+        ));
+    }
+
+    pub async fn build_new_assignment(
+        &self,
+        blobhash: FixedBytes<32>,
+        blob_assignment_tx_hash: FixedBytes<32>,
+    ) -> anyhow::Result<BlobAssignment> {
+        let blob_data: DdexSequencer::Blob = self.sequencer.blobs(blobhash).call().await?.into();
+        let local_image_version = self.select_local_image_version(&blob_data.imageId).await?;
+
+        let blob_submission_details = self
+            .get_blob_submission_details(blobhash, blob_data.submissionBlock.to::<u64>())
+            .await?;
+
+        let blob_assignment = BlobAssignment {
+            blobhash,
+            commitment: blob_submission_details.commitment,
+            status: BlobAssignmentStatus::Assigned,
+            assignment_tx_hash: blob_assignment_tx_hash,
+            blob_submission_block: blob_data.submissionBlock.to::<u64>(),
+            image_id: blob_data.imageId,
+            proof_submission_tx_hash: None,
+            proof_submission_input: None,
+            blob_submission_tx_hash: blob_submission_details.submission_tx_hash,
+            blob_submission_timestamp: blob_submission_details.timestamp,
+            chain_id: self.chain_id,
+            local_image_version: local_image_version,
+        };
+        Ok(blob_assignment)
+    }
+    pub async fn subscribe_to_contracts(
+        &self,
+        config: &Config,
+        start_block: u64,
+    ) -> anyhow::Result<BlobAssignmentStartingPoint> {
+        log_info!("Subscribing to queue");
+        let ws_url = WsConnect::new(&config.ws_url);
+        let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
+
+        let filter = Filter::new()
+            .address(vec![
+                config.ddex_sequencer_address,
+                self.emitter.address().clone(),
+            ])
+            .events(vec![
+                DdexSequencer::NewBlobSubmitted::SIGNATURE,
+                DdexEmitter::BlobProcessed::SIGNATURE,
+                DdexEmitter::BlobRejected::SIGNATURE,
+            ])
+            .from_block(start_block);
+
+        log_info!("Subscribed to queue, waiting for changes...");
+        let subscription = ws_provider.subscribe_logs(&filter).await?;
+        let mut stream = subscription.into_stream();
+
+        while let Some(log) = stream.next().await {
+            match log.topic0().expect("Event log signature not found") {
+                &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
+                    let DdexSequencer::NewBlobSubmitted {
+                        commitment: _,
+                        image_id: _,
+                    } = log.log_decode()?.inner.data;
+                    let block_number = log
+                        .block_number
+                        .ok_or_else(|| format_error!("Block not found in log"))?;
+                    return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted { block_number });
+                }
+                &DdexEmitter::BlobProcessed::SIGNATURE_HASH
+                | &DdexEmitter::BlobRejected::SIGNATURE_HASH => {
+                    let block_number = log
+                        .block_number
+                        .ok_or_else(|| format_error!("Block not found in log"))?;
+                    return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected {
+                        block_number,
+                    });
+                }
+                _ => (),
+            }
+        }
+        Ok(BlobAssignmentStartingPoint::CleanStart)
+    }
+
+    pub async fn get_next_blob_assignment(&self) -> anyhow::Result<FixedBytes<32>> {
+        Ok(self.sequencer.nextBlobAssignment().call().await?._0)
+    }
+
+    pub async fn select_local_image_version(
+        &self,
+        blob_image_id: &FixedBytes<32>,
+    ) -> anyhow::Result<LocalImageVersion> {
+        let local_image_version: LocalImageVersion;
         let blob_is_local_current;
 
         if blob_image_id == &self.current_image_id {
-            selected_elf = CURRENT_DDEX_GUEST_ELF;
+            local_image_version = LocalImageVersion::Current;
             blob_is_local_current = true;
         } else if blob_image_id == &self.previous_image_id {
-            selected_elf = PREVIOUS_DDEX_GUEST_ELF;
+            local_image_version = LocalImageVersion::Previous;
             blob_is_local_current = false;
         } else {
             log_warn!("Current image id: {}", self.current_image_id.to_string());
@@ -167,7 +419,7 @@ impl ContractsManager {
 
         if previous_verifier_image_id.is_zero() {
             if current_verifier_image_id == self.current_image_id && blob_is_local_current {
-                return Ok(selected_elf);
+                return Ok(local_image_version);
             } else {
                 log_warn!("Current image id: {}", self.current_image_id.to_string());
                 log_warn!("Previous image id: {}", self.previous_image_id.to_string());
@@ -186,10 +438,10 @@ impl ContractsManager {
             if self.current_image_id == current_verifier_image_id && blob_is_local_current
                 || self.previous_image_id == previous_verifier_image_id && !blob_is_local_current
             {
-                return Ok(selected_elf);
+                return Ok(local_image_version);
             } else if self.current_image_id == previous_verifier_image_id && blob_is_local_current {
                 log_warn!("Validator supports imageId that will soon become outdated. Please update validator ASAP!");
-                return Ok(selected_elf);
+                return Ok(local_image_version);
             } else {
                 log_warn!("Current image id: {}", self.current_image_id.to_string());
                 log_warn!("Previous image id: {}", self.previous_image_id.to_string());
@@ -209,14 +461,14 @@ impl ContractsManager {
 
     pub async fn submit_proof(
         &self,
-        image_id: FixedBytes<32>,
-        journal: Vec<u8>,
-        seal: Vec<u8>,
-        ipfs_cid: String,
+        input: SubmitProofInput,
     ) -> anyhow::Result<TransactionReceipt> {
-        let mut tx_builder =
-            self.sequencer
-                .submitProof(image_id, journal.into(), seal.into(), ipfs_cid);
+        let mut tx_builder = self.sequencer.submitProof(
+            input.image_id,
+            input.journal.into(),
+            input.seal.into(),
+            input.ipfs_cid,
+        );
 
         if is_local() {
             tx_builder = tx_builder
@@ -246,7 +498,7 @@ impl ContractsManager {
         Ok(receipt)
     }
 
-    fn commitment_to_blobhash(commitment: &Bytes) -> FixedBytes<32> {
+    pub fn commitment_to_blobhash(commitment: &Bytes) -> FixedBytes<32> {
         let mut hasher = Sha256::new();
         hasher.update(commitment);
         let mut hashed_commitment = hasher.finalize();
@@ -258,7 +510,7 @@ impl ContractsManager {
         FixedBytes::<32>::from(fixed_bytes_input)
     }
 
-    async fn get_parent_beacon_block_root(
+    pub async fn get_parent_beacon_block_root(
         &self,
         block_number: u64,
     ) -> anyhow::Result<FixedBytes<32>> {
@@ -266,150 +518,11 @@ impl ContractsManager {
             .provider
             .get_block_by_number(BlockNumberOrTag::Number(block_number), true)
             .await?
-            .ok_or_else(|| {
-                format_error!("Block {} not found", block_number)
-                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
-            })?
+            .ok_or_else(|| format_error!("Block {} not found", block_number))?
             .header
             .parent_beacon_block_root
-            .ok_or_else(|| {
-                format_error!("Block {} not found", block_number)
-                // return Box::new(OwValidatorNodeError::BlockNotFound(block_number))
-            })?;
+            .ok_or_else(|| format_error!("Block {} not found", block_number))?;
 
         Ok(parent_beacon_block_root)
-    }
-
-    pub async fn subscribe_to_queue(&self, config: &Config) -> anyhow::Result<QueueHeadData> {
-        log_info!("Subscribing to queue");
-        let ws_url = WsConnect::new(&config.ws_url);
-        let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
-
-        let filter = Filter::new()
-            .address(config.ddex_sequencer_address)
-            .event(DdexSequencer::NewBlobSubmitted::SIGNATURE);
-
-        log_info!("Subscribed to queue, waiting for new blobs...");
-        let subscription = ws_provider.subscribe_logs(&filter).await?;
-        let mut stream = subscription.into_stream();
-
-        let mut queue_head_commitment = Bytes::new();
-        let mut parent_beacon_block_root = FixedBytes::<32>::new([0u8; 32]);
-        let mut transaction_hash = FixedBytes::<32>::new([0u8; 32]);
-        let mut block_number: u64 = 0;
-        let mut timestamp: u64 = 0;
-        let mut blob_image_id = FixedBytes::<32>::new([0u8; 32]);
-
-        while let Some(log) = stream.next().await {
-            println!("New blob detected!");
-            let DdexSequencer::NewBlobSubmitted {
-                commitment,
-                image_id,
-            } = log.log_decode()?.inner.data;
-            block_number = log
-                .block_number
-                .ok_or_else(|| format_error!("Block not found in log"))?;
-            parent_beacon_block_root = self.get_parent_beacon_block_root(block_number).await?;
-            queue_head_commitment = commitment;
-            blob_image_id = image_id;
-            *config.start_block.borrow_mut() = block_number;
-            transaction_hash = log
-                .transaction_hash
-                .ok_or_else(|| format_error!("Transaction hash not found in log"))?;
-
-            timestamp = self
-                .provider
-                .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
-                .await?
-                .ok_or_else(|| format_error!("Cannot get block info"))?
-                .header
-                .timestamp;
-            break;
-        }
-        Ok(QueueHeadData {
-            parent_beacon_block_root,
-            versioned_blobhash: Self::commitment_to_blobhash(&queue_head_commitment),
-            commitment: queue_head_commitment,
-            image_id: blob_image_id,
-            transaction_hash,
-            block_number,
-            timestamp,
-            chain_id: self.chain_id,
-        })
-    }
-
-    pub async fn get_queue_head_data(
-        &self,
-        config: &Config,
-        queue_head: FixedBytes<32>,
-    ) -> anyhow::Result<QueueHeadData> {
-        let filter = Filter::new()
-            .address(config.ddex_sequencer_address)
-            .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
-            .from_block(*config.start_block.borrow());
-
-        let logs = self.provider.get_logs(&filter).await?;
-
-        let mut queue_head_commitment = Bytes::new();
-        let mut blob_image_id = FixedBytes::<32>::new([0u8; 32]);
-        let mut parent_beacon_block_root = FixedBytes::<32>::new([0u8; 32]);
-        let mut transaction_hash = FixedBytes::<32>::new([0u8; 32]);
-        let mut block_number: u64 = 0;
-        let mut timestamp: u64 = 0;
-
-        for log in logs {
-            match log.topic0() {
-                Some(&DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH) => {
-                    let DdexSequencer::NewBlobSubmitted {
-                        commitment,
-                        image_id,
-                    } = log.log_decode()?.inner.data;
-                    transaction_hash = log
-                        .transaction_hash
-                        .ok_or_else(|| format_error!("Transaction hash not found in log"))?;
-                    let current_blobhash = Self::commitment_to_blobhash(&commitment);
-                    if queue_head == current_blobhash {
-                        block_number = log
-                            .block_number
-                            .ok_or_else(|| format_error!("Block not found in log"))?;
-                        parent_beacon_block_root =
-                            self.get_parent_beacon_block_root(block_number).await?;
-                        queue_head_commitment = commitment;
-                        blob_image_id = image_id;
-                        *config.start_block.borrow_mut() = block_number;
-
-                        timestamp = self
-                            .provider
-                            .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
-                            .await?
-                            .ok_or_else(|| format_error!("Cannot get block info"))?
-                            .header
-                            .timestamp;
-                        break;
-                    }
-                }
-                _ => (),
-            }
-        }
-        if parent_beacon_block_root == FixedBytes::<32>::new([0u8; 32])
-            || queue_head_commitment == Bytes::new()
-        {
-            return Err(format_error!("Queue head not found"));
-        }
-
-        if blob_image_id == FixedBytes::<32>::new([0u8; 32]) {
-            return Err(format_error!("Corrupted image_id"));
-        }
-
-        Ok(QueueHeadData {
-            parent_beacon_block_root,
-            versioned_blobhash: Self::commitment_to_blobhash(&queue_head_commitment),
-            commitment: queue_head_commitment,
-            image_id: blob_image_id,
-            transaction_hash,
-            block_number,
-            timestamp,
-            chain_id: self.chain_id,
-        })
     }
 }

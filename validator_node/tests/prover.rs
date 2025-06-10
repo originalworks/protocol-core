@@ -1,11 +1,13 @@
-use validator_node::prover_wrapper::ProverRunResults;
+// use validator_node::prover_wrapper::ProverRunResults;
+
+use validator_node::blob_proofs::{BlobProofManager, ProverRunResults};
 
 fn produce_proof(dir: &str) -> Result<ProverRunResults, anyhow::Error> {
     std::env::set_var("RISC0_DEV_MODE", "1");
     let blob =
         blob_codec::BlobCodec::from_dir(dir, Some(blob_codec::CalldataLimitConfig::default()))
             .unwrap();
-    validator_node::prover_wrapper::run(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
+    BlobProofManager::run_prover(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
 }
 
 #[test]
@@ -51,12 +53,9 @@ fn prover_mixed() {
 #[test]
 fn prover_faulty_blob() {
     std::env::set_var("RISC0_DEV_MODE", "1");
-    let output = validator_node::prover_wrapper::run(
-        &[1; 131072].into(),
-        prover::CURRENT_DDEX_GUEST_ELF,
-        18,
-    )
-    .unwrap();
+    let output =
+        BlobProofManager::run_prover(&[1; 131072].into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
+            .unwrap();
 
     assert_eq!(output.public_outputs.valid, false);
     assert_eq!(output.public_outputs.rejected_messages.len(), 0);
