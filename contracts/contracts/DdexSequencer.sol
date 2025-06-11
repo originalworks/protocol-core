@@ -144,8 +144,7 @@ contract DdexSequencer is
     ) external _isWhitelistedOn(VALIDATORS_WHITELIST) {
         require(blobQueueHead != bytes32(0), "DdexSequencer: Queue is empty");
         require(
-            block.number <=
-                headProcessingStartBlock + headProcessingTimeInBlocks,
+            isQueueHeadExpired() == false,
             "DdexSequencer: Head processing time expired"
         );
         require(
@@ -166,9 +165,7 @@ contract DdexSequencer is
             headProcessingStartBlock = block.number;
             emit BlobAssigned(nextBlobAssignment, msg.sender);
             nextBlobAssignment = blobs[nextBlobAssignment].nextBlob;
-        } else if (
-            block.number > headProcessingStartBlock + headProcessingTimeInBlocks
-        ) {
+        } else if (isQueueHeadExpired() == true) {
             // TODO! Slash previous blobs[blobQueueHead].assignedValidator here!
             blobs[blobQueueHead].assignedValidator = msg.sender;
             headProcessingStartBlock = block.number;
