@@ -1,5 +1,5 @@
 use alloy::primitives::{Bytes, FixedBytes};
-use log_macros::{log_info, log_warn};
+use log_macros::{format_error, log_info, log_warn};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -151,7 +151,10 @@ impl BlobAssignmentManager {
                             }
                         }
                         Err(err) => {
-                            log_warn!("ASSIGNMENT LOOP: Sending proof failed {}", err)
+                            return Err(format_error!(
+                                "ASSIGNMENT LOOP: Sending tx with proof failed {}",
+                                err
+                            ))
                         }
                     };
                 }
