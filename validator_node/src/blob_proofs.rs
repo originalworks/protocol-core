@@ -7,10 +7,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::{
-    blob_assignment::{
-        files::BlobAssignmentFiles,
-        manager::{BlobAssignment, BlobAssignmentStatus},
-    },
+    blob_assignment::{files::BlobAssignmentFiles, manager::BlobAssignment},
     contracts::{LocalImageVersion, SubmitProofInput},
     ipfs::IpfsManager,
 };
