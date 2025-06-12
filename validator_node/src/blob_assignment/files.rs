@@ -172,6 +172,17 @@ impl BlobAssignmentFiles {
         Ok(None)
     }
 
+    pub fn get_next_assignment_to_process(&self) -> anyhow::Result<Option<BlobAssignment>> {
+        for blobhash in &self.inner_queue {
+            if let Some(assignment) = self.assignments.get(blobhash) {
+                if assignment.status == BlobAssignmentStatus::Discovered {
+                    return Ok(Some(assignment.clone()));
+                }
+            }
+        }
+        Ok(None)
+    }
+
     pub fn archive_head_assignment(&mut self, tx_hash: FixedBytes<32>) -> anyhow::Result<()> {
         let inner_queue_head = self
             .get_inner_queue_head()?

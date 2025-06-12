@@ -7,10 +7,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::{
-    blob_assignment::{
-        files::BlobAssignmentFiles,
-        manager::{BlobAssignment, BlobAssignmentStatus},
-    },
+    blob_assignment::{files::BlobAssignmentFiles, manager::BlobAssignment},
     contracts::{LocalImageVersion, SubmitProofInput},
     ipfs::IpfsManager,
 };
@@ -67,30 +64,20 @@ impl BlobProofManager {
 
     pub async fn run(&self) -> anyhow::Result<()> {
         let blob_assignment = {
-            let assigned_blob_file_mutex = self.blob_assignment_files.lock().await;
-            assigned_blob_file_mutex.get_inner_queue_head()?
+            let blob_assignment_files = self.blob_assignment_files.lock().await;
+            blob_assignment_files.get_next_assignment_to_process()?
         };
 
         if let Some(blob_assignment) = blob_assignment {
             log_info!(
-                "PROVING LOOP: New assignment found, {}",
+                "PROVING LOOP: New assignment found, generating proof for: {}",
                 blob_assignment.blobhash
             );
-            if blob_assignment.status == BlobAssignmentStatus::Discovered {
-                log_info!("PROVING LOOP: Assignment ready, generating proof");
-                self.generate_proof(blob_assignment).await?;
-            } else {
-                log_info!(
-                    "PROVING LOOP: Assignment is not ready yet, status: {:?}. Waiting for changes",
-                    &blob_assignment.status
-                );
+            self.generate_proof(blob_assignment).await?;
 
-                BlobAssignmentFiles::watch_json_file().await?;
-                return Ok(());
-            }
             return Ok(());
         } else {
-            log_info!("PROVING LOOP: No assignment found, waiting for changes");
+            log_info!("PROVING LOOP: No new assignment found, waiting for changes");
             BlobAssignmentFiles::watch_json_file().await?;
             return Ok(());
         }
