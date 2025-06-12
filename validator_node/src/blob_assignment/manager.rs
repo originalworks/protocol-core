@@ -135,9 +135,20 @@ impl BlobAssignmentManager {
                         .await
                     {
                         Ok(receipt) => {
-                            let mut blob_assignment_files = self.blob_assignment_files.lock().await;
-                            blob_assignment_files
-                                .archive_head_assignment(receipt.transaction_hash)?;
+                            if receipt.status() == true {
+                                {
+                                    let mut blob_assignment_files =
+                                        self.blob_assignment_files.lock().await;
+                                    blob_assignment_files
+                                        .archive_head_assignment(receipt.transaction_hash)?;
+                                }
+                            } else {
+                                log_warn!(
+                                    "ASSIGNMENT LOOP: Proof submission tx failed. Blobhash: {} tx hash: {}",
+                                    assigned_blob.blobhash,
+                                    receipt.transaction_hash
+                                );
+                            }
                         }
                         Err(err) => {
                             log_warn!("ASSIGNMENT LOOP: Sending proof failed {}", err)
