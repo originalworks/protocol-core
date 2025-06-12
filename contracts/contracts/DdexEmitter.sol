@@ -67,6 +67,12 @@ contract DdexEmitter is
         }
     }
 
+    function setRisc0Groth16VerifierAddress(
+        address _verifierAddress
+    ) public onlyOwner {
+        riscZeroGroth16Verifier = IRiscZeroVerifier(_verifierAddress);
+    }
+
     function getSupportedBlobImageIds()
         external
         view
