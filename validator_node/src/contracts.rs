@@ -489,6 +489,29 @@ impl ContractsManager {
         Ok(receipt)
     }
 
+    pub async fn remove_expired_blob(&self) -> anyhow::Result<()> {
+        let mut tx_builder = self.sequencer.removeExpiredBlob();
+
+        if is_local() {
+            tx_builder = tx_builder.gas(1000000);
+        }
+
+        let receipt = tx_builder.send().await?.get_receipt().await?;
+
+        if receipt.status() == false {
+            return Err(log_error!(
+                "removeExpiredBlob tx was rejected: {:?}",
+                receipt.transaction_hash
+            ));
+        }
+
+        log_info!(
+            "removeExpiredBlob tx was successful: {:?}",
+            receipt.transaction_hash
+        );
+        Ok(())
+    }
+
     pub fn commitment_to_blobhash(commitment: &Bytes) -> FixedBytes<32> {
         let mut hasher = Sha256::new();
         hasher.update(commitment);

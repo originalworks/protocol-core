@@ -17,6 +17,8 @@ export interface FixtureInput {
   fakeRisc0Groth16Verifier?: boolean;
   fakeImageId?: boolean;
   headProcessingTimeInBlocks?: number;
+  brokenDdexSequencer?: boolean;
+  blobLifetime?: number;
 }
 
 export interface FixtureOutput {

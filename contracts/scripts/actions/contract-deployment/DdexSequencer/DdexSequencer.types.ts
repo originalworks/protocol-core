@@ -6,4 +6,6 @@ export interface DdexSequencerDeploymentInput {
   validatorsWhitelist: string;
   stakeVaultAddress: string;
   headProcessingTimeInBlocks: number;
+  brokenDdexSequencer: boolean;
+  blobLifetime: number;
 }

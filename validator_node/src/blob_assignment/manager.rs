@@ -1,5 +1,5 @@
 use alloy::primitives::{Bytes, FixedBytes};
-use log_macros::{format_error, log_info, log_warn};
+use log_macros::{format_error, log_error, log_info, log_warn};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -206,7 +206,10 @@ impl BlobAssignmentManager {
                     assigned_blob.commitment,
                     assigned_blob.blob_submission_block,
                 )
-                .await?;
+                .await?
+                .ok_or(format_error!(
+                    "ASSIGNMENT LOOP: Blob not found for priority assignment"
+                ))?;
 
             assigned_blob = {
                 let mut blob_assignment_files = self.blob_assignment_files.lock().await;
@@ -221,18 +224,52 @@ impl BlobAssignmentManager {
         Ok(self.contracts_manager.fetch_current_block().await?)
     }
 
-    async fn find_blob(&self, commitment: Bytes, submission_block: u64) -> anyhow::Result<Vec<u8>> {
+    async fn find_blob(
+        &self,
+        commitment: Bytes,
+        submission_block: u64,
+    ) -> anyhow::Result<Option<Vec<u8>>> {
         let parent_beacon_block_root = self
             .contracts_manager
             .get_parent_beacon_block_root(submission_block)
             .await?;
 
-        let blob_vec = self
+        let blob_vec = match self
             .blob_finder
             .find(&commitment, &parent_beacon_block_root)
-            .await?;
+            .await
+        {
+            Ok(blob) => blob,
+            Err(_) => match self.handle_missing_head_blob(commitment).await {
+                Ok(_) => return Ok(None),
+                Err(e) => {
+                    return Err(log_error!(
+                        "ASSIGNMENT LOOP: Failed to remove missing head blob: {:?}",
+                        e
+                    ));
+                }
+            },
+        };
 
-        Ok(blob_vec)
+        Ok(Some(blob_vec))
+    }
+
+    pub async fn handle_missing_head_blob(&self, commitment: Bytes) -> anyhow::Result<()> {
+        log_warn!("ASSIGNMENT LOOP: BLOB for queue head not found, trying to remove expired blob");
+        match self.contracts_manager.remove_expired_blob().await {
+            Ok(_) => {
+                log_info!("ASSIGNMENT LOOP: Expired blob removed successfully");
+                let blobhash = ContractsManager::commitment_to_blobhash(&commitment);
+                {
+                    let mut blob_assignment_files = self.blob_assignment_files.lock().await;
+                    blob_assignment_files.remove_from_queue(blobhash)?;
+                }
+                return Ok(());
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
     }
 
     pub async fn try_new_assignment(
@@ -293,12 +330,18 @@ impl BlobAssignmentManager {
                     blob_assignment_files.save_assignment(assigned_blob.clone())?;
                 }
 
-                let blob_vec = self
+                let blob_vec = match self
                     .find_blob(
                         assigned_blob.commitment,
                         assigned_blob.blob_submission_block,
                     )
-                    .await?;
+                    .await?
+                {
+                    Some(blob) => blob,
+                    None => {
+                        return Ok(BlobAssignmentStartingPoint::CleanStart);
+                    }
+                };
 
                 {
                     let mut blob_assignment_files = self.blob_assignment_files.lock().await;
