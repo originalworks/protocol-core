@@ -52,25 +52,3 @@ async function main() {
   console.log("Broken blob submited: ", receipt?.hash);
 }
 main();
-
-// async function nonono() {
-//     const kzgOutput = await KzgHelper.generate("./test/ddex-messages/new_release.xml");
-//     const tx = await ddexSequencer
-//       .connect(signer)
-//       .submitNewBlob(imageId, kzgOutput.commitment, kzgOutput.blobSha2, {
-//         type: 3,
-//         maxFeePerBlobGas: 10,
-//         gasLimit: 1000000,
-//         blobs: [
-//           {
-//             data: kzgOutput.blobFile,
-//             proof: kzgOutput.proof,
-//             commitment: kzgOutput.commitment,
-//           },
-//         ],
-//       });
-
-//     await tx.wait();
-
-//     return kzgOutput;
-// }
