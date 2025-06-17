@@ -5,7 +5,7 @@ services:
       - "host.docker.internal:host-gateway"
     working_dir: /protocol-core
     volumes:
-      - ../../../:/protocol-core
+      - ../../:/protocol-core
       - container_target:/protocol-core/target
       - container_node_modules:/protocol-core/contracts/node_modules
       - container_artifacts:/protocol-core/contracts/artifacts
@@ -13,9 +13,11 @@ services:
       - container_typechain:/protocol-core/contracts/typechain_types
     environment:
       - RPC_URL=${RPC_URL}
-      - PROVING_SETUP=false
+      - PROVING_SETUP=${PROVING_SETUP}
       - KURTOSIS_MNEMONIC=${KURTOSIS_MNEMONIC}
-    command: ["/protocol-core/local_setup/dev_mode_network/scripts/setup/build.sh"]
+      - DEPLOY_BROKEN_DDEX_SEQUENCER=${DEPLOY_BROKEN_DDEX_SEQUENCER}
+      - BLOB_LIFETIME=${BLOB_LIFETIME}
+    command: ["/protocol-core/local_setup/scripts/network/build.sh"]
 
   validator_node_1:
     build: .
@@ -28,7 +30,7 @@ services:
       ipfs:
         condition: service_started
     volumes:
-      - ../../../:/protocol-core
+      - ../../:/protocol-core
       - container_target:/protocol-core/target
       - container_node_modules:/protocol-core/contracts/node_modules
       - container_artifacts:/protocol-core/contracts/artifacts
@@ -40,12 +42,11 @@ services:
       - RPC_URL=${RPC_URL}
       - WS_URL=${WS_URL}
       - BEACON_RPC_URL=${BEACON_RPC_URL}
-      - START_BLOCK=${START_BLOCK}
       - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
       - ENVIRONMENT=${ENVIRONMENT}
       - USERNAME=${USERNAME}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
-      - RISC0_DEV_MODE=1
+      - RISC0_DEV_MODE=${RISC0_DEV_MODE}
       - LOCAL=true
       - IPFS_API_BASE_URL=http://ipfs:5001
     command: ["tail", "-f", "/dev/null"]
@@ -62,7 +63,7 @@ services:
       ipfs:
         condition: service_started
     volumes:
-      - ../../../:/protocol-core
+      - ../../:/protocol-core
       - container_target:/protocol-core/target
       - container_node_modules:/protocol-core/contracts/node_modules
       - container_artifacts:/protocol-core/contracts/artifacts
@@ -74,12 +75,11 @@ services:
       - RPC_URL=${RPC_URL}
       - WS_URL=${WS_URL}
       - BEACON_RPC_URL=${BEACON_RPC_URL}
-      - START_BLOCK=${START_BLOCK}
       - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
       - ENVIRONMENT=${ENVIRONMENT}
       - USERNAME=${USERNAME}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
-      - RISC0_DEV_MODE=1
+      - RISC0_DEV_MODE=${RISC0_DEV_MODE}
       - LOCAL=true
       - IPFS_API_BASE_URL=http://ipfs:5001
     command: ["tail", "-f", "/dev/null"]
@@ -95,7 +95,7 @@ services:
       ipfs:
         condition: service_started
     volumes:
-      - ../../../:/protocol-core
+      - ../../:/protocol-core
       - container_target:/protocol-core/target
       - container_node_modules:/protocol-core/contracts/node_modules
       - container_artifacts:/protocol-core/contracts/artifacts
@@ -107,12 +107,11 @@ services:
       - RPC_URL=${RPC_URL}
       - WS_URL=${WS_URL}
       - BEACON_RPC_URL=${BEACON_RPC_URL}
-      - START_BLOCK=${START_BLOCK}
       - SEGMENT_LIMIT_PO2=${SEGMENT_LIMIT_PO2}
       - ENVIRONMENT=${ENVIRONMENT}
       - USERNAME=${USERNAME}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
-      - RISC0_DEV_MODE=1
+      - RISC0_DEV_MODE=${RISC0_DEV_MODE}
       - LOCAL=true
       - IPFS_API_BASE_URL=http://ipfs:5001
     command: ["tail", "-f", "/dev/null"]
@@ -129,7 +128,7 @@ services:
       ipfs:
         condition: service_started
     volumes:
-      - ../../../:/protocol-core
+      - ../../:/protocol-core
       - container_target:/protocol-core/target
       - container_node_modules:/protocol-core/contracts/node_modules
       - container_artifacts:/protocol-core/contracts/artifacts
