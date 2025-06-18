@@ -518,7 +518,8 @@ describe("DdexSequencer", () => {
       await (
         await ddexEmitter.contract.setImageIds(
           [currTarget, prevTarget],
-          [ethers.randomBytes(32), ddexEmitter.imageId]
+          [ethers.randomBytes(32), ddexEmitter.imageId],
+          [ethers.Wallet.createRandom(), ethers.Wallet.createRandom()]
         )
       ).wait();
 
@@ -581,7 +582,11 @@ describe("DdexSequencer", () => {
       await (
         await ddexEmitter.contract.setImageIds(
           [currTarget, prevTarget],
-          [ethers.randomBytes(32), ddexEmitter.imageId]
+          [ethers.randomBytes(32), ddexEmitter.imageId],
+          [
+            ethers.Wallet.createRandom(),
+            fixture.fixtureAddresses.riscZeroGroth16Verifier,
+          ]
         )
       ).wait();
 

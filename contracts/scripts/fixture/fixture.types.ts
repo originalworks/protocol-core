@@ -44,6 +44,7 @@ export interface FixtureAddresses {
   ddexEmitter: string;
   dataProvidersWhitelist: string;
   validatorsWhitelist: string;
+  riscZeroGroth16Verifier: string;
   dataProviders: string[];
   validators: string[];
 }
