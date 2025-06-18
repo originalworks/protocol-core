@@ -39,6 +39,10 @@ async function main() {
     printLogs: true,
     fakeRisc0Groth16Verifier: process.env.PROVING_SETUP == "false",
     fakeImageId: false,
+    brokenDdexSequencer: process.env.DEPLOY_BROKEN_DDEX_SEQUENCER == "true",
+    blobLifetime: process.env.BLOB_LIFETIME
+      ? Number(process.env.BLOB_LIFETIME)
+      : undefined,
   });
 
   console.log("deployment data:", fixtureOutput.fixtureAddresses);

@@ -7,7 +7,14 @@ import { getImplementationAddressFromProxy } from "@openzeppelin/upgrades-core";
 export async function deployDdexSequencer(
   input: DdexSequencerDeploymentInput
 ): Promise<DeploymentOutput<DdexSequencer>> {
-  const DdexSequencer = await ethers.getContractFactory("DdexSequencer");
+  let DdexSequencer;
+
+  if (input.brokenDdexSequencer) {
+    console.log("Broken DdexSequencer will be deployed!");
+    DdexSequencer = await ethers.getContractFactory("BrokenDdexSequencer");
+  } else {
+    DdexSequencer = await ethers.getContractFactory("DdexSequencer");
+  }
 
   const ddexSequencer = (await upgrades.deployProxy(
     DdexSequencer,
@@ -31,10 +38,16 @@ export async function deployDdexSequencer(
     throw new Error("Implementation address not found");
   }
 
-  const tx = await ddexSequencer.setHeadProcessingTimeInBlocks(
-    input.headProcessingTimeInBlocks
+  const setHeadProcessingTimeInBlocksTx =
+    await ddexSequencer.setHeadProcessingTimeInBlocks(
+      input.headProcessingTimeInBlocks
+    );
+  await setHeadProcessingTimeInBlocksTx.wait();
+
+  const setBlobLifetimeTx = await ddexSequencer.setBlobLifetime(
+    input.blobLifetime
   );
-  await tx.wait();
+  await setBlobLifetimeTx.wait();
 
   return {
     contract: ddexSequencer,

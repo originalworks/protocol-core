@@ -15,6 +15,7 @@ import { deployFakeVerifier } from "../actions/contract-deployment/FakeVerifier/
 
 const SLASH_RATE = 1000;
 const DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS = 34560; // 2 days in blocks (assuming 5s block time)
+const DEFAULT_BLOB_LIFETIME = 30; // 2,5 min
 
 class ConsoleLog {
   constructor(private active: boolean) {}
@@ -52,9 +53,11 @@ export async function deployFixture(
       await dataProvidersWhitelistOutput.contract.getAddress(),
     validatorsWhitelist: await validatorsWhitelistOutput.contract.getAddress(),
     stakeVaultAddress: await stakeVaultOutput.contract.getAddress(),
+    brokenDdexSequencer: input.brokenDdexSequencer || false,
     headProcessingTimeInBlocks:
       input.headProcessingTimeInBlocks ||
       DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS,
+    blobLifetime: input.blobLifetime || DEFAULT_BLOB_LIFETIME,
   });
 
   if (input.disableWhitelist) {

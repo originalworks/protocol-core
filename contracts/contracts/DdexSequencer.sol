@@ -17,6 +17,11 @@ contract DdexSequencer is
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
     event WhitelistingStatusChanged(bool current_status);
     event BlobAssigned(bytes32 blob, address assignedValidator);
+    event BlobExpired(bytes32 blobhash);
+    event BlobLifetimeChanged(
+        uint256 _previousLifetime,
+        uint256 _currentLifetime
+    );
 
     struct Blob {
         bytes32 nextBlob;
@@ -47,7 +52,9 @@ contract DdexSequencer is
     uint256 public headProcessingStartBlock;
     uint256 public headProcessingTimeInBlocks;
 
-    uint256[47] __gap;
+    uint256 blobLifetime;
+
+    uint256[46] __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -63,10 +70,18 @@ contract DdexSequencer is
         _setWhitelistAddress(validatorsWhitelist, VALIDATORS_WHITELIST);
         stakeVault = IStakeVault(stakeVaultAddress);
         __Ownable_init(msg.sender);
+        blobLifetime = 262144;
     }
 
     function setDdexEmitter(IDdexEmitter _ddexEmitter) public onlyOwner {
         ddexEmitter = _ddexEmitter;
+    }
+
+    function setBlobLifetime(uint256 _newLifetime) external onlyOwner {
+        uint256 previousLifetime = blobLifetime;
+        blobLifetime = _newLifetime;
+
+        emit BlobLifetimeChanged(previousLifetime, blobLifetime);
     }
 
     // temporary solution for open alpha tests
@@ -223,6 +238,16 @@ contract DdexSequencer is
             nextBlobAssignment = blobs[blobQueueHead].nextBlob;
         }
         _moveQueue();
+    }
+
+    function removeExpiredBlob() external {
+        require(
+            blobs[blobQueueHead].submissionBlock + blobLifetime < block.number,
+            "DdexSequencer: Blob is still considered alive"
+        );
+        bytes32 expiredBlob = blobQueueHead;
+        _moveQueue();
+        emit BlobExpired(expiredBlob);
     }
 
     function _deleteBlobQueueHead() private {
