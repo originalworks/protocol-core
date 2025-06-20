@@ -25,7 +25,7 @@ contract DdexEmitter is
     mapping(bytes1 => bytes32) imageIds;
     mapping(bytes32 => address) public riscZeroGroth16Verifiers;
 
-    uint256[50] __gap;
+    uint256[49] __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
