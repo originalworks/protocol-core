@@ -1,4 +1,4 @@
-import { ethers, parseEther, Signer} from "ethers";
+import { ethers, parseEther, Signer } from "ethers";
 import { FixtureOutput } from "../scripts/fixture/fixture.types";
 import {
   deployFixture,
@@ -42,55 +42,112 @@ describe("DdexEmitter", () => {
       ],
       disableWhitelist: false,
       fakeRisc0Groth16Verifier: true,
-      fakeImageId: true
+      fakeImageId: true,
     });
   });
 
   it("Gets/sets image ids", async () => {
-    const {ddexEmitter} = fixture;
-    const initialImageId = ethers.hexlify(ddexEmitter.imageId)
-    
+    const { ddexEmitter } = fixture;
+    const initialImageId = ethers.hexlify(ddexEmitter.imageId);
+
     // accepted targets are 0x01 to 0x04
-    await expect(ddexEmitter.contract.setImageIds(["0x00"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Invalid target")
-    await expect(ddexEmitter.contract.setImageIds(["0x05"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Invalid target")
-    await expect(ddexEmitter.contract.setImageIds(["0x01", "0x02"], [ethers.randomBytes(32)])).to.be.rejectedWith("DdexEmitter: Mismatched array lengths")
+    await expect(
+      ddexEmitter.contract.setImageIds(
+        ["0x00"],
+        [ethers.randomBytes(32)],
+        [ethers.Wallet.createRandom()]
+      )
+    ).to.be.rejectedWith("DdexEmitter: Invalid target");
+    await expect(
+      ddexEmitter.contract.setImageIds(
+        ["0x05"],
+        [ethers.randomBytes(32)],
+        [ethers.Wallet.createRandom()]
+      )
+    ).to.be.rejectedWith("DdexEmitter: Invalid target");
+    await expect(
+      ddexEmitter.contract.setImageIds(
+        ["0x01", "0x02"],
+        [ethers.randomBytes(32)],
+        [ethers.Wallet.createRandom()]
+      )
+    ).to.be.rejectedWith("DdexEmitter: Mismatched array lengths");
 
+    let [currentBlobImageId, previousBlobImageId] =
+      await ddexEmitter.contract.getSupportedBlobImageIds();
 
-    let [currentBlobImageId, previousBlobImageId] = await ddexEmitter.contract.getSupportedBlobImageIds();
-    
     expect(currentBlobImageId).to.equal(initialImageId);
     expect(previousBlobImageId).to.equal(ZERO_BYTES32);
-    
-    let [currentVerifierImageId, previousVerifierImageId] = await ddexEmitter.contract.getSupportedVerifierImageIds();
-    
+
+    let [currentVerifierImageId, previousVerifierImageId] =
+      await ddexEmitter.contract.getSupportedVerifierImageIds();
+
     expect(currentVerifierImageId).to.equal(initialImageId);
     expect(previousVerifierImageId).to.equal(ZERO_BYTES32);
 
-    const currBlobTarget = await ddexEmitter.contract.BLOB_CURRENT_IMAGE_ID()
-    const prevBlobTarget = await ddexEmitter.contract.BLOB_PREVIOUS_IMAGE_ID()
-    const currVerifierTarget = await ddexEmitter.contract.VERIFIER_CURRENT_IMAGE_ID()
-    const prevVerifierTarget = await ddexEmitter.contract.VERIFIER_PREVIOUS_IMAGE_ID()
+    const currBlobTarget = await ddexEmitter.contract.BLOB_CURRENT_IMAGE_ID();
+    const prevBlobTarget = await ddexEmitter.contract.BLOB_PREVIOUS_IMAGE_ID();
+    const currVerifierTarget =
+      await ddexEmitter.contract.VERIFIER_CURRENT_IMAGE_ID();
+    const prevVerifierTarget =
+      await ddexEmitter.contract.VERIFIER_PREVIOUS_IMAGE_ID();
 
     const newCurrBlobImageId = ethers.hexlify(ethers.randomBytes(32));
     const newPrevBlobImageId = ethers.hexlify(ethers.randomBytes(32));
     const newCurrVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
     const newPrevVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
-    
+
+    const risc0Groth16Verifier1 = ethers.Wallet.createRandom().address;
+    const risc0Groth16Verifier2 = ethers.Wallet.createRandom().address;
+    const risc0Groth16Verifier3 = ethers.Wallet.createRandom().address;
+    const risc0Groth16Verifier4 = ethers.Wallet.createRandom().address;
+
     await (
       await ddexEmitter.contract.setImageIds(
-        [currBlobTarget, prevBlobTarget, currVerifierTarget, prevVerifierTarget], 
-        [newCurrBlobImageId, newPrevBlobImageId, newCurrVerifierImageId, newPrevVerifierImageId]
+        [
+          currBlobTarget,
+          prevBlobTarget,
+          currVerifierTarget,
+          prevVerifierTarget,
+        ],
+        [
+          newCurrBlobImageId,
+          newPrevBlobImageId,
+          newCurrVerifierImageId,
+          newPrevVerifierImageId,
+        ],
+        [
+          risc0Groth16Verifier1,
+          risc0Groth16Verifier2,
+          risc0Groth16Verifier3,
+          risc0Groth16Verifier4,
+        ]
       )
-    ).wait()
+    ).wait();
+    [currentBlobImageId, previousBlobImageId] =
+      await ddexEmitter.contract.getSupportedBlobImageIds();
+    [currentVerifierImageId, previousVerifierImageId] =
+      await ddexEmitter.contract.getSupportedVerifierImageIds();
 
-
-
-    ;[currentBlobImageId, previousBlobImageId] = await ddexEmitter.contract.getSupportedBlobImageIds();
-    ;[currentVerifierImageId, previousVerifierImageId] = await ddexEmitter.contract.getSupportedVerifierImageIds();
-
-    expect(newCurrBlobImageId).to.equal(currentBlobImageId)
-    expect(newPrevBlobImageId).to.equal(previousBlobImageId)
-    expect(newCurrVerifierImageId).to.equal(currentVerifierImageId)
-    expect(newPrevVerifierImageId).to.equal(previousVerifierImageId)
-  })
-})
+    expect(newCurrBlobImageId).to.equal(currentBlobImageId);
+    expect(newPrevBlobImageId).to.equal(previousBlobImageId);
+    expect(newCurrVerifierImageId).to.equal(currentVerifierImageId);
+    expect(newPrevVerifierImageId).to.equal(previousVerifierImageId);
+    expect(
+      await ddexEmitter.contract.riscZeroGroth16Verifiers(currentBlobImageId)
+    ).to.equal(risc0Groth16Verifier1);
+    expect(
+      await ddexEmitter.contract.riscZeroGroth16Verifiers(newPrevBlobImageId)
+    ).to.equal(risc0Groth16Verifier2);
+    expect(
+      await ddexEmitter.contract.riscZeroGroth16Verifiers(
+        newCurrVerifierImageId
+      )
+    ).to.equal(risc0Groth16Verifier3);
+    expect(
+      await ddexEmitter.contract.riscZeroGroth16Verifiers(
+        newPrevVerifierImageId
+      )
+    ).to.equal(risc0Groth16Verifier4);
+  });
+});

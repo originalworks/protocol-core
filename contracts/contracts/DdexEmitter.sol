@@ -14,7 +14,7 @@ contract DdexEmitter is
     IDdexEmitter,
     UUPSUpgradeable
 {
-    IRiscZeroVerifier riscZeroGroth16Verifier;
+    IRiscZeroVerifier riscZeroGroth16Verifier; // deprecated, using mapping instead
     address ddexSequencerAddress;
 
     bytes1 public constant BLOB_CURRENT_IMAGE_ID = 0x01;
@@ -23,8 +23,9 @@ contract DdexEmitter is
     bytes1 public constant VERIFIER_PREVIOUS_IMAGE_ID = 0x04;
 
     mapping(bytes1 => bytes32) imageIds;
+    mapping(bytes32 => address) public riscZeroGroth16Verifiers;
 
-    uint256[50] __gap;
+    uint256[49] __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -32,22 +33,26 @@ contract DdexEmitter is
     }
 
     function initialize(
-        IRiscZeroVerifier _riscZeroGroth16Verifier,
+        address _riscZeroGroth16Verifier,
         address _ddexSequencerAddress
     ) public initializer {
         imageIds[BLOB_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
         imageIds[VERIFIER_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
-        riscZeroGroth16Verifier = _riscZeroGroth16Verifier;
+        riscZeroGroth16Verifiers[
+            ImageID.DDEX_GUEST_ID
+        ] = _riscZeroGroth16Verifier;
         ddexSequencerAddress = _ddexSequencerAddress;
         __Ownable_init(msg.sender);
     }
 
     function setImageIds(
         bytes1[] memory _targets,
-        bytes32[] memory _newImageIds
+        bytes32[] memory _newImageIds,
+        address[] memory _riscZeroGroth16Verifiers
     ) public onlyOwner {
         require(
-            _targets.length == _newImageIds.length,
+            _targets.length == _newImageIds.length &&
+                _newImageIds.length == _riscZeroGroth16Verifiers.length,
             "DdexEmitter: Mismatched array lengths"
         );
 
@@ -62,15 +67,10 @@ contract DdexEmitter is
 
             bytes32 previousImageId = imageIds[target];
             imageIds[target] = newImageId;
+            riscZeroGroth16Verifiers[newImageId] = _riscZeroGroth16Verifiers[i];
 
             emit ImageIdChanged(target, previousImageId, newImageId);
         }
-    }
-
-    function setRisc0Groth16VerifierAddress(
-        address _verifierAddress
-    ) public onlyOwner {
-        riscZeroGroth16Verifier = IRiscZeroVerifier(_verifierAddress);
     }
 
     function getSupportedBlobImageIds()
@@ -116,7 +116,11 @@ contract DdexEmitter is
             _journal,
             (ProverPublicOutputs)
         );
-        riscZeroGroth16Verifier.verify(_seal, _imageId, sha256(_journal));
+        IRiscZeroVerifier(riscZeroGroth16Verifiers[_imageId]).verify(
+            _seal,
+            _imageId,
+            sha256(_journal)
+        );
 
         if (proverPublicOutputs.valid) {
             emit BlobProcessed(proverPublicOutputs, _cid);

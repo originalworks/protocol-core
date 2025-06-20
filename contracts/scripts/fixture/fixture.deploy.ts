@@ -105,6 +105,7 @@ export async function deployFixture(
       stakeVault: await stakeVaultOutput.contract.getAddress(),
       ddexSequencer: await ddexSequencerOutput.contract.getAddress(),
       ddexEmitter: await ddexEmitterOutput.contract.getAddress(),
+      riscZeroGroth16Verifier: riscZeroGroth16VerifierAddress,
       dataProvidersWhitelist:
         await dataProvidersWhitelistOutput.contract.getAddress(),
       validatorsWhitelist:
