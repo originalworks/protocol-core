@@ -1,5 +1,5 @@
 STACK_NAME=validator-infra
-ARTIFACTS_BUCKET=validator-artifacts
+ARTIFACTS_BUCKET=validator-infrastructure-artifacts
 PARAMETERS_FILE=template-config.json
 
 TEMPLATE_FILE=template.yml

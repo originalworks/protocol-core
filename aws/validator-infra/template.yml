@@ -20,7 +20,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: g4dn.xlarge
-      ImageId: ami-084568db4383264d4
+      ImageId: ami-020cba7c55df1f615
       SubnetId: !Ref ValidatorSubnet
       KeyName: validator-ec2
       IamInstanceProfile: !Ref ValidatorInstanceProfile
@@ -45,20 +45,15 @@ Resources:
 
           git clone https://github.com/originalworks/protocol-core.git >> /var/log/instance-config.log 2>&1
 
-          cd protocol-core/aws/validator-infra/instance-config
-
+          cd /workspace/protocol-core/aws/validator-infra/instance-config
           ./cloudwatch/run.sh >> /var/log/instance-config.log 2>&1
-          ./install-nvidia-driver.sh >> /var/log/instance-config.log 2>&1
-          ./install-docker.sh >> /var/log/instance-config.log 2>&1
-          ./install-nvidia-container-toolkit.sh >> /var/log/instance-config.log 2>&1
           ./install-awscli.sh >> /var/log/instance-config.log 2>&1
           snap enable amazon-ssm-agent >> /var/log/instance-config.log 2>&1
+
+          cd /workspace/protocol-core/validator_node/setup
+          . ./install.sh >> /var/log/instance-config.log 2>&1
+
           echo "---Preconfig finished---" >> /var/log/instance-config.log
-
-          cd ..
-          ./rebuild.sh >> /var/log/rebuild.log 2>&1
-
-          ./run-validator.sh
 
   ValidatorSecurityGroup:
     Type: AWS::EC2::SecurityGroup
