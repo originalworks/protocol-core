@@ -1,4 +1,5 @@
-# apt update && apt install wget npm pkg-config -y
+echo "Installing apt packages..."
+apt update && apt install gcc make npm pkg-config -y
 
 ./deps/docker.sh
 ./deps/cuda.sh
