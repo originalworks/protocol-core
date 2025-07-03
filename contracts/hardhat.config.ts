@@ -19,11 +19,19 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       url: `${process.env.RPC_URL}`,
-      kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`
+      kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`,
     },
     chiado: {
       url: `${process.env.RPC_URL}`,
       kmsKeyId: `${process.env.KMS_KEY_ID_DEV}`,
+    },
+    gnosis: {
+      url: `${process.env.RPC_URL}`,
+      kmsKeyId: `${process.env.KMS_KEY_ID_PROD}`,
+    },
+    ethereum: {
+      url: `${process.env.RPC_URL}`,
+      kmsKeyId: `${process.env.KMS_KEY_ID_PROD}`,
     },
     kurtosis_testnet: {
       url: `${process.env.RPC_URL}`,
@@ -34,14 +42,31 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      holesky: process.env.ETHERSCAN_API_KEY || "",
-      sepolia: process.env.ETHERSCAN_API_KEY || "",
-      chiado: process.env.BLOCKSCOUT_API_KEY || ""
+      xdai: process.env.ETHERSCAN_API_KEY || "",
+      gnosis: process.env.ETHERSCAN_API_KEY || "",
     },
+    customChains: [
+      {
+        network: "xdai",
+        chainId: 100,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api?chainid=100",
+          browserURL: "https://gnosisscan.io",
+        },
+      },
+      {
+        network: "gnosis",
+        chainId: 100,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api?chainid=100",
+          browserURL: "https://gnosisscan.io",
+        },
+      },
+    ],
   },
   sourcify: {
-    enabled: false
-  }
+    enabled: false,
+  },
 };
 
 export default config;

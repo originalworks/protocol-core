@@ -14,8 +14,8 @@ import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/Dd
 import { deployFakeVerifier } from "../actions/contract-deployment/FakeVerifier/FakeVerifier.deploy";
 
 const SLASH_RATE = 1000;
-const DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS = 34560; // 2 days in blocks (assuming 5s block time)
-const DEFAULT_BLOB_LIFETIME = 30; // 2,5 min
+const DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS = 1440; // 2 hours in blocks (assuming 5s block time)
+const DEFAULT_BLOB_LIFETIME = 262144; // ~15 days in blocks (assuming 5s block time)
 
 class ConsoleLog {
   constructor(private active: boolean) {}
