@@ -41,31 +41,10 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: {
-      xdai: process.env.ETHERSCAN_API_KEY || "",
-      gnosis: process.env.ETHERSCAN_API_KEY || "",
-    },
-    customChains: [
-      {
-        network: "xdai",
-        chainId: 100,
-        urls: {
-          apiURL: "https://api.etherscan.io/v2/api?chainid=100",
-          browserURL: "https://gnosisscan.io",
-        },
-      },
-      {
-        network: "gnosis",
-        chainId: 100,
-        urls: {
-          apiURL: "https://api.etherscan.io/v2/api?chainid=100",
-          browserURL: "https://gnosisscan.io",
-        },
-      },
-    ],
+    apiKey: process.env.ETHERSCAN_API_KEY || "",
   },
   sourcify: {
-    enabled: false,
+    enabled: true,
   },
 };
 
