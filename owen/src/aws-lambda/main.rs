@@ -86,7 +86,8 @@ async fn function_handler(
                 }
             }
         }
-        Err(_) => {
+        Err(e) => {
+            tracing::info!("Unhandled error: {}", e);
             queue
                 .set_message_folders_as_rejected(message_folders)
                 .await
