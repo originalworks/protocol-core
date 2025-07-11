@@ -210,7 +210,7 @@ Resources:
       Description: "Environmental variables with sensitive data for OwenLambda"
       # !!! Set those manually in your AWS Console after the deployment!!!
       # !!! Do not edit this line here directly !!!
-      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key", "PINATA_JWT": "your-pinata-jwt", "IPFS_KUBO_URL": "your-kubo-url" }'
+      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key" }'
 
   QueueConsumerLambda:
     Type: AWS::Serverless::Function
