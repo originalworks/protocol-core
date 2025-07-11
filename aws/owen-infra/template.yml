@@ -28,6 +28,10 @@ Parameters:
     Type: String
   ProcessedStatusValue:
     Type: String
+  ReservedStatusValue:
+    Type: String
+  RejectedStatusValue:
+    Type: String
   MessagePerBlob:
     Type: String
   OutputFilesDir:
