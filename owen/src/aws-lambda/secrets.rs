@@ -7,8 +7,6 @@ use std::env;
 struct OwenSecretEnvs {
     RPC_URL: String,
     PRIVATE_KEY: String,
-    PINATA_JWT: String,
-    IPFS_KUBO_URL: String,
 }
 
 pub async fn set_secret_envs(aws_main_config: &aws_config::SdkConfig) -> Result<()> {
@@ -30,8 +28,6 @@ pub async fn set_secret_envs(aws_main_config: &aws_config::SdkConfig) -> Result<
 
     env::set_var("RPC_URL", owen_secret_envs.RPC_URL);
     env::set_var("PRIVATE_KEY", owen_secret_envs.PRIVATE_KEY);
-    env::set_var("PINATA_JWT", owen_secret_envs.PINATA_JWT);
-    env::set_var("IPFS_KUBO_URL", owen_secret_envs.IPFS_KUBO_URL);
 
     Ok(())
 }
