@@ -189,6 +189,8 @@ Resources:
           MESSAGES_BUCKET_NAME: !Ref MessagesBucketName
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
+          RESERVED_STATUS_VALUE: !Ref ReservedStatusValue
+          REJECTED_STATUS_VALUE: !Ref RejectedStatusValue
           MESSAGES_PER_BLOB: !Ref MessagePerBlob
           INPUT_FILES_DIR: !Ref InputFilesDir
           OUTPUT_FILES_DIR: !Ref OutputFilesDir

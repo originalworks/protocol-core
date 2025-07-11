@@ -9,8 +9,10 @@ pub struct MessageQueue {
     index_name: String,
     pk_name: String,
     index_attribute_name: String,
-    unprocessed_status_value: String,
-    processed_status_value: String,
+    pub unprocessed_status_value: String,
+    pub processed_status_value: String,
+    pub reserved_status_value: String,
+    pub rejected_status_value: String,
     messages_per_blob: String,
 }
 
@@ -27,6 +29,8 @@ impl MessageQueue {
             index_attribute_name: MessageQueue::get_env_var("PROCESSING_STATUS_ATTRIBUTE_NAME"),
             unprocessed_status_value: MessageQueue::get_env_var("UNPROCESSED_STATUS_VALUE"),
             processed_status_value: MessageQueue::get_env_var("PROCESSED_STATUS_VALUE"),
+            reserved_status_value: MessageQueue::get_env_var("RESERVED_STATUS_VALUE"),
+            rejected_status_value: MessageQueue::get_env_var("REJECTED_STATUS_VALUE"),
             messages_per_blob: MessageQueue::get_env_var("MESSAGES_PER_BLOB"),
         }
     }
@@ -63,13 +67,14 @@ impl MessageQueue {
         Ok(message_folders)
     }
 
-    pub async fn set_message_folders_as_processed(
+    pub async fn set_message_folders_status(
         &self,
-        message_folders: Vec<String>,
+        message_folders: &Vec<String>,
+        status: String,
     ) -> Result<()> {
         for folder in message_folders {
             let folder_key = AttributeValue::S(folder.clone());
-            let status_value = AttributeValue::S(self.processed_status_value.to_string().clone());
+            let status_value = AttributeValue::S(status.clone());
 
             let update_output = &self
                 .client
@@ -84,27 +89,7 @@ impl MessageQueue {
         }
         Ok(())
     }
-    pub async fn set_message_folders_as_rejected(
-        &self,
-        message_folders: Vec<String>,
-    ) -> Result<()> {
-        for folder in message_folders {
-            let folder_key = AttributeValue::S(folder.clone());
-            let status_value = AttributeValue::S("rejected".to_string());
 
-            let update_output = &self
-                .client
-                .update_item()
-                .table_name(&self.table_name)
-                .key("messageFolder", folder_key)
-                .update_expression("SET processingStatus = :expressionValue")
-                .expression_attribute_values(":expressionValue", status_value)
-                .send()
-                .await?;
-            println!("update output: {update_output:?}");
-        }
-        Ok(())
-    }
     pub async fn sync_message_folder_statuses(
         &self,
         local_to_s3_folder_mapping: HashMap<String, String>,

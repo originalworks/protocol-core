@@ -11,6 +11,8 @@
         "UpdatedTimestampAttributeName": "updatedTimestamp",
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
+        "ReservedStatusValue": "reserved",
+        "RejectedStatusValue": "rejected",
         "MessagePerBlob": "5",
         "OutputFilesDir": "/tmp/output_files",
         "InputFilesDir": "/tmp/input_files",

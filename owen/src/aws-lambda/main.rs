@@ -35,6 +35,10 @@ async fn function_handler(
         .await
         .map_err(|err| format!("Error while getting messages from s3: {err}"))?;
 
+    queue
+        .set_message_folders_status(&message_folders, queue.reserved_status_value.clone())
+        .await?;
+
     if message_folders.is_empty() {
         tracing::info!("No message folders found, queue is empty. Terminating execution.");
         return Ok(());
@@ -67,7 +71,7 @@ async fn function_handler(
                 .contains(&"blob already submitted".to_string().to_lowercase()) =>
         {
             queue
-                .set_message_folders_as_processed(message_folders)
+                .set_message_folders_status(&message_folders, queue.processed_status_value.clone())
                 .await
                 .map_err(|err| {
                     format!("Setting message folder statuses as processed failed: {err}")
@@ -89,7 +93,7 @@ async fn function_handler(
         Err(e) => {
             tracing::info!("Unhandled error: {}", e);
             queue
-                .set_message_folders_as_rejected(message_folders)
+                .set_message_folders_status(&message_folders, queue.rejected_status_value.clone())
                 .await
                 .map_err(|err| {
                     format!("Setting message folder statuses as rejected failed: {err}")
