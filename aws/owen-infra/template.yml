@@ -30,8 +30,6 @@ Parameters:
     Type: String
   MessagePerBlob:
     Type: String
-  DefaultIpfsInterface:
-    Type: String
   OutputFilesDir:
     Type: String
   InputFilesDir:
@@ -192,7 +190,6 @@ Resources:
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
           MESSAGES_PER_BLOB: !Ref MessagePerBlob
-          DEFAULT_IPFS_INTERFACE: !Ref DefaultIpfsInterface
           INPUT_FILES_DIR: !Ref InputFilesDir
           OUTPUT_FILES_DIR: !Ref OutputFilesDir
           ENVIRONMENT: !Ref Environment
