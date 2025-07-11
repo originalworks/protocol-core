@@ -12,12 +12,11 @@
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
         "MessagePerBlob": "5",
-        "DefaultIpfsInterface": "PINATA",
         "OutputFilesDir": "/tmp/output_files",
         "InputFilesDir": "/tmp/input_files",
         "Environment": "development",
-        "OwenUsername": "owen_lambda",
+        "OwenUsername": "owen_lambda_dev",
         "OwenLambdaSecretsName": "OwenLambdaSecretsDev",
-        "DdexSequencerAddress": "B076DDf7B0d77721113F725896665f8589ee042e"
+        "DdexSequencerAddress": "75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
     }
 }

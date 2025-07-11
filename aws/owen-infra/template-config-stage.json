@@ -12,7 +12,6 @@
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
         "MessagePerBlob": "5",
-        "DefaultIpfsInterface": "PINATA",
         "OutputFilesDir": "/tmp/output_files",
         "InputFilesDir": "/tmp/input_files",
         "Environment": "stage",
