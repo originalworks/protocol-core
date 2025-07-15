@@ -24,6 +24,8 @@ Parameters:
     Type: String
   UpdatedTimestampAttributeName:
     Type: String
+  OwenInstanceAttributeName:
+    Type: String
   UnprocessedStatusValue:
     Type: String
   ProcessedStatusValue:
@@ -230,6 +232,7 @@ Resources:
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           CREATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref CreatedTimestampAttributeName
           UPDATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref UpdatedTimestampAttributeName
+          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
           MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
           PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
       Policies:

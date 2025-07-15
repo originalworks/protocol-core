@@ -8,12 +8,14 @@ pub struct MessageQueue {
     table_name: String,
     index_name: String,
     pk_name: String,
-    index_attribute_name: String,
+    processing_status_attribute_name: String,
     pub unprocessed_status_value: String,
     pub processed_status_value: String,
     pub reserved_status_value: String,
     pub rejected_status_value: String,
     messages_per_blob: String,
+    owen_instance_attribute_name: String,
+    owen_instance_name: String,
 }
 
 impl MessageQueue {
@@ -26,11 +28,15 @@ impl MessageQueue {
             table_name: MessageQueue::get_env_var("MESSAGE_STATUS_TABLE_NAME"),
             index_name: MessageQueue::get_env_var("PROCESSING_STATUS_INDEX_NAME"),
             pk_name: MessageQueue::get_env_var("MESSAGE_FOLDER_ATTRIBUTE_NAME"),
-            index_attribute_name: MessageQueue::get_env_var("PROCESSING_STATUS_ATTRIBUTE_NAME"),
+            processing_status_attribute_name: MessageQueue::get_env_var(
+                "PROCESSING_STATUS_ATTRIBUTE_NAME",
+            ),
+            owen_instance_attribute_name: MessageQueue::get_env_var("OWEN_INSTANCE_ATTRIBUTE_NAME"),
             unprocessed_status_value: MessageQueue::get_env_var("UNPROCESSED_STATUS_VALUE"),
             processed_status_value: MessageQueue::get_env_var("PROCESSED_STATUS_VALUE"),
             reserved_status_value: MessageQueue::get_env_var("RESERVED_STATUS_VALUE"),
             rejected_status_value: MessageQueue::get_env_var("REJECTED_STATUS_VALUE"),
+            owen_instance_name: MessageQueue::get_env_var("USERNAME"),
             messages_per_blob: MessageQueue::get_env_var("MESSAGES_PER_BLOB"),
         }
     }
@@ -41,7 +47,10 @@ impl MessageQueue {
             .query()
             .table_name(&self.table_name)
             .index_name(&self.index_name)
-            .key_condition_expression(format!("{} = :expressionValue", &self.index_attribute_name))
+            .key_condition_expression(format!(
+                "{} = :expressionValue",
+                &self.processing_status_attribute_name
+            ))
             .expression_attribute_values(
                 ":expressionValue",
                 AttributeValue::S(self.unprocessed_status_value.to_string()),
@@ -67,25 +76,40 @@ impl MessageQueue {
         Ok(message_folders)
     }
 
+    async fn set_single_message_folder_status(
+        &self,
+        message_folder: String,
+        status: String,
+    ) -> Result<()> {
+        let folder_key = AttributeValue::S(message_folder);
+        let status_value = AttributeValue::S(status);
+        let owen_instance_value = AttributeValue::S(self.owen_instance_name.clone());
+
+        let update_output = &self
+            .client
+            .update_item()
+            .table_name(&self.table_name)
+            .key("messageFolder", folder_key)
+            .update_expression(format!(
+                "SET {} = :statusValue, {} = :owenInstanceValue",
+                &self.processing_status_attribute_name, &self.owen_instance_attribute_name
+            ))
+            .expression_attribute_values(":statusValue", status_value)
+            .expression_attribute_values(":owenInstanceValue", owen_instance_value)
+            .send()
+            .await?;
+        println!("update output: {update_output:?}");
+        Ok(())
+    }
+
     pub async fn set_message_folders_status(
         &self,
         message_folders: &Vec<String>,
         status: String,
     ) -> Result<()> {
         for folder in message_folders {
-            let folder_key = AttributeValue::S(folder.clone());
-            let status_value = AttributeValue::S(status.clone());
-
-            let update_output = &self
-                .client
-                .update_item()
-                .table_name(&self.table_name)
-                .key("messageFolder", folder_key)
-                .update_expression("SET processingStatus = :expressionValue")
-                .expression_attribute_values(":expressionValue", status_value)
-                .send()
+            self.set_single_message_folder_status(folder.clone(), status.clone())
                 .await?;
-            println!("update output: {update_output:?}");
         }
         Ok(())
     }
@@ -113,52 +137,27 @@ impl MessageQueue {
             s3_folder_to_processing_context_map.insert(s3_path.clone(), message_processing_context);
         }
         for folder in message_folders {
-            let folder_key = AttributeValue::S(folder.clone());
             let message_processing_context = s3_folder_to_processing_context_map.get(&folder);
             if let Some(message_processing_context) = message_processing_context {
                 if message_processing_context.excluded {
-                    let update_output = &self
-                        .client
-                        .update_item()
-                        .table_name(&self.table_name)
-                        .key("messageFolder", folder_key)
-                        .update_expression("SET processingStatus = :expressionValue")
-                        .expression_attribute_values(
-                            ":expressionValue",
-                            AttributeValue::S("rejected".to_string()),
-                        )
-                        .send()
-                        .await?;
-                    println!("update output: {update_output:?}");
+                    self.set_single_message_folder_status(
+                        folder.clone(),
+                        self.rejected_status_value.to_string(),
+                    )
+                    .await?;
                 } else {
-                    let update_output = &self
-                        .client
-                        .update_item()
-                        .table_name(&self.table_name)
-                        .key("messageFolder", folder_key)
-                        .update_expression("SET processingStatus = :expressionValue")
-                        .expression_attribute_values(
-                            ":expressionValue",
-                            AttributeValue::S("processed".to_string()),
-                        )
-                        .send()
-                        .await?;
-                    println!("update output: {update_output:?}");
+                    self.set_single_message_folder_status(
+                        folder.clone(),
+                        self.processed_status_value.to_string(),
+                    )
+                    .await?;
                 }
             } else {
-                let update_output = &self
-                    .client
-                    .update_item()
-                    .table_name(&self.table_name)
-                    .key("messageFolder", folder_key)
-                    .update_expression("SET processingStatus = :expressionValue")
-                    .expression_attribute_values(
-                        ":expressionValue",
-                        AttributeValue::S("rejected".to_string()),
-                    )
-                    .send()
-                    .await?;
-                println!("update output: {update_output:?}");
+                self.set_single_message_folder_status(
+                    folder.clone(),
+                    self.rejected_status_value.to_string(),
+                )
+                .await?;
             }
         }
         Ok(())
