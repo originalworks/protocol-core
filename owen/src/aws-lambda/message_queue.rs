@@ -137,7 +137,6 @@ impl MessageQueue {
             s3_folder_to_processing_context_map.insert(s3_path.clone(), message_processing_context);
         }
         for folder in message_folders {
-            // let folder_key = AttributeValue::S(folder.clone());
             let message_processing_context = s3_folder_to_processing_context_map.get(&folder);
             if let Some(message_processing_context) = message_processing_context {
                 if message_processing_context.excluded {
