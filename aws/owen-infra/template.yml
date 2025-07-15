@@ -181,9 +181,7 @@ Resources:
       Handler: bootstrap
       MemorySize: 512
       Timeout: 600
-      AutoPublishAlias: OwenLambdaAlias
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
+      ReservedConcurrentExecutions: 1
       Environment:
         Variables:
           MESSAGE_BUCKET_PREFIX: "revelator"
