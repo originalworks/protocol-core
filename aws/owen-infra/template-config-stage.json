@@ -9,6 +9,7 @@
         "ProcessingStatusAttributeName": "processingStatus",
         "CreatedTimestampAttributeName": "createdTimestamp",
         "UpdatedTimestampAttributeName": "updatedTimestamp",
+        "OwenInstanceAttributeName": "OwenInstance",
         "UnprocessedStatusValue": "unprocessed",
         "ProcessedStatusValue": "processed",
         "ReservedStatusValue": "reserved",
