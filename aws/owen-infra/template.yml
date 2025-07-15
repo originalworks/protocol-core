@@ -192,6 +192,7 @@ Resources:
           PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
           MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
           PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
+          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
           MESSAGES_BUCKET_NAME: !Ref MessagesBucketName
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
@@ -232,7 +233,6 @@ Resources:
           UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
           CREATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref CreatedTimestampAttributeName
           UPDATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref UpdatedTimestampAttributeName
-          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
           MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
           PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
       Policies:
