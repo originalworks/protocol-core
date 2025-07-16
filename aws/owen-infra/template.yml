@@ -12,8 +12,6 @@ Parameters:
     Type: String
   TriggerFilePattern:
     Type: String
-  OwenLambdaScheduleRateMin:
-    Type: String
   ProcessingStatusIndexName:
     Type: String
   MessageFolderAttributeName:
@@ -24,25 +22,11 @@ Parameters:
     Type: String
   UpdatedTimestampAttributeName:
     Type: String
-  OwenInstanceAttributeName:
-    Type: String
   UnprocessedStatusValue:
-    Type: String
-  ProcessedStatusValue:
-    Type: String
-  ReservedStatusValue:
-    Type: String
-  RejectedStatusValue:
     Type: String
   MessagePerBlob:
     Type: String
-  OutputFilesDir:
-    Type: String
-  InputFilesDir:
-    Type: String
   Environment:
-    Type: String
-  OwenUsername:
     Type: String
   OwenLambdaSecretsName:
     Type: String
@@ -52,7 +36,7 @@ Parameters:
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
-  OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
+  # OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
 
 Resources:
   NewUploadsQueue:
@@ -122,18 +106,6 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt OwenLambdaScheduledRule.Arn
 
-  OwenLambdaScheduledRule:
-    Type: AWS::Events::Rule
-    Properties:
-      # Name: "OwenLambdaScheduledRuleStage"
-      ScheduleExpression: !Sub "rate(${OwenLambdaScheduleRateMin} minutes)"
-      State: ENABLED
-      Targets:
-        - Arn: !GetAtt OwenLambda.Arn
-          Id: "OwenLambdaTarget"
-          RetryPolicy:
-            MaximumRetryAttempts: 0 # Disable automatic retries
-
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -169,43 +141,6 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref OwenLambdaSecrets
-
-  OwenLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri: ../../target/lambda/owen_lambda
-      Runtime: "provided.al2023"
-      Architectures:
-        - x86_64
-      Handler: bootstrap
-      MemorySize: 512
-      Timeout: 600
-      ReservedConcurrentExecutions: 1
-      Environment:
-        Variables:
-          MESSAGE_BUCKET_PREFIX: "revelator"
-          FALLBACK_BUCKET_NAME: "empty"
-          MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
-          PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
-          MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
-          PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
-          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
-          MESSAGES_BUCKET_NAME: !Ref MessagesBucketName
-          UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
-          PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
-          RESERVED_STATUS_VALUE: !Ref ReservedStatusValue
-          REJECTED_STATUS_VALUE: !Ref RejectedStatusValue
-          MESSAGES_PER_BLOB: !Ref MessagePerBlob
-          INPUT_FILES_DIR: !Ref InputFilesDir
-          OUTPUT_FILES_DIR: !Ref OutputFilesDir
-          ENVIRONMENT: !Ref Environment
-          USERNAME: !Ref OwenUsername
-          OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
-          DDEX_SEQUENCER_ADDRESS: !If
-            - OverwriteDdexSequencerAddress
-            - !Ref DdexSequencerAddress
-            - !Ref "AWS::NoValue"
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret
@@ -270,3 +205,21 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+
+  Owen_1:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./resources/owen.yml
+      Parameters:
+        LambdaScheduleRateMin: "6"
+        MessagesBucketName: !Ref MessagesBucketName
+        MessageStatusTableName: !Ref MessageStatusTableName
+        MessagePerBlob: !Ref MessagePerBlob
+        Environment: !Ref Environment
+        OwenUsername: "owen_dev_lambda_1"
+        OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
+        DdexSequencerAddress: !Ref DdexSequencerAddress
+        LambdaExecutionRoleArn: !!GetAtt LambdaExecutionRole.Arn
+        ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
+        MessageFolderAttributeName: !Ref MessageFolderAttributeName
+        UnprocessedStatusValue: !Ref UnprocessedStatusValue

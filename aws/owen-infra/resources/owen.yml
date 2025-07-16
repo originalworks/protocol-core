@@ -1,0 +1,104 @@
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  LambdaScheduleRateMin:
+    Type: String
+  MessagesBucketName:
+    Type: String
+  MessageStatusTableName:
+    Type: String
+  MessagePerBlob:
+    Type: String
+  Environment:
+    Type: String
+  OwenUsername:
+    Type: String
+  OwenLambdaSecretsName:
+    Type: String
+  DdexSequencerAddress:
+    Type: String
+  LambdaExecutionRoleArn:
+    Type: String
+  ProcessingStatusAttributeName:
+    Type: String
+  MessageFolderAttributeName:
+    Type: String
+  UnprocessedStatusValue:
+    Type: String
+
+  MessageBucketPrefix:
+    Type: String
+    Default: "revelator"
+  ProcessingStatusIndexName:
+    Type: String
+    Default: "ProcessingStatusIndex"
+  OwenInstanceAttributeName:
+    Type: String
+    Default: "owenInstance"
+  ProcessedStatusValue:
+    Type: String
+    Default: "processed"
+  ReservedStatusValue:
+    Type: String
+    Default: "reserved"
+  RejectedStatusValue:
+    Type: String
+    Default: "rejected"
+  InputFilesDir:
+    Type: String
+    Default: "/tmp/input_files"
+  OutputFilesDir:
+    Type: String
+    Default: "/tmp/output_files"
+
+Conditions:
+  OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
+
+Resources:
+  LambdaScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: !Sub "rate(${LambdaScheduleRateMin} minutes)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt OwenLambda.Arn
+          Id: "OwenLambdaTarget"
+          RetryPolicy:
+            MaximumRetryAttempts: 0 # Disable automatic retries
+
+  OwenLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !Ref LambdaExecutionRoleArn
+      CodeUri: ../../../target/lambda/owen_lambda
+      Runtime: "provided.al2023"
+      Architectures:
+        - x86_64
+      Handler: bootstrap
+      MemorySize: 512
+      Timeout: 600
+      ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          MESSAGE_BUCKET_PREFIX: !Ref MessageBucketPrefix
+          FALLBACK_BUCKET_NAME: "empty"
+          MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
+          PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
+          MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
+          PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
+          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
+          MESSAGES_BUCKET_NAME: !Ref MessagesBucketName
+          UNPROCESSED_STATUS_VALUE: !Ref UnprocessedStatusValue
+          PROCESSED_STATUS_VALUE: !Ref ProcessedStatusValue
+          RESERVED_STATUS_VALUE: !Ref ReservedStatusValue
+          REJECTED_STATUS_VALUE: !Ref RejectedStatusValue
+          MESSAGES_PER_BLOB: !Ref MessagePerBlob
+          INPUT_FILES_DIR: !Ref InputFilesDir
+          OUTPUT_FILES_DIR: !Ref OutputFilesDir
+          ENVIRONMENT: !Ref Environment
+          USERNAME: !Ref OwenUsername
+          OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
+          DDEX_SEQUENCER_ADDRESS: !If
+            - OverwriteDdexSequencerAddress
+            - !Ref DdexSequencerAddress
+            - !Ref "AWS::NoValue"
