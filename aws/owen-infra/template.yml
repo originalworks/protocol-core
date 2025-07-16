@@ -206,7 +206,7 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  Owen_1:
+  OwenOne:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./resources/owen.yml
