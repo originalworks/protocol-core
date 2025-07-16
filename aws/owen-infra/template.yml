@@ -219,7 +219,7 @@ Resources:
         OwenUsername: "owen_dev_lambda_1"
         OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
         DdexSequencerAddress: !Ref DdexSequencerAddress
-        LambdaExecutionRoleArn: !!GetAtt LambdaExecutionRole.Arn
+        LambdaExecutionRoleArn: !GetAtt LambdaExecutionRole.Arn
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
