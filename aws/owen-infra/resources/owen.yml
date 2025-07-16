@@ -133,6 +133,6 @@ Resources:
           - Sid: AllowLambdaUseKey
             Effect: Allow
             Principal:
-              AWS: !GetAtt LambdaExecutionRoleArn
+              AWS: !Ref LambdaExecutionRoleArn
             Action: "kms:*"
             Resource: "*"
