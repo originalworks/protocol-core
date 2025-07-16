@@ -106,7 +106,33 @@ Resources:
           ENVIRONMENT: !Ref Environment
           USERNAME: !Ref OwenUsername
           OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
+          SIGNER_KMS_ID: !Ref OwenSignerKmsKey
+          USE_KMS: true
           DDEX_SEQUENCER_ADDRESS: !If
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
             - !Ref "AWS::NoValue"
+
+  OwenSignerKmsKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      KeySpec: ECC_SECG_P256K1
+      KeyUsage: SIGN_VERIFY
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowRootAccount
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: AllowLambdaUseKey
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt LambdaExecutionRoleArn
+            Action: "kms:*"
+            Resource: "*"
