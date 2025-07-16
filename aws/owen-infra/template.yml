@@ -98,14 +98,6 @@ Resources:
               ArnEquals:
                 "aws:SourceArn": !GetAtt NewUploadEventRule.Arn
 
-  OwenLambdaInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref OwenLambda
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt OwenLambdaScheduledRule.Arn
-
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:

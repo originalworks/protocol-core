@@ -66,6 +66,14 @@ Resources:
           RetryPolicy:
             MaximumRetryAttempts: 0 # Disable automatic retries
 
+  OwenLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OwenLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LambdaScheduledRule.Arn
+
   OwenLambda:
     Type: AWS::Serverless::Function
     Properties:
