@@ -115,7 +115,11 @@ Resources:
 
   OwenSignerKmsKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
+      KeySpec: ECC_SECG_P256K1
+      KeyUsage: SIGN_VERIFY
       Enabled: true
       KeyPolicy:
         Version: "2012-10-17"
