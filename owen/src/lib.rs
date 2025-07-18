@@ -48,6 +48,8 @@ pub struct Config {
     pub disable_telemetry: bool,
     pub storacha_bridge_url: String,
     pub ipfs_api_base_url: String,
+    pub use_kms: bool,
+    pub signer_kms_id: Option<String>,
 }
 
 impl Config {
@@ -104,6 +106,19 @@ impl Config {
         let ipfs_api_base_url = env::var("IPFS_API_BASE_URL")
             .unwrap_or_else(|_| constants::IPFS_API_BASE_URL.to_string());
 
+        let use_kms = matches!(
+            std::env::var("USE_KMS")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+
+        let mut signer_kms_id: Option<String> = None;
+
+        if use_kms {
+            signer_kms_id = Some(Config::get_env_var("SIGNER_KMS_ID"));
+        }
+
         let config = Config {
             rpc_url,
             private_key,
@@ -116,6 +131,8 @@ impl Config {
             ddex_sequencer_address,
             disable_telemetry,
             storacha_bridge_url,
+            use_kms,
+            signer_kms_id,
         };
 
         config
@@ -149,12 +166,7 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         scope.set_extra("config", json!(cloned_config));
     });
 
-    let contracts_manager = ContractsManager::build(
-        config.ddex_sequencer_address,
-        &config.private_key,
-        &config.rpc_url,
-    )
-    .await?;
+    let contracts_manager = ContractsManager::build(&config).await?;
 
     let message_dir_processing_context = run(&config, &contracts_manager).await.map_err(|e| {
         sentry::configure_scope(|scope| {

@@ -118,6 +118,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
+      Description: !Sub "This key is used by OWEN instance: ${OwenUsername}"
       KeySpec: ECC_SECG_P256K1
       KeyUsage: SIGN_VERIFY
       Enabled: true
