@@ -86,12 +86,6 @@ impl ContractsManager {
         })
     }
 
-    pub async fn get_chain_id(rpc_url: &String) -> anyhow::Result<u64> {
-        let rpc_provider = ProviderBuilder::new().on_http(rpc_url.parse()?);
-        let chain_id = rpc_provider.get_chain_id().await?;
-        Ok(chain_id)
-    }
-
     async fn build_wallet(config: &Config) -> anyhow::Result<EthereumWallet> {
         let wallet: EthereumWallet;
         if config.use_kms {
