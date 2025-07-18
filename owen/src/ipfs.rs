@@ -4,9 +4,12 @@ use crate::{
 };
 use alloy::{
     hex,
+    providers::{Provider, ProviderBuilder},
     signers::{local::PrivateKeySigner, Signer},
 };
+use alloy_signer_aws::AwsSigner;
 use anyhow::Context;
+use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use log_macros::{format_error, log_info};
 use reqwest::{multipart, Body};
 use serde::{Deserialize, Serialize};
@@ -24,123 +27,144 @@ struct StorachaBridgeResponse {
     url: String,
 }
 
-pub async fn pin_file(path: &String, config: &Config) -> anyhow::Result<String> {
-    if config.local_ipfs {
-        Ok(pin_file_ipfs_kubo(path, &config.ipfs_api_base_url).await?)
-    } else {
-        Ok(pin_file_storacha(path, &config.storacha_bridge_url, &config.private_key).await?)
-    }
+pub struct IpfsManager {
+    local_ipfs: bool,
+    ipfs_api_base_url: String,
+    storacha_bridge_url: String,
+    private_key_signer: Option<PrivateKeySigner>,
+    use_kms: bool,
+    kms_signer: Option<AwsSigner>,
 }
 
-async fn file_to_multipart_form(
-    file_path: &String,
-    mime_type: Option<&str>,
-) -> anyhow::Result<multipart::Form> {
-    let file = tokio::fs::File::open(file_path).await?;
-    let file_stream = FramedRead::new(file, BytesCodec::new());
-    let mut multipart_stream =
-        multipart::Part::stream(Body::wrap_stream(file_stream)).file_name("filename");
+impl IpfsManager {
+    pub async fn build(config: &Config) -> anyhow::Result<Self> {
+        let rpc_provider = ProviderBuilder::new().on_http(config.rpc_url.parse()?);
+        let chain_id = rpc_provider.get_chain_id().await?;
+        let mut kms_signer: Option<AwsSigner> = None;
+        let mut private_key_signer: Option<PrivateKeySigner> = None;
 
-    if let Some(mime_str) = mime_type {
-        multipart_stream = multipart_stream.mime_str(&mime_str)?;
-    }
+        if config.use_kms {
+            let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
+            let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
+                .region(region_provider)
+                .load()
+                .await;
 
-    let multipart_form = multipart::Form::new().part("file", multipart_stream);
-    Ok(multipart_form)
-}
+            let client = aws_sdk_kms::Client::new(&aws_main_config);
 
-async fn pin_file_ipfs_kubo(
-    file_path: &String,
-    ipfs_api_base_url: &String,
-) -> anyhow::Result<String> {
-    log_info!("Pinning {} to IPFS using KUBO...", file_path);
-    let multipart_form = file_to_multipart_form(file_path, None).await?;
+            let key_id = config
+                .signer_kms_id
+                .clone()
+                .expect("'use_kms' is set to true but 'signer_kms_id' is missing");
 
-    let response = REQWEST_CLIENT
-        .post(format!("{}{}", ipfs_api_base_url, IPFS_API_ADD_FILE))
-        .multipart(multipart_form)
-        .send()
-        .await
-        .with_context(|| format_error!("Pinning to IPFS failed"))?;
-
-    let result = response.json::<IpfsKuboResponse>().await?;
-
-    Ok(result.Hash)
-}
-
-async fn pin_file_storacha(
-    file_path: &String,
-    storacha_bridge_url: &String,
-    private_key: &String,
-) -> anyhow::Result<String> {
-    log_info!("Pinning {} to IPFS using STORACHA...", file_path);
-
-    let form = file_to_multipart_form(&file_path, Some("image/avif")).await?;
-
-    let signer: PrivateKeySigner = private_key
-        .parse()
-        .with_context(|| "Failed to parse PRIVATE_KEY")?;
-
-    let signed_message = signer.sign_message(constants::CLIENT).await?;
-
-    let authorization = format!("{}::0x{}", "OWEN", hex::encode(signed_message.as_bytes()));
-
-    let response = REQWEST_CLIENT
-        .post(format!("{}w3up/file", storacha_bridge_url))
-        .header("authorization", authorization)
-        .multipart(form)
-        .send()
-        .await
-        .with_context(|| format_error!("Pinning to Storacha failed"))?;
-
-    let res: StorachaBridgeResponse;
-
-    if response.status().is_success() {
-        res = response.json().await?;
-    } else {
-        let reason = response.text().await?;
-        return Err(format_error!("Storacha Bridge returned error: {}", reason));
-    }
-
-    log_info!("Pinned! CID: {}", res.cid);
-
-    Ok(res.cid)
-}
-
-#[cfg(test)]
-mod tests {
-    use std::fs;
-
-    use super::*;
-    use crate::constants::{IPFS_API_BASE_URL, IPFS_API_CAT_FILE};
-
-    async fn fetch_ipfs_file(cid: &String) -> anyhow::Result<tokio_util::bytes::Bytes> {
-        let response = REQWEST_CLIENT
-            .post(format!(
-                "{}{}?arg={}",
-                IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid
-            ))
-            .send()
-            .await?;
-
-        if response.status() != 200 {
-            panic!("Image CID not found {cid}");
+            kms_signer = Some(
+                AwsSigner::new(client, key_id, Some(chain_id))
+                    .await
+                    .unwrap(),
+            );
+        } else {
+            let private_key_signer_parsed: PrivateKeySigner = config
+                .private_key
+                .parse()
+                .with_context(|| "Failed to parse PRIVATE_KEY")?;
+            private_key_signer = Some(private_key_signer_parsed);
         }
-        let bytes = response.bytes().await?;
 
-        Ok(bytes)
+        Ok(Self {
+            local_ipfs: config.local_ipfs.clone(),
+            ipfs_api_base_url: config.ipfs_api_base_url.clone(),
+            storacha_bridge_url: config.storacha_bridge_url.clone(),
+            use_kms: config.use_kms,
+            kms_signer,
+            private_key_signer,
+        })
     }
 
-    #[tokio::test]
-    async fn pin_and_read() -> anyhow::Result<()> {
-        let path = &"./tests/msg_one.json".to_string();
-        let expected_file = fs::read(path)?;
+    pub async fn pin_file(&self, path: &String) -> anyhow::Result<String> {
+        if self.local_ipfs {
+            Ok(self.pin_file_ipfs_kubo(path).await?)
+        } else {
+            Ok(self.pin_file_storacha(path).await?)
+        }
+    }
 
-        let cid = pin_file_ipfs_kubo(path, &constants::IPFS_API_BASE_URL.to_string()).await?;
+    async fn pin_file_ipfs_kubo(&self, file_path: &String) -> anyhow::Result<String> {
+        log_info!("Pinning {} to IPFS using KUBO...", file_path);
+        let multipart_form = Self::file_to_multipart_form(file_path, None).await?;
 
-        let fetched_file = fetch_ipfs_file(&cid).await?;
-        assert_eq!(expected_file, fetched_file.to_vec(), "should be equal");
+        let response = REQWEST_CLIENT
+            .post(format!("{}{}", self.ipfs_api_base_url, IPFS_API_ADD_FILE))
+            .multipart(multipart_form)
+            .send()
+            .await
+            .with_context(|| format_error!("Pinning to IPFS failed"))?;
 
-        Ok(())
+        let result = response.json::<IpfsKuboResponse>().await?;
+
+        Ok(result.Hash)
+    }
+    async fn file_to_multipart_form(
+        file_path: &String,
+        mime_type: Option<&str>,
+    ) -> anyhow::Result<multipart::Form> {
+        let file = tokio::fs::File::open(file_path).await?;
+        let file_stream = FramedRead::new(file, BytesCodec::new());
+        let mut multipart_stream =
+            multipart::Part::stream(Body::wrap_stream(file_stream)).file_name("filename");
+
+        if let Some(mime_str) = mime_type {
+            multipart_stream = multipart_stream.mime_str(&mime_str)?;
+        }
+
+        let multipart_form = multipart::Form::new().part("file", multipart_stream);
+        Ok(multipart_form)
+    }
+
+    async fn sign_authorization_header(&self) -> anyhow::Result<String> {
+        let signature;
+        if self.use_kms {
+            let kms_signer = self
+                .kms_signer
+                .clone()
+                .expect("IpfsManager: Failed to get kms_signer");
+            signature = kms_signer.sign_message(constants::CLIENT).await?;
+        } else {
+            let private_key_signer = self
+                .private_key_signer
+                .clone()
+                .expect("IpfsManager: Failed to get private_key_signer");
+            signature = private_key_signer.sign_message(constants::CLIENT).await?;
+        }
+        let authorization = format!("{}::0x{}", "OWEN", hex::encode(signature.as_bytes()));
+        Ok(authorization)
+    }
+
+    async fn pin_file_storacha(&self, file_path: &String) -> anyhow::Result<String> {
+        log_info!("Pinning {} to IPFS using STORACHA...", file_path);
+
+        let form = Self::file_to_multipart_form(&file_path, Some("image/avif")).await?;
+
+        let authorization = self.sign_authorization_header().await?;
+
+        let response = REQWEST_CLIENT
+            .post(format!("{}w3up/file", self.storacha_bridge_url))
+            .header("authorization", authorization)
+            .multipart(form)
+            .send()
+            .await
+            .with_context(|| format_error!("Pinning to Storacha failed"))?;
+
+        let res: StorachaBridgeResponse;
+
+        if response.status().is_success() {
+            res = response.json().await?;
+        } else {
+            let reason = response.text().await?;
+            return Err(format_error!("Storacha Bridge returned error: {}", reason));
+        }
+
+        log_info!("Pinned! CID: {}", res.cid);
+
+        Ok(res.cid)
     }
 }

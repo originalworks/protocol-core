@@ -1,5 +1,5 @@
 use crate::image_processor::optimize_image;
-use crate::ipfs::pin_file;
+use crate::ipfs::IpfsManager;
 use crate::logger::report_validation_error;
 use crate::Config;
 use anyhow::Context;
@@ -51,7 +51,7 @@ pub struct MessageDirProcessingContext {
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
-    config: &Config,
+    ipfs_manager: &IpfsManager,
 ) -> anyhow::Result<()> {
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
@@ -65,7 +65,7 @@ async fn pin_and_write_cid(
 
                 message_dir_processing_context.input_image_path = resized_image_path.clone();
 
-                let file_uri = pin_file(&resized_image_path, &config).await?;
+                let file_uri = ipfs_manager.pin_file(&resized_image_path).await?;
 
                 message_dir_processing_context.image_cid = file_uri.clone();
                 file.uri = file_uri;
@@ -124,6 +124,7 @@ fn is_xml_file_empty(file_path: &Path) -> anyhow::Result<bool> {
 
 async fn process_message_folder(
     message_folder_path: PathBuf,
+    ipfs_manager: &IpfsManager,
     config: &Config,
 ) -> anyhow::Result<MessageDirProcessingContext> {
     let mut message_dir_processing_context = MessageDirProcessingContext {
@@ -226,7 +227,7 @@ async fn process_message_folder(
                     let pinning_result = pin_and_write_cid(
                         &mut message_dir_processing_context,
                         &mut new_release_message,
-                        &config,
+                        &ipfs_manager,
                     )
                     .await;
 
@@ -291,11 +292,13 @@ pub async fn create_output_files(
             )
         })?;
 
+        let ipfs_manager = IpfsManager::build(config).await?;
+
         for message_folder in message_folders {
             empty_root_folder = false;
             let message_folder_path = message_folder?.path();
             let message_dir_processing_context =
-                process_message_folder(message_folder_path, &config).await?;
+                process_message_folder(message_folder_path, &ipfs_manager, &config).await?;
             result.push(message_dir_processing_context);
         }
     } else {
@@ -379,6 +382,8 @@ mod tests {
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
             ipfs_api_base_url: "ABC".to_string(),
+            use_kms: false,
+            signer_kms_id: None,
         };
         let processing_context_vec = create_output_files(&config).await?;
 
@@ -412,6 +417,8 @@ mod tests {
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
             ipfs_api_base_url: "ABC".to_string(),
+            use_kms: false,
+            signer_kms_id: None,
         };
         fs::create_dir_all(&config.folder_path).unwrap();
 
