@@ -36,7 +36,6 @@ Parameters:
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
-  # OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
 
 Resources:
   NewUploadsQueue:
@@ -208,7 +207,7 @@ Resources:
         MessageStatusTableName: !Ref MessageStatusTableName
         MessagePerBlob: !Ref MessagePerBlob
         Environment: !Ref Environment
-        OwenUsername: "owen_dev_lambda_1"
+        OwenUsername: !Sub "owen_${Environment}_lambda_1"
         OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
         DdexSequencerAddress: !Ref DdexSequencerAddress
         LambdaExecutionRoleArn: !GetAtt LambdaExecutionRole.Arn
@@ -226,7 +225,7 @@ Resources:
         MessageStatusTableName: !Ref MessageStatusTableName
         MessagePerBlob: !Ref MessagePerBlob
         Environment: !Ref Environment
-        OwenUsername: "owen_dev_lambda_2"
+        OwenUsername: !Sub "owen_${Environment}_lambda_2"
         OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
         DdexSequencerAddress: !Ref DdexSequencerAddress
         LambdaExecutionRoleArn: !GetAtt LambdaExecutionRole.Arn

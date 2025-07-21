@@ -3,22 +3,14 @@
         "MessagesBucketName": "ddex-messages-prod",
         "MessageStatusTableName": "DdexMessageStatusStage",
         "TriggerFilePattern": "BatchComplete_",
-        "OwenLambdaScheduleRateMin": "20",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
         "ProcessingStatusAttributeName": "processingStatus",
         "CreatedTimestampAttributeName": "createdTimestamp",
         "UpdatedTimestampAttributeName": "updatedTimestamp",
-        "OwenInstanceAttributeName": "OwenInstance",
         "UnprocessedStatusValue": "unprocessed",
-        "ProcessedStatusValue": "processed",
-        "ReservedStatusValue": "reserved",
-        "RejectedStatusValue": "rejected",
         "MessagePerBlob": "5",
-        "OutputFilesDir": "/tmp/output_files",
-        "InputFilesDir": "/tmp/input_files",
         "Environment": "stage",
-        "OwenUsername": "owen_lambda",
         "OwenLambdaSecretsName": "OwenLambdaSecretsStage"
     }
 }
