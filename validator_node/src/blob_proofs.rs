@@ -161,7 +161,7 @@ impl BlobProofManager {
 
         let journal = receipt.journal.bytes.clone();
 
-        let public_outputs: ProverPublicOutputs = ProverPublicOutputs::abi_decode(&journal, true)?;
+        let public_outputs: ProverPublicOutputs = ProverPublicOutputs::abi_decode(&journal)?;
 
         log_info!("Public outputs: {:?}", public_outputs);
         log_info!("Journal: {:?}", journal);

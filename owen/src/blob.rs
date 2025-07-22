@@ -1,6 +1,6 @@
 use alloy::consensus::BlobTransactionSidecar;
 use blob_codec::{BlobCodec, CalldataLimitConfig};
-use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment, KzgProof};
+use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment};
 use log_macros::{format_error, log_info};
 
 pub struct BlobTransactionData {
@@ -19,17 +19,16 @@ impl BlobTransactionData {
 
         let kzg_blob = Blob::new(blob);
 
-        let kzg_settings = ethereum_kzg_settings();
+        let kzg_settings = ethereum_kzg_settings(0u64);
 
-        let kzg_commitment = KzgCommitment::blob_to_kzg_commitment(&kzg_blob, kzg_settings)?;
+        let kzg_commitment = kzg_settings.blob_to_kzg_commitment(&kzg_blob)?;
         let kzg_proof =
-            KzgProof::compute_blob_kzg_proof(&kzg_blob, &kzg_commitment.to_bytes(), &kzg_settings)?;
+            kzg_settings.compute_blob_kzg_proof(&kzg_blob, &kzg_commitment.to_bytes())?;
 
-        let is_valid = KzgProof::verify_blob_kzg_proof(
+        let is_valid = kzg_settings.verify_blob_kzg_proof(
             &kzg_blob,
             &kzg_commitment.to_bytes(),
             &kzg_proof.to_bytes(),
-            &kzg_settings,
         )?;
         if is_valid {
             let blob_sidecar: BlobTransactionSidecar = BlobTransactionSidecar::from_kzg(

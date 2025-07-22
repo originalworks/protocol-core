@@ -38,7 +38,7 @@ pub struct IpfsManager {
 
 impl IpfsManager {
     pub async fn build(config: &Config) -> anyhow::Result<Self> {
-        let rpc_provider = ProviderBuilder::new().on_http(config.rpc_url.parse()?);
+        let rpc_provider = ProviderBuilder::new().connect_http(config.rpc_url.parse()?);
         let chain_id = rpc_provider.get_chain_id().await?;
         let mut kms_signer: Option<AwsSigner> = None;
         let mut private_key_signer: Option<PrivateKeySigner> = None;

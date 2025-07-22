@@ -4,7 +4,7 @@ use crate::{
 };
 use alloy::{
     eips::BlockNumberOrTag,
-    network::{Ethereum, EthereumWallet},
+    network::EthereumWallet,
     primitives::{Address, Bytes, FixedBytes},
     providers::{
         fillers::{
@@ -17,7 +17,6 @@ use alloy::{
     signers::local::PrivateKeySigner,
     sol,
     sol_types::SolEvent,
-    transports::http::{reqwest, Client, Http},
 };
 use anyhow::Context;
 use futures_util::StreamExt;
@@ -101,20 +100,12 @@ type HardlyTypedProvider = FillProvider<
         >,
         WalletFiller<EthereumWallet>,
     >,
-    RootProvider<Http<Client>>,
-    Http<Client>,
-    Ethereum,
+    RootProvider,
 >;
 
 pub struct ContractsManager {
-    pub sequencer: DdexSequencer::DdexSequencerInstance<
-        alloy::transports::http::Http<reqwest::Client>,
-        HardlyTypedProvider,
-    >,
-    pub emitter: DdexEmitter::DdexEmitterInstance<
-        alloy::transports::http::Http<reqwest::Client>,
-        HardlyTypedProvider,
-    >,
+    pub sequencer: DdexSequencer::DdexSequencerInstance<HardlyTypedProvider>,
+    pub emitter: DdexEmitter::DdexEmitterInstance<HardlyTypedProvider>,
     pub current_image_id: alloy::primitives::FixedBytes<32>,
     pub previous_image_id: alloy::primitives::FixedBytes<32>,
     pub provider: HardlyTypedProvider,
@@ -134,14 +125,13 @@ impl ContractsManager {
         let wallet = EthereumWallet::from(private_key_signer.clone());
 
         let provider = ProviderBuilder::new()
-            .with_recommended_fillers()
             .wallet(wallet)
-            .on_http(rpc_url.parse()?);
+            .connect_http(rpc_url.parse()?);
 
         let chain_id = provider.get_chain_id().await?;
         let sequencer = DdexSequencer::new(ddex_sequencer_address, provider.clone());
 
-        let emitter_address = sequencer.ddexEmitter().call().await?._0;
+        let emitter_address = sequencer.ddexEmitter().call().await?;
         let emitter = DdexEmitter::new(emitter_address, provider.clone());
 
         let current_image_id_parsed = prover::parse_guest_id(&prover::CURRENT_DDEX_GUEST_ID);
@@ -159,7 +149,7 @@ impl ContractsManager {
     }
 
     pub async fn is_queue_head_expired(&self) -> anyhow::Result<bool> {
-        Ok(self.sequencer.isQueueHeadExpired().call().await?._0)
+        Ok(self.sequencer.isQueueHeadExpired().call().await?)
     }
 
     pub async fn get_queue_head(&self) -> anyhow::Result<BlobOnchainData> {
@@ -201,7 +191,7 @@ impl ContractsManager {
             if blobhash_from_commitment == blobhash {
                 let timestamp = self
                     .provider
-                    .get_block_by_number(BlockNumberOrTag::Number(block_number), false)
+                    .get_block_by_number(BlockNumberOrTag::Number(block_number))
                     .await?
                     .ok_or_else(|| format_error!("Cannot get block info"))?
                     .header
@@ -316,7 +306,7 @@ impl ContractsManager {
     ) -> anyhow::Result<BlobAssignmentStartingPoint> {
         log_info!("Subscribing to queue");
         let ws_url = WsConnect::new(&config.ws_url);
-        let ws_provider = ProviderBuilder::new().on_ws(ws_url).await?;
+        let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
 
         let filter = Filter::new()
             .address(vec![
@@ -362,7 +352,7 @@ impl ContractsManager {
     }
 
     pub async fn get_next_blob_assignment(&self) -> anyhow::Result<FixedBytes<32>> {
-        Ok(self.sequencer.nextBlobAssignment().call().await?._0)
+        Ok(self.sequencer.nextBlobAssignment().call().await?)
     }
 
     pub async fn select_local_image_version(
@@ -530,7 +520,7 @@ impl ContractsManager {
     ) -> anyhow::Result<FixedBytes<32>> {
         let parent_beacon_block_root = self
             .provider
-            .get_block_by_number(BlockNumberOrTag::Number(block_number), true)
+            .get_block_by_number(BlockNumberOrTag::Number(block_number))
             .await?
             .ok_or_else(|| format_error!("Block {} not found", block_number))?
             .header

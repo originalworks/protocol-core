@@ -15,17 +15,17 @@ log_macros = { path = "./log_macros" }
 blob_codec = { path = "./blob_codec" }
 ddex_parser = { path = "./ddex_parser" }
 prover = { path = "./prover" }
-log = "0.4.25"
-thiserror = "2"
-serde = { version = "1.0.217" }
-serde_valid = "0.25.0"
-serde_json = "1.0.138"
-reqwest = "0.12.8"
+log = "0.4.27"
+thiserror = "2.0.12"
+serde = "1.0.219"
+serde_valid = "1.0.5"
+serde_json = "1.0.141"
+reqwest = "0.12.22"
 dotenvy = "0.15.7"
-tokio = "1.40.0"
-anyhow = "1.0.95"
-sentry = "0.36.0"
-sentry-log = "0.36"
+tokio = "1.46.1"
+anyhow = "1.0.98"
+sentry = "0.41.0"
+sentry-log = "0.41.0"
 pretty_env_logger = "0.5.0"
 once_cell = "1.21.3"
 

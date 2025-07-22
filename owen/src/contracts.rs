@@ -5,7 +5,7 @@ use alloy::providers::{Provider, ProviderBuilder};
 use alloy::signers::local::PrivateKeySigner;
 use alloy::sol_types::private::Bytes;
 use alloy::{
-    network::{Ethereum, EthereumWallet},
+    network::EthereumWallet,
     providers::{
         fillers::{
             BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller,
@@ -14,7 +14,6 @@ use alloy::{
         Identity, RootProvider,
     },
     sol,
-    transports::http::{reqwest, Client, Http},
 };
 use alloy_signer_aws::AwsSigner;
 use anyhow::Context;
@@ -46,20 +45,12 @@ type HardlyTypedProvider = FillProvider<
         >,
         WalletFiller<EthereumWallet>,
     >,
-    RootProvider<Http<Client>>,
-    Http<Client>,
-    Ethereum,
+    RootProvider,
 >;
 
 pub struct ContractsManager {
-    pub sequencer: DdexSequencer::DdexSequencerInstance<
-        alloy::transports::http::Http<reqwest::Client>,
-        HardlyTypedProvider,
-    >,
-    pub emitter: DdexEmitter::DdexEmitterInstance<
-        alloy::transports::http::Http<reqwest::Client>,
-        HardlyTypedProvider,
-    >,
+    pub sequencer: DdexSequencer::DdexSequencerInstance<HardlyTypedProvider>,
+    pub emitter: DdexEmitter::DdexEmitterInstance<HardlyTypedProvider>,
     pub image_id: alloy::primitives::FixedBytes<32>,
 }
 
@@ -68,13 +59,12 @@ impl ContractsManager {
         let wallet = Self::build_wallet(config).await?;
 
         let provider = ProviderBuilder::new()
-            .with_recommended_fillers()
             .wallet(wallet)
-            .on_http(config.rpc_url.parse()?);
+            .connect_http(config.rpc_url.parse()?);
 
         let sequencer = DdexSequencer::new(config.ddex_sequencer_address, provider.clone());
 
-        let emitter_address = sequencer.ddexEmitter().call().await?._0;
+        let emitter_address = sequencer.ddexEmitter().call().await?;
         let emitter = DdexEmitter::new(emitter_address, provider);
 
         let image_id_parsed = prover::parse_guest_id(&prover::CURRENT_DDEX_GUEST_ID);
@@ -89,7 +79,7 @@ impl ContractsManager {
     async fn build_wallet(config: &Config) -> anyhow::Result<EthereumWallet> {
         let wallet: EthereumWallet;
         if config.use_kms {
-            let rpc_provider = ProviderBuilder::new().on_http(config.rpc_url.parse()?);
+            let rpc_provider = ProviderBuilder::new().connect_http(config.rpc_url.parse()?);
             let chain_id = rpc_provider.get_chain_id().await?;
 
             let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");

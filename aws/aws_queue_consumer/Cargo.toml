@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aws-config = { version = "1.5.16", features = ["behavior-version-latest"] }
-aws-sdk-dynamodb = "1.64.0"
-aws_lambda_events = { version = "0.15.1", default-features = false, features = [
+aws-config = { version = "1.8.2", features = ["behavior-version-latest"] }
+aws-sdk-dynamodb = "1.84.0"
+aws_lambda_events = { version = "0.17.0", default-features = false, features = [
     "sqs",
 ] }
-chrono = "0.4.39"
-lambda_runtime = "0.13.0"
+chrono = "0.4.41"
+lambda_runtime = "0.14.3"
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
