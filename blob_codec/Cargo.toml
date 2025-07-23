@@ -6,11 +6,11 @@ description = "Utility tools for working with KZG Blobs"
 license = "MIT"
 
 [dependencies]
-miniz_oxide = "0.8.0"
-sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", rev = "244dc3b08788f7a4ccce14c66896ae3b4f24c166"}
+miniz_oxide = "0.8.9"
+sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", rev = "244dc3b08788f7a4ccce14c66896ae3b4f24c166" }
 thiserror = { workspace = true }
 log_macros = { workspace = true }
 
 [dev-dependencies]
-c-kzg = "1.0.3"
+c-kzg = "2.1.1"
 serde_json = { workspace = true }
