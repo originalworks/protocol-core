@@ -19,5 +19,5 @@
 pragma solidity ^0.8.20;
 
 library ImageID {
-    bytes32 public constant DDEX_GUEST_ID = bytes32(0x04ede7b81aae6bdb1f36d1c80f85f253860527578929149cfdce8fd4cdeaa498);
+    bytes32 public constant DDEX_GUEST_ID = bytes32(0xf74017a31dd0880702c598eb947f7f7386d127c3bda518c37ad435090946aac3);
 }
