@@ -227,9 +227,7 @@ impl ContractsManager {
     pub async fn assign_blob(&self) -> anyhow::Result<BlobAssignment> {
         let mut tx_builder = self.sequencer.assignBlob();
 
-        if is_local() {
-            tx_builder = tx_builder.gas(1000000);
-        }
+        tx_builder = tx_builder.gas(1000000);
 
         let receipt = tx_builder.send().await?.get_receipt().await?;
 
