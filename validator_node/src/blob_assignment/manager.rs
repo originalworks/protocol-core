@@ -160,7 +160,7 @@ impl BlobAssignmentManager {
                                 log_warn!(
                                     "ASSIGNMENT LOOP: Queue head expired, trying new assignment"
                                 );
-                                return Ok(self.try_new_assignment(config, start_block).await?);
+                                return Ok(self.handle_blob_assignment().await?);
                             } else {
                                 return Err(formated_error);
                             }
@@ -336,7 +336,19 @@ impl BlobAssignmentManager {
             Ok(assigned_blob) => {
                 {
                     let mut blob_assignment_files = self.blob_assignment_files.lock().await;
-                    blob_assignment_files.save_assignment(assigned_blob.clone())?;
+                    if blob_assignment_files
+                        .assignments
+                        .contains_key(&assigned_blob.blobhash)
+                    {
+                        log_info!(
+                            "Assignment exists. Skipping {} save. Inner queue state: {:?}",
+                            &assigned_blob.blobhash,
+                            blob_assignment_files.inner_queue
+                        );
+                        return Ok(BlobAssignmentStartingPoint::CleanStart);
+                    } else {
+                        blob_assignment_files.save_assignment(assigned_blob.clone())?;
+                    }
                 }
 
                 let blob_vec = match self
