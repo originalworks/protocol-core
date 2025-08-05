@@ -332,7 +332,6 @@ impl BlobAssignmentManager {
     }
 
     async fn handle_blob_assignment(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
-        println!("handle_blob_assignment");
         match self.contracts_manager.assign_blob().await {
             Ok(assigned_blob) => {
                 {
