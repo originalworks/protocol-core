@@ -151,10 +151,19 @@ impl BlobAssignmentManager {
                             }
                         }
                         Err(err) => {
-                            return Err(format_error!(
+                            let formated_error = format_error!(
                                 "ASSIGNMENT LOOP: Sending tx with proof failed {}",
                                 err
-                            ))
+                            );
+
+                            if formated_error.to_string().contains("time expired") {
+                                log_warn!(
+                                    "ASSIGNMENT LOOP: Queue head expired, trying new assignment"
+                                );
+                                return Ok(self.try_new_assignment(config, start_block).await?);
+                            } else {
+                                return Err(formated_error);
+                            }
                         }
                     };
                 }
@@ -323,6 +332,7 @@ impl BlobAssignmentManager {
     }
 
     async fn handle_blob_assignment(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
+        println!("handle_blob_assignment");
         match self.contracts_manager.assign_blob().await {
             Ok(assigned_blob) => {
                 {
