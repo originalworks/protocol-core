@@ -225,9 +225,14 @@ impl ContractsManager {
     }
 
     pub async fn assign_blob(&self) -> anyhow::Result<BlobAssignment> {
+        let nonce = self
+            .provider
+            .get_transaction_count(self.signer.address())
+            .await?;
+
         let mut tx_builder = self.sequencer.assignBlob();
 
-        tx_builder = tx_builder.gas(1000000);
+        tx_builder = tx_builder.gas(10000000).nonce(nonce);
 
         let receipt = tx_builder.send().await?.get_receipt().await?;
 
@@ -442,6 +447,11 @@ impl ContractsManager {
         &self,
         input: SubmitProofInput,
     ) -> anyhow::Result<TransactionReceipt> {
+        let nonce = self
+            .provider
+            .get_transaction_count(self.signer.address())
+            .await?;
+
         let mut tx_builder = self.sequencer.submitProof(
             input.image_id,
             input.journal.into(),
@@ -455,7 +465,7 @@ impl ContractsManager {
                 .max_fee_per_gas(500000001);
         }
 
-        let receipt = tx_builder.send().await?.get_receipt().await?;
+        let receipt = tx_builder.nonce(nonce).send().await?.get_receipt().await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));
@@ -478,13 +488,17 @@ impl ContractsManager {
     }
 
     pub async fn remove_expired_blob(&self) -> anyhow::Result<()> {
+        let nonce = self
+            .provider
+            .get_transaction_count(self.signer.address())
+            .await?;
         let mut tx_builder = self.sequencer.removeExpiredBlob();
 
         if is_local() {
             tx_builder = tx_builder.gas(1000000);
         }
 
-        let receipt = tx_builder.send().await?.get_receipt().await?;
+        let receipt = tx_builder.nonce(nonce).send().await?.get_receipt().await?;
 
         if receipt.status() == false {
             return Err(log_error!(
