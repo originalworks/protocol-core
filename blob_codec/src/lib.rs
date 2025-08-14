@@ -221,7 +221,6 @@ impl BlobCodec {
         let dir = Path::new(path);
         let mut kzg_blob: [u8; BYTES_PER_BLOB] = [0; BYTES_PER_BLOB];
         let mut blob_cursor = 0;
-        // let mut calldata_size = 0;
 
         if let Some(blob_estimator) = &config {
             blob_estimator.estimate_and_check(Path::new(path))?;
