@@ -1,6 +1,5 @@
 mod config;
 mod message_database;
-
 use anyhow::Result;
 use blob_codec::errors::OwCodecError;
 use config::LocalS3Config;
@@ -13,19 +12,18 @@ async fn main() -> Result<()> {
     let LocalS3Config {
         owen_config,
         aws_sdk_config,
-        messages_per_blob,
     } = LocalS3Config::build().await;
 
     let _guard = init_sentry(&owen_config);
 
-    let storage = owen::s3_message_storage::MessageStorage::build(&aws_sdk_config);
+    let mut storage = owen::s3_message_storage::MessageStorage::build(&aws_sdk_config);
     let mut database = message_database::MessageDatabase::build();
 
-    let s3_message_folders = storage
-        .list_message_folders_with_limit(messages_per_blob)
-        .await?;
+    storage.clear_input_folder()?;
+    storage.download_message_folders().await?;
 
-    let local_to_s3_folder_mapping = storage.sync_message_folders(&s3_message_folders).await?;
+    let local_to_s3_folder_mapping = storage.local_to_s3_folder_mapping.clone();
+    let s3_message_folders = storage.s3_message_folders.clone();
 
     match owen::run_with_sentry(&owen_config).await {
         Ok(message_processing_context) => {

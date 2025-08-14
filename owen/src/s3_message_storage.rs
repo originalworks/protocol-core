@@ -1,9 +1,11 @@
 use anyhow::Result;
 use aws_sdk_s3::types::{Delete, ObjectIdentifier};
+use blob_codec::BlobEstimator;
+use log_macros::log_warn;
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
-use crate::output_generator::MessageDirProcessingContext;
+use crate::{constants::MAX_DDEX_PER_BLOB, output_generator::MessageDirProcessingContext};
 
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
@@ -11,6 +13,8 @@ pub struct MessageStorage {
     input_files_dir: String,
     message_bucket_prefix: String,
     fallback_bucket_name: String,
+    pub local_to_s3_folder_mapping: HashMap<String, String>,
+    pub s3_message_folders: Vec<String>,
 }
 
 impl MessageStorage {
@@ -24,6 +28,8 @@ impl MessageStorage {
             input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
             message_bucket_prefix: MessageStorage::get_env_var("MESSAGE_BUCKET_PREFIX"),
             fallback_bucket_name: MessageStorage::get_env_var("FALLBACK_BUCKET_NAME"),
+            local_to_s3_folder_mapping: HashMap::new(),
+            s3_message_folders: vec![],
         }
     }
 
@@ -61,53 +67,67 @@ impl MessageStorage {
         Ok(())
     }
 
-    pub async fn sync_message_folders(
-        &self,
-        message_folders: &Vec<String>,
-    ) -> Result<HashMap<String, String>> {
-        let mut local_to_s3_folder_mapping = HashMap::<String, String>::new();
-        for s3_message_folder in message_folders {
-            let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
-                .file_name()
-                .expect(
-                    format!("S3 message folder has no filename {}", &s3_message_folder).as_str(),
-                )
-                .to_str()
-                .expect("Parsing to str failed");
+    pub async fn download_message_folders(&mut self) -> Result<()> {
+        let max_s3_message_folders = self
+            .list_message_folders_with_limit(MAX_DDEX_PER_BLOB)
+            .await?;
+        let blob_estimator = BlobEstimator::default();
 
-            let local_message_folder =
-                format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
+        for s3_message_folder in max_s3_message_folders {
+            let local_message_folder = self.sync_message_folder(&s3_message_folder).await?;
+            match blob_estimator.estimate_and_check(Path::new(&self.input_files_dir)) {
+                Ok(_) => {
+                    self.local_to_s3_folder_mapping
+                        .insert(local_message_folder.clone(), s3_message_folder.clone());
 
-            local_to_s3_folder_mapping
-                .insert(local_message_folder.clone(), s3_message_folder.clone());
-
-            let s3_message_folder_objects = self
-                .client
-                .list_objects_v2()
-                .bucket(&self.bucket_name)
-                .prefix(s3_message_folder)
-                .send()
-                .await?;
-
-            for s3_folder_object in s3_message_folder_objects
-                .contents
-                .expect("S3 message folder object has no 'contents'")
-            {
-                let s3_folder_object_key = s3_folder_object
-                    .key
-                    .expect("S3 message folder object has no 'key'");
-                let local_object_path = self.build_local_object_path(
-                    &s3_folder_object_key,
-                    &s3_message_folder,
-                    &local_message_folder,
-                )?;
-
-                self.copy_from_s3(s3_folder_object_key, local_object_path)
-                    .await?;
+                    self.s3_message_folders.push(s3_message_folder)
+                }
+                Err(err) => {
+                    log_warn!(err);
+                    std::fs::remove_dir_all(Path::new(&local_message_folder))?;
+                    break;
+                }
             }
         }
 
-        Ok(local_to_s3_folder_mapping)
+        Ok(())
+    }
+
+    pub async fn sync_message_folder(&self, s3_message_folder: &String) -> Result<String> {
+        let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
+            .file_name()
+            .expect(format!("S3 message folder has no filename {}", &s3_message_folder).as_str())
+            .to_str()
+            .expect("Parsing to str failed");
+
+        let local_message_folder =
+            format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
+
+        let s3_message_folder_objects = self
+            .client
+            .list_objects_v2()
+            .bucket(&self.bucket_name)
+            .prefix(s3_message_folder)
+            .send()
+            .await?;
+
+        for s3_folder_object in s3_message_folder_objects
+            .contents
+            .expect("S3 message folder object has no 'contents'")
+        {
+            let s3_folder_object_key = s3_folder_object
+                .key
+                .expect("S3 message folder object has no 'key'");
+            let local_object_path = self.build_local_object_path(
+                &s3_folder_object_key,
+                &s3_message_folder,
+                &local_message_folder,
+            )?;
+
+            self.copy_from_s3(s3_folder_object_key, local_object_path)
+                .await?;
+        }
+        Ok(local_message_folder)
     }
 
     pub fn clear_input_folder(&self) -> Result<()> {

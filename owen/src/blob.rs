@@ -1,5 +1,5 @@
 use alloy::consensus::BlobTransactionSidecar;
-use blob_codec::{BlobCodec, CalldataLimitConfig};
+use blob_codec::{BlobCodec, BlobEstimator};
 use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment};
 use log_macros::{format_error, log_info};
 
@@ -12,8 +12,7 @@ pub struct BlobTransactionData {
 impl BlobTransactionData {
     pub fn build(output_files_dir: &String) -> anyhow::Result<Self> {
         log_info!("Creating blob...");
-        let blob_codec =
-            BlobCodec::from_dir(output_files_dir, Some(CalldataLimitConfig::default()))?;
+        let blob_codec = BlobCodec::from_dir(output_files_dir, Some(BlobEstimator::default()))?;
         let blob_sha2: [u8; 32] = blob_codec.digest();
         let blob: [u8; 131072] = blob_codec.to_bytes();
 

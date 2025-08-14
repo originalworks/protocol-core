@@ -28,31 +28,26 @@ async fn function_handler(
     let owen_config = owen::Config::build();
 
     let queue = MessageQueue::build(&aws_main_config);
-    let storage = MessageStorage::build(&aws_main_config);
+    let mut storage = MessageStorage::build(&aws_main_config);
 
-    let message_folders = queue
-        .get_message_folders()
-        .await
-        .map_err(|err| format!("Error while getting messages from s3: {err}"))?;
-
-    queue
-        .set_message_folders_status(&message_folders, queue.reserved_status_value.clone())
-        .await?;
-
-    if message_folders.is_empty() {
-        tracing::info!("No message folders found, queue is empty. Terminating execution.");
-        return Ok(());
-    }
     storage
         .clear_input_folder()
         .map_err(|err| format!("Clearing input folder error: {err}"))?;
+    storage.download_message_folders().await?;
 
-    let local_to_s3_folder_mapping = storage
-        .sync_message_folders(&message_folders)
-        .await
-        .map_err(|err| format!("Sync message folders error: {err}"))?;
+    let local_to_s3_folder_mapping = storage.local_to_s3_folder_mapping.clone();
+    let s3_message_folders = storage.s3_message_folders.clone();
 
-    println!("synced directories: {message_folders:?}");
+    queue
+        .set_message_folders_status(&s3_message_folders, queue.reserved_status_value.clone())
+        .await?;
+
+    if s3_message_folders.is_empty() {
+        tracing::info!("No message folders found, queue is empty. Terminating execution.");
+        return Ok(());
+    }
+
+    println!("synced directories: {s3_message_folders:?}");
 
     match owen::run_with_sentry(&owen_config).await {
         Ok(message_processing_context) => {
@@ -60,7 +55,7 @@ async fn function_handler(
                 .sync_message_folder_statuses(
                     local_to_s3_folder_mapping,
                     message_processing_context,
-                    message_folders,
+                    s3_message_folders,
                 )
                 .await
                 .map_err(|err| format!("Sync message folder statuses error: {err}"))?;
@@ -71,7 +66,10 @@ async fn function_handler(
                 .contains(&"blob already submitted".to_string().to_lowercase()) =>
         {
             queue
-                .set_message_folders_status(&message_folders, queue.processed_status_value.clone())
+                .set_message_folders_status(
+                    &s3_message_folders,
+                    queue.processed_status_value.clone(),
+                )
                 .await
                 .map_err(|err| {
                     format!("Setting message folder statuses as processed failed: {err}")
@@ -93,7 +91,10 @@ async fn function_handler(
         Err(e) => {
             tracing::info!("Unhandled error: {}", e);
             queue
-                .set_message_folders_status(&message_folders, queue.rejected_status_value.clone())
+                .set_message_folders_status(
+                    &s3_message_folders,
+                    queue.rejected_status_value.clone(),
+                )
                 .await
                 .map_err(|err| {
                     format!("Setting message folder statuses as rejected failed: {err}")

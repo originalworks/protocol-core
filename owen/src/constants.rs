@@ -5,6 +5,7 @@ pub const IPFS_API_CAT_FILE: &str = "/api/v0/cat";
 pub const DEFAULT_STORACHA_BRIDGE_URL: &str =
     "https://p1o0h55rwh.execute-api.us-east-1.amazonaws.com/devel/";
 pub const CLIENT: &[u8] = b"OWEN";
+pub const MAX_DDEX_PER_BLOB: i32 = 50;
 #[cfg(any(feature = "local-s3"))]
 pub const DEFAULT_DATABASE_NAME: &str = "sqlite";
 

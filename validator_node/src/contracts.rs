@@ -21,6 +21,7 @@ use alloy::{
 use anyhow::Context;
 use futures_util::StreamExt;
 use log_macros::{format_error, log_error, log_info, log_warn};
+use prover::SubmitProofInput;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -65,14 +66,6 @@ impl From<DdexSequencer::blobsReturn> for DdexSequencer::Blob {
             blobId: blob.blobId,
         }
     }
-}
-
-#[derive(Deserialize, Serialize, Clone)]
-pub struct SubmitProofInput {
-    pub image_id: FixedBytes<32>,
-    pub journal: Vec<u8>,
-    pub seal: Vec<u8>,
-    pub ipfs_cid: String,
 }
 
 pub struct BlobOnchainData {

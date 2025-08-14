@@ -1,5 +1,6 @@
 use alloy::primitives::{Bytes, FixedBytes};
 use log_macros::{format_error, log_error, log_info, log_warn};
+use prover::SubmitProofInput;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -7,7 +8,7 @@ use tokio::sync::Mutex;
 use crate::{
     beacon_chain::BlobFinder,
     constants::{EMPTY_BYTES32, MAX_BLOB_ASSIGNMENTS},
-    contracts::{ContractsManager, LocalImageVersion, SubmitProofInput},
+    contracts::{ContractsManager, LocalImageVersion},
     Config,
 };
 

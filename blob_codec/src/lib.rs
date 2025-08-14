@@ -2,13 +2,18 @@ pub mod constants;
 mod decoder;
 mod encoder;
 pub mod errors;
+use alloy_primitives::FixedBytes;
+use alloy_sol_types::SolValue;
 use constants::BYTES_PER_BLOB;
+use ddex_parser::DdexParser;
 use decoder::blob_to_vecs;
 use errors::OwCodecError;
 use log_macros::loc;
+use prover::{ProvedMessage, ProverPublicOutputs, SubmitProofInput};
+use serde_valid::json::ToJsonString;
 use sha2::{Digest as _, Sha256};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct BlobCodec {
@@ -17,46 +22,178 @@ pub struct BlobCodec {
 }
 
 #[derive(Debug)]
-pub struct CalldataLimitConfig {
+pub struct BlobEstimator {
     max_calldata_size: u64,
-    ratio: f64,
+    max_gas_for_proof_submission: u64,
 }
 
-impl CalldataLimitConfig {
+impl BlobEstimator {
     pub fn default() -> Self {
         Self {
-            max_calldata_size: 130472, // 131072 (max limit for most rpc providers) - 600 (constant tx cost + constant args)
-            ratio: 0.5,
+            max_calldata_size: 130472, // 131072 (max limit for most rpc providers) - 600 (margin error)
+            max_gas_for_proof_submission: 6_000_000, // 20% of block limit assuming 30M per block
         }
     }
 
-    pub fn new(max_calldata_size: u64, ratio: f64) -> Self {
+    pub fn new(max_calldata_size: u64, max_gas_for_proof_submission: u64) -> Self {
         Self {
             max_calldata_size,
-            ratio,
+            max_gas_for_proof_submission,
         }
     }
 
-    pub fn check_calldata_size(
-        &self,
-        calldata_size: u64,
-        file_path: &Path,
-    ) -> Result<u64, OwCodecError> {
-        let metadata = std::fs::metadata(file_path).map_err(|_e| OwCodecError::NotAFile {
-            path: file_path.to_string_lossy().to_string(),
-            loc: loc!(),
-        })?;
+    pub fn estimate_and_check(&self, folder_path: &Path) -> Result<(), OwCodecError> {
+        if let Some(proof_submission_input) =
+            BlobEstimator::predict_proof_submission_input(folder_path)?
+        {
+            let gas = BlobEstimator::estimate_proof_gas(proof_submission_input.journal.len());
+            let calldata = BlobEstimator::estimate_calldata_size(proof_submission_input)?;
 
-        let new_calldata_size = calldata_size + (metadata.len() as f64 * self.ratio).ceil() as u64;
-
-        if new_calldata_size > self.max_calldata_size {
-            return Err(OwCodecError::CalldataOverflow {
-                limit: self.max_calldata_size,
+            println!("gas: {gas} calldata: {calldata}");
+            if gas <= self.max_gas_for_proof_submission && calldata <= self.max_calldata_size {
+                return Ok(());
+            } else {
+                return Err(OwCodecError::CalldataOverflow {
+                    limit: self.max_calldata_size,
+                    loc: loc!(),
+                });
+            }
+        } else {
+            return Err(OwCodecError::EmptyDirectory {
+                path: folder_path.to_string_lossy().to_string(),
                 loc: loc!(),
             });
         }
+    }
 
-        return Ok(new_calldata_size);
+    pub fn is_xml_file_empty(file_path: &Path) -> Result<bool, OwCodecError> {
+        let content = fs::read_to_string(file_path).map_err(|_e| OwCodecError::NotAFile {
+            path: file_path.to_string_lossy().to_string(),
+            loc: loc!(),
+        })?;
+        Ok(content.trim().is_empty())
+    }
+
+    pub fn find_ddex_xml(folder_path: PathBuf) -> Result<Option<PathBuf>, OwCodecError> {
+        let files = fs::read_dir(&folder_path).map_err(|_e| OwCodecError::NotADirectory {
+            path: folder_path.to_string_lossy().to_string(),
+            loc: loc!(),
+        })?;
+
+        for file in files {
+            let file_path = file
+                .map_err(|e| OwCodecError::Io {
+                    source: e,
+                    path: folder_path.to_string_lossy().to_string(),
+                    loc: loc!(),
+                })?
+                .path();
+            if file_path.is_dir() {
+                continue;
+            }
+            let kind = match infer::get_from_path(&file_path).map_err(|e| OwCodecError::Io {
+                source: e,
+                path: folder_path.to_string_lossy().to_string(),
+                loc: loc!(),
+            })? {
+                Some(v) => v,
+                None => continue,
+            };
+            if file_path.is_dir() == false
+                && kind.extension() == "xml"
+                && BlobEstimator::is_xml_file_empty(&file_path)? == false
+            {
+                return Ok(Some(file_path));
+            }
+        }
+
+        Ok(None)
+    }
+
+    pub fn estimate_calldata_size(
+        submit_proof_input: SubmitProofInput,
+    ) -> Result<u64, OwCodecError> {
+        let calldata_size = submit_proof_input.image_id.len()
+            + submit_proof_input.ipfs_cid.len()
+            + submit_proof_input.journal.len()
+            + submit_proof_input.seal.len();
+        Ok(calldata_size as u64)
+    }
+
+    pub fn estimate_proof_gas(journal_len: usize) -> u64 {
+        // This calculation is based on correlation pattern observed on-chain
+        let gas = 35 * journal_len + 300000;
+        gas as u64
+    }
+
+    pub fn predict_proof_submission_input(
+        input_files_dir_path: &Path,
+    ) -> Result<Option<SubmitProofInput>, OwCodecError> {
+        let input_folders =
+            fs::read_dir(&input_files_dir_path).map_err(|_e| OwCodecError::NotADirectory {
+                path: input_files_dir_path.to_string_lossy().to_string(),
+                loc: loc!(),
+            })?;
+
+        let mut prover_public_outputs = ProverPublicOutputs {
+            messages: vec![],
+            rejected_messages: vec![],
+            valid: true,
+            digest: [255; 32].into(),
+        };
+
+        let mut empty = true;
+
+        for input_folder in input_folders {
+            empty = false;
+
+            let input_folder_path = input_folder
+                .map_err(|e| OwCodecError::Io {
+                    source: e,
+                    path: input_files_dir_path.to_string_lossy().to_string(),
+                    loc: loc!(),
+                })?
+                .path();
+
+            let ddex_xml_path = match BlobEstimator::find_ddex_xml(input_folder_path)? {
+                Some(v) => v,
+                None => continue,
+            };
+
+            let mut new_release_message = match DdexParser::from_xml_file(
+                &ddex_xml_path.to_str().expect("parsing Path to str failed"),
+            ) {
+                Ok(result) => result,
+                Err(_) => continue,
+            };
+
+            let json_output = match new_release_message.to_json_string_pretty() {
+                Ok(result) => result,
+                Err(_) => continue,
+            };
+
+            new_release_message = match DdexParser::from_json_string(&json_output) {
+                Ok(result) => result,
+                Err(_) => continue,
+            };
+
+            let proved_message = ProvedMessage::from_ddex(new_release_message);
+
+            prover_public_outputs.messages.push(proved_message);
+        }
+
+        let journal = prover_public_outputs.abi_encode();
+
+        if empty {
+            Ok(None)
+        } else {
+            Ok(Some(SubmitProofInput {
+                image_id: FixedBytes::<32>::repeat_byte(255u8),
+                journal,
+                seal: vec![255u8; 260],
+                ipfs_cid: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_string(),
+            }))
+        }
     }
 }
 
@@ -80,11 +217,14 @@ impl BlobCodec {
         })
     }
 
-    pub fn from_dir(path: &str, config: Option<CalldataLimitConfig>) -> Result<Self, OwCodecError> {
+    pub fn from_dir(path: &str, config: Option<BlobEstimator>) -> Result<Self, OwCodecError> {
         let dir = Path::new(path);
         let mut kzg_blob: [u8; BYTES_PER_BLOB] = [0; BYTES_PER_BLOB];
         let mut blob_cursor = 0;
-        let mut calldata_size = 0;
+
+        if let Some(blob_estimator) = &config {
+            blob_estimator.estimate_and_check(Path::new(path))?;
+        }
 
         if dir.is_dir() {
             let files = fs::read_dir(dir).map_err(|e| OwCodecError::Io {
@@ -103,9 +243,6 @@ impl BlobCodec {
                     .path();
 
                 if path.is_file() && path.extension().unwrap() == "json" {
-                    if let Some(calldata_check) = &config {
-                        calldata_size = calldata_check.check_calldata_size(calldata_size, &path)?;
-                    }
                     append_to_blob(&mut kzg_blob, &path, &mut blob_cursor)?;
                     empty_folder = false;
                 }
@@ -291,7 +428,7 @@ mod tests {
     #[test]
     fn encode_dir_files_into_blob_default_config() {
         assert_eq!(
-            BlobCodec::from_dir("./tests/assets", Some(CalldataLimitConfig::default())).is_err(),
+            BlobCodec::from_dir("./tests/assets", Some(BlobEstimator::default())).is_err(),
             false
         );
         let cleanup = generate_test_json(vec![125, 100, 50, 25]);
@@ -301,7 +438,7 @@ mod tests {
                 .to_string();
 
         assert_eq!(
-            BlobCodec::from_dir("./tests/assets", Some(CalldataLimitConfig::default()))
+            BlobCodec::from_dir("./tests/assets", Some(BlobEstimator::default()))
                 .unwrap_err()
                 .to_string(),
             error_msg
@@ -313,7 +450,7 @@ mod tests {
     #[test]
     fn encode_dir_files_into_blob_custom_config() {
         assert_eq!(
-            BlobCodec::from_dir("./tests/assets", Some(CalldataLimitConfig::new(20000, 1.0)))
+            BlobCodec::from_dir("./tests/assets", Some(BlobEstimator::new(20000, 1000000)))
                 .is_err(),
             false
         );
@@ -324,7 +461,7 @@ mod tests {
                 .to_string();
 
         assert_eq!(
-            BlobCodec::from_dir("./tests/assets", Some(CalldataLimitConfig::new(20000, 1.0)))
+            BlobCodec::from_dir("./tests/assets", Some(BlobEstimator::new(20000, 1000000)))
                 .unwrap_err()
                 .to_string(),
             error_msg

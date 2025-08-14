@@ -1,12 +1,9 @@
+use aws_config::{meta::region::RegionProviderChain, BehaviorVersion, Region, SdkConfig};
 use std::env;
-
-use aws_config::{meta::region::RegionProviderChain, Region, SdkConfig};
-use aws_sdk_s3::config::Credentials;
 
 pub struct LocalS3Config {
     pub owen_config: owen::Config,
     pub aws_sdk_config: SdkConfig,
-    pub messages_per_blob: i32,
 }
 
 impl LocalS3Config {
@@ -16,27 +13,12 @@ impl LocalS3Config {
 
     pub async fn build() -> Self {
         let owen_config = owen::Config::build();
-
-        let aws_access_key_id = LocalS3Config::get_env_var("AWS_ACCESS_KEY_ID");
-        let aws_secret_access_key = LocalS3Config::get_env_var("AWS_SECRET_ACCESS_KEY");
         let aws_default_region = LocalS3Config::get_env_var("AWS_DEFAULT_REGION");
-        let messages_per_blob =
-            i32::from_str_radix(LocalS3Config::get_env_var("MESSAGES_PER_BLOB").as_str(), 10)
-                .expect("Error parsing MESSAGES_PER_BLOB to i32");
-
-        let aws_credentials = Credentials::new(
-            aws_access_key_id,
-            aws_secret_access_key,
-            None,
-            None,
-            "owen-s3",
-        );
 
         let region_provider =
             RegionProviderChain::default_provider().or_else(Some(Region::new(aws_default_region)));
 
-        let aws_sdk_config = aws_config::from_env()
-            .credentials_provider(aws_credentials)
+        let aws_sdk_config = aws_config::defaults(BehaviorVersion::latest())
             .region(region_provider)
             .load()
             .await;
@@ -44,7 +26,6 @@ impl LocalS3Config {
         Self {
             owen_config,
             aws_sdk_config,
-            messages_per_blob,
         }
     }
 }
