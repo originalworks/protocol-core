@@ -1,5 +1,6 @@
 use alloy::{eips::eip4844::BYTES_PER_BLOB, primitives::FixedBytes};
 use log_macros::{format_error, log_info};
+use prover::SubmitProofInput;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -9,12 +10,9 @@ use std::{
 };
 use tokio::time::sleep;
 
-use crate::{
-    constants::{
-        BLOB_ASSIGNMENT_FOLDER_NAME, BLOB_ASSIGNMENT_JSON_FILE_NAME, DOWNLOADED_BLOBS_FOLDER_NAME,
-        MAX_STORED_ASSIGNMENTS, TEMP_FOLDER,
-    },
-    contracts::SubmitProofInput,
+use crate::constants::{
+    BLOB_ASSIGNMENT_FOLDER_NAME, BLOB_ASSIGNMENT_JSON_FILE_NAME, DOWNLOADED_BLOBS_FOLDER_NAME,
+    MAX_STORED_ASSIGNMENTS, TEMP_FOLDER,
 };
 
 use super::manager::{BlobAssignment, BlobAssignmentStatus};

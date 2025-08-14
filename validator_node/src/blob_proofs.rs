@@ -1,6 +1,8 @@
 use alloy_sol_types::SolValue;
 use log_macros::{format_error, log_info};
-use prover::{ProverPublicOutputs, CURRENT_DDEX_GUEST_ELF, PREVIOUS_DDEX_GUEST_ELF};
+use prover::{
+    ProverPublicOutputs, SubmitProofInput, CURRENT_DDEX_GUEST_ELF, PREVIOUS_DDEX_GUEST_ELF,
+};
 use risc0_ethereum_contracts::encode_seal;
 use risc0_zkvm::{default_prover, ExecutorEnv, ProverOpts, VerifierContext};
 use std::sync::Arc;
@@ -8,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     blob_assignment::{files::BlobAssignmentFiles, manager::BlobAssignment},
-    contracts::{LocalImageVersion, SubmitProofInput},
+    contracts::LocalImageVersion,
     ipfs::IpfsManager,
 };
 use std::time::Instant;
