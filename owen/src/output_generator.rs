@@ -3,6 +3,7 @@ use crate::ipfs::IpfsManager;
 use crate::logger::report_validation_error;
 use crate::Config;
 use anyhow::Context;
+use blob_codec::BlobEstimator;
 use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
 use serde_json::json;
@@ -313,6 +314,9 @@ pub async fn create_output_files(
             config.folder_path.to_string()
         ))?;
     }
+
+    let blob_estimator = BlobEstimator::default();
+    blob_estimator.estimate_and_check(Path::new(&config.folder_path))?;
 
     print_output(&result)?;
     Ok(result)
