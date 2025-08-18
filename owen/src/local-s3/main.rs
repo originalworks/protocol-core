@@ -3,7 +3,10 @@ mod message_database;
 use anyhow::Result;
 use blob_codec::errors::OwCodecError;
 use config::LocalS3Config;
-use owen::logger::{init_logging, init_sentry};
+use owen::{
+    constants::MAX_DDEX_PER_BLOB,
+    logger::{init_logging, init_sentry},
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,7 +23,12 @@ async fn main() -> Result<()> {
     let mut database = message_database::MessageDatabase::build();
 
     storage.clear_input_folder()?;
-    storage.download_message_folders().await?;
+    let max_s3_message_folders: Vec<String> = storage
+        .list_message_folders_with_limit(MAX_DDEX_PER_BLOB)
+        .await?;
+    storage
+        .download_message_folders(max_s3_message_folders)
+        .await?;
 
     let local_to_s3_folder_mapping = storage.local_to_s3_folder_mapping.clone();
     let s3_message_folders = storage.s3_message_folders.clone();
