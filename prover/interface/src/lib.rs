@@ -1,3 +1,4 @@
+use alloy_primitives::FixedBytes;
 use ddex_parser::NewReleaseMessage;
 use serde::{Deserialize, Serialize};
 
@@ -192,4 +193,12 @@ pub fn parse_guest_id(guest_id: &[u32; 8]) -> alloy_primitives::FixedBytes<32> {
     alloy_primitives::FixedBytes::<32>::from_slice(
         &guest_id.map(|word| word.to_le_bytes()).concat(),
     )
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct SubmitProofInput {
+    pub image_id: FixedBytes<32>,
+    pub journal: Vec<u8>,
+    pub seal: Vec<u8>,
+    pub ipfs_cid: String,
 }

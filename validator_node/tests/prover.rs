@@ -1,12 +1,9 @@
-// use validator_node::prover_wrapper::ProverRunResults;
-
 use validator_node::blob_proofs::{BlobProofManager, ProverRunResults};
 
 fn produce_proof(dir: &str) -> Result<ProverRunResults, anyhow::Error> {
     std::env::set_var("RISC0_DEV_MODE", "1");
     let blob =
-        blob_codec::BlobCodec::from_dir(dir, Some(blob_codec::CalldataLimitConfig::default()))
-            .unwrap();
+        blob_codec::BlobCodec::from_dir(dir, Some(blob_codec::BlobEstimator::default())).unwrap();
     BlobProofManager::run_prover(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18)
 }
 

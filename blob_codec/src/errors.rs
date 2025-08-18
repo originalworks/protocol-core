@@ -21,4 +21,6 @@ pub enum OwCodecError {
     EmptyFile { path: String, loc: String },
     #[error("Error while decompressing the blob: {msg}")]
     Decompress { msg: String, loc: String },
+    #[error("Error while parsing json: {path}")]
+    JsonParsing { path: String, loc: String },
 }
