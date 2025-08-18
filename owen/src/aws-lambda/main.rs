@@ -33,7 +33,12 @@ async fn function_handler(
     storage
         .clear_input_folder()
         .map_err(|err| format!("Clearing input folder error: {err}"))?;
-    storage.download_message_folders().await?;
+
+    let max_message_folders = queue.get_message_folders().await?;
+
+    storage
+        .download_message_folders(max_message_folders)
+        .await?;
 
     let local_to_s3_folder_mapping = storage.local_to_s3_folder_mapping.clone();
     let s3_message_folders = storage.s3_message_folders.clone();

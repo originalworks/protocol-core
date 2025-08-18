@@ -1,6 +1,6 @@
 use anyhow::Result;
 use aws_sdk_dynamodb::types::AttributeValue;
-use owen::output_generator::MessageDirProcessingContext;
+use owen::{constants::MAX_DDEX_PER_BLOB, output_generator::MessageDirProcessingContext};
 use std::{collections::HashMap, env};
 
 pub struct MessageQueue {
@@ -13,7 +13,6 @@ pub struct MessageQueue {
     pub processed_status_value: String,
     pub reserved_status_value: String,
     pub rejected_status_value: String,
-    messages_per_blob: String,
     owen_instance_attribute_name: String,
     owen_instance_name: String,
 }
@@ -37,7 +36,6 @@ impl MessageQueue {
             reserved_status_value: MessageQueue::get_env_var("RESERVED_STATUS_VALUE"),
             rejected_status_value: MessageQueue::get_env_var("REJECTED_STATUS_VALUE"),
             owen_instance_name: MessageQueue::get_env_var("USERNAME"),
-            messages_per_blob: MessageQueue::get_env_var("MESSAGES_PER_BLOB"),
         }
     }
 
@@ -55,7 +53,7 @@ impl MessageQueue {
                 ":expressionValue",
                 AttributeValue::S(self.unprocessed_status_value.to_string()),
             )
-            .limit(self.messages_per_blob.parse::<i32>()?)
+            .limit(MAX_DDEX_PER_BLOB)
             .scan_index_forward(true) // Ascending order (oldest first)
             .send()
             .await?;

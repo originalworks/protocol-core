@@ -5,7 +5,7 @@ use log_macros::log_warn;
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
-use crate::{constants::MAX_DDEX_PER_BLOB, output_generator::MessageDirProcessingContext};
+use crate::output_generator::MessageDirProcessingContext;
 
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
@@ -46,7 +46,7 @@ impl MessageStorage {
         Ok(local_object_path)
     }
 
-    async fn copy_from_s3(&self, key: String, local_path: String) -> Result<()> {
+    async fn copy_file_from_s3(&self, key: String, local_path: String) -> Result<()> {
         let resp = self
             .client
             .get_object()
@@ -67,10 +67,10 @@ impl MessageStorage {
         Ok(())
     }
 
-    pub async fn download_message_folders(&mut self) -> Result<()> {
-        let max_s3_message_folders = self
-            .list_message_folders_with_limit(MAX_DDEX_PER_BLOB)
-            .await?;
+    pub async fn download_message_folders(
+        &mut self,
+        max_s3_message_folders: Vec<String>,
+    ) -> Result<()> {
         let blob_estimator = BlobEstimator::default();
 
         for s3_message_folder in max_s3_message_folders {
@@ -124,7 +124,7 @@ impl MessageStorage {
                 &local_message_folder,
             )?;
 
-            self.copy_from_s3(s3_folder_object_key, local_object_path)
+            self.copy_file_from_s3(s3_folder_object_key, local_object_path)
                 .await?;
         }
         Ok(local_message_folder)
