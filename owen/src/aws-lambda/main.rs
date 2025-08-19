@@ -3,14 +3,54 @@ mod secrets;
 
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_lambda_events::event::cloudwatch_events::CloudWatchEvent;
-use blob_codec::errors::OwCodecError;
+use blob_codec::{errors::OwCodecError, BlobEstimator};
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
+use log_macros::log_warn;
 use message_queue::MessageQueue;
 use owen::{
     logger::{init_logging, init_sentry},
     s3_message_storage::MessageStorage,
 };
 use secrets::set_secret_envs;
+use std::path::Path;
+
+async fn build_input_folder(
+    queue: &MessageQueue,
+    storage: &mut MessageStorage,
+) -> anyhow::Result<()> {
+    storage.clear_input_folder()?;
+    let blob_estimator = BlobEstimator::default();
+
+    loop {
+        match queue.reserve_message_folder().await? {
+            Some(s3_message_folder) => {
+                let local_message_folder = storage.sync_message_folder(&s3_message_folder).await?;
+                match blob_estimator.estimate_and_check(Path::new(&storage.input_files_dir)) {
+                    Ok(_) => {
+                        storage
+                            .local_to_s3_folder_mapping
+                            .insert(local_message_folder.clone(), s3_message_folder.clone());
+
+                        storage.s3_message_folders.push(s3_message_folder)
+                    }
+                    Err(err) => {
+                        log_warn!(err);
+                        std::fs::remove_dir_all(Path::new(&local_message_folder))?;
+                        queue
+                            .set_single_message_folder_status(
+                                s3_message_folder,
+                                queue.unprocessed_status_value.clone(),
+                            )
+                            .await?;
+                        break;
+                    }
+                }
+            }
+            None => break,
+        }
+    }
+    Ok(())
+}
 
 async fn function_handler(
     event: LambdaEvent<CloudWatchEvent>,
@@ -30,22 +70,10 @@ async fn function_handler(
     let queue = MessageQueue::build(&aws_main_config);
     let mut storage = MessageStorage::build(&aws_main_config);
 
-    storage
-        .clear_input_folder()
-        .map_err(|err| format!("Clearing input folder error: {err}"))?;
-
-    let max_message_folders = queue.get_message_folders().await?;
-
-    storage
-        .download_message_folders(max_message_folders)
-        .await?;
+    build_input_folder(&queue, &mut storage).await?;
 
     let local_to_s3_folder_mapping = storage.local_to_s3_folder_mapping.clone();
     let s3_message_folders = storage.s3_message_folders.clone();
-
-    queue
-        .set_message_folders_status(&s3_message_folders, queue.reserved_status_value.clone())
-        .await?;
 
     if s3_message_folders.is_empty() {
         tracing::info!("No message folders found, queue is empty. Terminating execution.");

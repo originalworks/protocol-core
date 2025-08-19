@@ -10,7 +10,7 @@ use crate::output_generator::MessageDirProcessingContext;
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
     bucket_name: String,
-    input_files_dir: String,
+    pub input_files_dir: String,
     message_bucket_prefix: String,
     fallback_bucket_name: String,
     pub local_to_s3_folder_mapping: HashMap<String, String>,

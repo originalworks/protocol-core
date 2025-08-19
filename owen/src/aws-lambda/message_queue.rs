@@ -1,5 +1,5 @@
 use anyhow::Result;
-use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_dynamodb::{operation::update_item::UpdateItemError, types::AttributeValue};
 use owen::{constants::MAX_DDEX_PER_BLOB, output_generator::MessageDirProcessingContext};
 use std::{collections::HashMap, env};
 
@@ -39,6 +39,82 @@ impl MessageQueue {
         }
     }
 
+    pub async fn reserve_message_folder(&self) -> Result<Option<String>> {
+        loop {
+            let response = self
+                .client
+                .query()
+                .table_name(&self.table_name)
+                .index_name(&self.index_name)
+                .key_condition_expression(format!(
+                    "{} = :expressionValue",
+                    &self.processing_status_attribute_name
+                ))
+                .expression_attribute_values(
+                    ":expressionValue",
+                    AttributeValue::S(self.unprocessed_status_value.to_string()),
+                )
+                .limit(1)
+                .scan_index_forward(true) // Ascending order (oldest first)
+                .send()
+                .await?;
+
+            if let Some(items) = response.items {
+                if let Some(item) = items.first() {
+                    let message_folder = item
+                        .get(&self.pk_name)
+                        .expect("Could not find partition key value")
+                        .as_s()
+                        .expect("Partition key is not a string")
+                        .clone();
+
+                    match self.try_reserve(message_folder).await? {
+                        Some(message_folder) => return Ok(Some(message_folder)),
+                        None => continue,
+                    }
+                } else {
+                    return Ok(None);
+                }
+            } else {
+                return Ok(None);
+            }
+        }
+    }
+
+    async fn try_reserve(&self, message_folder: String) -> Result<Option<String>> {
+        let folder_key = AttributeValue::S(message_folder.clone());
+        let reserved_status_value = AttributeValue::S(self.reserved_status_value.clone());
+        let unprocessed_status_value = AttributeValue::S(self.unprocessed_status_value.clone());
+        let owen_instance_value = AttributeValue::S(self.owen_instance_name.clone());
+
+        let update_output = &self
+            .client
+            .update_item()
+            .table_name(&self.table_name)
+            .key("messageFolder", folder_key)
+            .update_expression(format!(
+                "SET {} = :reservedStatusValue, {} = :owenInstanceValue",
+                &self.processing_status_attribute_name, &self.owen_instance_attribute_name
+            ))
+            .condition_expression(format!(
+                "{} = :unprocessedStatusValue",
+                &self.processing_status_attribute_name
+            ))
+            .expression_attribute_values(":reservedStatusValue", reserved_status_value)
+            .expression_attribute_values(":unprocessedStatusValue", unprocessed_status_value)
+            .expression_attribute_values(":owenInstanceValue", owen_instance_value)
+            .send()
+            .await;
+
+        match update_output {
+            Ok(_) => {
+                println!("Item reserved successfully");
+                Ok(Some(message_folder.clone()))
+            }
+            Err(_err) => Ok(None),
+        }
+    }
+
     pub async fn get_message_folders(&self) -> Result<Vec<String>> {
         let response = self
             .client
@@ -74,7 +150,7 @@ impl MessageQueue {
         Ok(message_folders)
     }
 
-    async fn set_single_message_folder_status(
+    pub async fn set_single_message_folder_status(
         &self,
         message_folder: String,
         status: String,
