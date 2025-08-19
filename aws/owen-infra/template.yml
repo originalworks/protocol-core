@@ -33,6 +33,9 @@ Parameters:
   DdexSequencerAddress:
     Type: String
     Default: ""
+  StorachaBridgeUrl:
+    Type: String
+    Default: ""
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
@@ -214,6 +217,7 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
+        StorachaBridgeUrl: !Ref StorachaBridgeUrl
 
   OwenTwo:
     Type: AWS::Serverless::Application
@@ -232,3 +236,4 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
+        StorachaBridgeUrl: !Ref StorachaBridgeUrl
