@@ -3,9 +3,10 @@ use crate::constants::{
     self, network_name, IPFS_API_BASE_URL, IPFS_API_CAT_FILE, IPFS_TEMP_FILES_FOLDER_NAME,
     REQWEST_CLIENT, TEMP_FOLDER,
 };
+use crate::contracts::ContractsManager;
 use crate::is_local;
 use crate::zip::zip_directory;
-use alloy::signers::local::PrivateKeySigner;
+use alloy::primitives::FixedBytes;
 use alloy::signers::Signer;
 use anyhow::Context;
 use blob_codec::BlobCodec;
@@ -17,6 +18,7 @@ use multihash_codetable::{Code, MultihashDigest};
 use reqwest::multipart;
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
+use std::sync::Arc;
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
@@ -42,26 +44,25 @@ struct StorachaBridgeResponse {
 }
 
 pub struct IpfsManager {
+    contracts_manager: Arc<ContractsManager>,
     blob_folder_path: String,
     storacha_bridge_url: String,
-    signer: PrivateKeySigner,
 }
 
 impl IpfsManager {
-    pub fn build(storacha_bridge_url: String, private_key: String) -> anyhow::Result<Self> {
+    pub fn build(
+        contracts_manager: Arc<ContractsManager>,
+        storacha_bridge_url: String,
+    ) -> anyhow::Result<Self> {
         let blob_folder_path = Path::new(constants::TEMP_FOLDER)
             .join(IPFS_TEMP_FILES_FOLDER_NAME)
             .to_string_lossy()
             .to_string();
 
-        let signer: PrivateKeySigner = private_key
-            .parse()
-            .with_context(|| "Failed to parse PRIVATE_KEY")?;
-
         Ok(Self {
+            contracts_manager,
             blob_folder_path,
             storacha_bridge_url,
-            signer,
         })
     }
 
@@ -200,7 +201,10 @@ impl IpfsManager {
         Ok(cid.to_string())
     }
 
-    pub async fn upload_blob_folder_and_cleanup(&self) -> anyhow::Result<String> {
+    pub async fn upload_blob_folder_and_cleanup(
+        &self,
+        blobhash: &FixedBytes<32>,
+    ) -> anyhow::Result<String> {
         log::info!("Zipping files...");
         let src_path = Path::new(&self.blob_folder_path);
         let zip_file_name = "temp.zip".to_string();
@@ -212,7 +216,11 @@ impl IpfsManager {
 
         zip_directory(src_path, &zip_path, zip::CompressionMethod::Deflated)?;
 
-        let signed_message = self.signer.sign_message(constants::CLIENT).await?;
+        let signed_message = self
+            .contracts_manager
+            .signer
+            .sign_message(constants::CLIENT)
+            .await?;
 
         let authorization = format!(
             "{}::0x{}",
@@ -237,8 +245,14 @@ impl IpfsManager {
         } else {
             log::info!("Uploading zip to Storacha Bridge...");
 
+            let proposer_address = self.contracts_manager.get_blob_proposer(&blobhash).await?;
+
             let response = REQWEST_CLIENT
-                .post(format!("{}w3up/dir", self.storacha_bridge_url))
+                .post(format!(
+                    "{}w3up/dir/{}",
+                    self.storacha_bridge_url,
+                    proposer_address.to_string()
+                ))
                 .header("authorization", authorization)
                 .multipart(form)
                 .send()

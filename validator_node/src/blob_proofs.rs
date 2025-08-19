@@ -95,7 +95,10 @@ impl BlobProofManager {
                 .build_blob_folder(&blob, &blob_assignment)
                 .await?;
 
-            let ipfs_folder_cid = self.ipfs_manager.upload_blob_folder_and_cleanup().await?;
+            let ipfs_folder_cid = self
+                .ipfs_manager
+                .upload_blob_folder_and_cleanup(&blob_assignment.blobhash)
+                .await?;
 
             let local_image_elf;
             if blob_assignment.local_image_version == LocalImageVersion::Current {

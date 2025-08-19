@@ -47,14 +47,14 @@ pub struct BlobAssignment {
 
 pub struct BlobAssignmentManager {
     pub blob_assignment_files: Arc<Mutex<BlobAssignmentFiles>>,
-    pub contracts_manager: ContractsManager,
+    pub contracts_manager: Arc<ContractsManager>,
     pub blob_finder: BlobFinder,
 }
 
 impl BlobAssignmentManager {
     pub fn new(
         blob_assignment_files: Arc<Mutex<BlobAssignmentFiles>>,
-        contracts_manager: ContractsManager,
+        contracts_manager: Arc<ContractsManager>,
         blob_finder: BlobFinder,
     ) -> Self {
         BlobAssignmentManager {

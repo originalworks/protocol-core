@@ -50,9 +50,13 @@ Parameters:
   OutputFilesDir:
     Type: String
     Default: "/tmp/output_files"
+  StorachaBridgeUrl:
+    Type: String
+
 
 Conditions:
   OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
+  OverwriteStorachaBridgeUrl: !Not [!Equals [!Ref StorachaBridgeUrl, ""]]
 
 Resources:
   LambdaScheduledRule:
@@ -113,6 +117,10 @@ Resources:
           DDEX_SEQUENCER_ADDRESS: !If
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
+            - !Ref "AWS::NoValue"
+          STORACHA_BRIDGE_URL: !If
+            - OverwriteStorachaBridgeUrl
+            - !Ref StorachaBridgeUrl
             - !Ref "AWS::NoValue"
 
   OwenSignerKmsKey:

@@ -106,25 +106,30 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let tokio_loop_config = config.clone();
     let mut next_starting_point = BlobAssignmentStartingPoint::CleanStart;
 
-    let contracts_manager = ContractsManager::build(
-        config.ddex_sequencer_address,
-        &config.private_key,
-        &config.rpc_url,
-    )
-    .await?;
+    let contracts_manager = Arc::new(
+        ContractsManager::build(
+            config.ddex_sequencer_address,
+            &config.private_key,
+            &config.rpc_url,
+        )
+        .await?,
+    );
 
     let blob_finder = BlobFinder::new(config.beacon_rpc_url.clone());
 
     let ipfs_manager = IpfsManager::build(
+        Arc::clone(&contracts_manager),
         config.storacha_bridge_url.clone(),
-        config.private_key.clone(),
     )?;
 
     let blob_assignment_files_ptr_1 = Arc::new(Mutex::new(BlobAssignmentFiles::build()?));
     let blob_assignment_files_ptr_2 = Arc::clone(&blob_assignment_files_ptr_1);
 
-    let blob_assignment_manager =
-        BlobAssignmentManager::new(blob_assignment_files_ptr_2, contracts_manager, blob_finder);
+    let blob_assignment_manager = BlobAssignmentManager::new(
+        blob_assignment_files_ptr_2,
+        Arc::clone(&contracts_manager),
+        blob_finder,
+    );
 
     let blob_proof_manager = BlobProofManager::new(
         blob_assignment_files_ptr_1,
