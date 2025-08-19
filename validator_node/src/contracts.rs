@@ -208,6 +208,11 @@ impl ContractsManager {
         ));
     }
 
+    pub async fn get_blob_proposer(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<Address> {
+        let blob_data: DdexSequencer::Blob = self.sequencer.blobs(*blobhash).call().await?.into();
+        Ok(blob_data.proposer)
+    }
+
     pub async fn fetch_current_block(&self) -> anyhow::Result<u64> {
         let current_block = self
             .provider
