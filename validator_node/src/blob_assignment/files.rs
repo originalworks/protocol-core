@@ -242,11 +242,14 @@ impl BlobAssignmentFiles {
             json_file_path.to_string_lossy()
         );
         let last_modified = BlobAssignmentFiles::get_json_modified_time()?;
+        let mut counter = 0;
 
         loop {
+            counter += 1;
             sleep(Duration::from_millis(1000)).await;
             let new_time = BlobAssignmentFiles::get_json_modified_time()?;
-            if last_modified != new_time {
+            // wait for 10min or for a file change
+            if last_modified != new_time || counter > 600 {
                 return Ok(());
             }
         }
