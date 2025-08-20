@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DdexSequencer
-    network: gnosis
+    network: gnosis-chiado
     source:
       abi: DdexSequencer
-      address: "0x88c430c91Cbb608b41cDB2fCe27604E12233233f"
-      startBlock: 40899762
+      address: "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
+      startBlock: 14932699
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -34,11 +34,11 @@ dataSources:
           handler: handleMoveQueue
   - kind: ethereum/contract
     name: DdexEmitter
-    network: gnosis
+    network: gnosis-chiado
     source:
       abi: DdexEmitter
-      address: "0x88d6667e9183571D35650ab19884b7990C228A01"
-      startBlock: 40899766
+      address: "0xDe804E8fc13883C447092d05F7968f86D1fD6847"
+      startBlock: 14932704
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -85,7 +85,7 @@ templates:
           file: ./abis/DdexEmitter.json
       handler: handleAssetMetadata
       file: ./src/assetMetadata.ts
-    network: gnosis
+    network: gnosis-chiado
   - kind: file/ipfs
     name: BlobMetadataTemplate
     mapping:
@@ -98,4 +98,4 @@ templates:
           file: ./abis/DdexEmitter.json
       handler: handleBlobMetadata
       file: ./src/blobMetadata.ts
-    network: gnosis
+    network: gnosis-chiado

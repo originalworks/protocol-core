@@ -9,7 +9,7 @@ import {
   recordHealthStatusMoveQueueData,
 } from "./helpers";
 import { BlobsSubmittedPerDay, BlobsSubmittedPerMonth } from "./types/schema";
-import { Initialized, NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
+import { Initialized, MoveQueueCall, NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 
 export function handleInitialized(event: Initialized): void {
   initializeBlobsStatuses();
@@ -51,6 +51,6 @@ export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
   submittedPerMonth.save();
 }
 
-export function handleMoveQueue(): void {
+export function handleMoveQueue(call: MoveQueueCall): void {
   recordHealthStatusMoveQueueData();
 }

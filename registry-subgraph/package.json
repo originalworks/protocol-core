@@ -2,10 +2,12 @@
   "name": "ow_subgraph",
   "private": true,
   "scripts": {
+    "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
+    "build-gnosis": "graph build --network=gnosis",
+    "build-chiado": "graph build --network=gnosis-chiado",
     "build": "graph build subgraph.yaml",
     "build-ipfs": "graph build --ipfs /ip4/127.0.0.1/tcp/5001 subgraph.yaml",
-    "build-wast": "graph build -t wast subgraph.yaml",
-    "codegen": "graph codegen --output-dir src/types/ subgraph.yaml"
+    "build-wast": "graph build -t wast subgraph.yaml"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "0.97.0",
