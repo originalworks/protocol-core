@@ -29,6 +29,9 @@ dataSources:
           handler: handleInitialized
         - event: NewBlobSubmitted(bytes,bytes32)
           handler: handleNewBlobSubmitted
+      callHandlers:
+        - function: moveQueue()
+          handler: handleMoveQueue
   - kind: ethereum/contract
     name: DdexEmitter
     network: gnosis
