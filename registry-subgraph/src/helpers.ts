@@ -86,6 +86,17 @@ export function recordHealthStatusValidatorData(validationTimestamp: BigInt, val
   healthStatus.save();
 }
 
+export function recordHealthStatusMoveQueueData(): void {
+  let healthStatus = HealthStatus.load("status");
+
+  if (healthStatus != null) {
+    if (healthStatus.blobsInQueueAmount != BigInt.zero()) {
+      healthStatus.blobsInQueueAmount = healthStatus.blobsInQueueAmount.minus(BigInt.fromI32(1));
+    }
+    healthStatus.save();
+  }
+}
+
 export function getValueIfExist(
   sourceObject: TypedMap<string, JSONValue>,
   parameterName: string,

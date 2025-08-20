@@ -159,7 +159,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.display_title = soundRecordings[j].display_title;
               track.subtitle = soundRecordings[j].subtitle;
               track.display_title_text = soundRecordings[j].display_title_text;
-              track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+              track.label = pLine.p_line_text.replace(pLine.year.toString(), "").trim();
               track.image = image;
               track.releases = [release.id];
               track.timestamp = event.block.timestamp;
@@ -196,7 +196,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                 track.display_title = soundRecordings[j].display_title;
                 track.subtitle = soundRecordings[j].subtitle;
                 track.display_title_text = soundRecordings[j].display_title_text;
-                track.label = pLine.p_line_text.replace(pLine.year.toString(), '').trim();
+                track.label = pLine.p_line_text.replace(pLine.year.toString(), "").trim();
                 track.image = image;
                 if (track.releases == null) {
                   track.releases = [release.id];
