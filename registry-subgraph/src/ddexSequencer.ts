@@ -7,9 +7,9 @@ import {
   initializeBlobsStatuses,
   recordHealthStatusBatchData,
   recordHealthStatusMoveQueueData,
-} from './helpers';
-import { BlobsSubmittedPerDay, BlobsSubmittedPerMonth } from './types/schema';
-import { Initialized, NewBlobSubmitted } from './types/DdexSequencer/DdexSequencer';
+} from "./helpers";
+import { BlobsSubmittedPerDay, BlobsSubmittedPerMonth } from "./types/schema";
+import { Initialized, NewBlobSubmitted } from "./types/DdexSequencer/DdexSequencer";
 
 export function handleInitialized(event: Initialized): void {
   initializeBlobsStatuses();
