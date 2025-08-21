@@ -1,6 +1,6 @@
 use anyhow::Result;
-use aws_sdk_dynamodb::{operation::update_item::UpdateItemError, types::AttributeValue};
-use owen::{constants::MAX_DDEX_PER_BLOB, output_generator::MessageDirProcessingContext};
+use aws_sdk_dynamodb::types::AttributeValue;
+use owen::output_generator::MessageDirProcessingContext;
 use std::{collections::HashMap, env};
 
 pub struct MessageQueue {
@@ -113,41 +113,6 @@ impl MessageQueue {
             }
             Err(_err) => Ok(None),
         }
-    }
-
-    pub async fn get_message_folders(&self) -> Result<Vec<String>> {
-        let response = self
-            .client
-            .query()
-            .table_name(&self.table_name)
-            .index_name(&self.index_name)
-            .key_condition_expression(format!(
-                "{} = :expressionValue",
-                &self.processing_status_attribute_name
-            ))
-            .expression_attribute_values(
-                ":expressionValue",
-                AttributeValue::S(self.unprocessed_status_value.to_string()),
-            )
-            .limit(MAX_DDEX_PER_BLOB)
-            .scan_index_forward(true) // Ascending order (oldest first)
-            .send()
-            .await?;
-
-        let message_folders = response
-            .items
-            .expect("No items in Dynamo response")
-            .iter()
-            .map(|item| {
-                item.get(&self.pk_name)
-                    .expect("Could not find partition key value")
-                    .as_s()
-                    .expect("Partition key is not a string")
-                    .clone()
-            })
-            .collect::<Vec<String>>();
-
-        Ok(message_folders)
     }
 
     pub async fn set_single_message_folder_status(
