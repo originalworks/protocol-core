@@ -20,6 +20,7 @@ async fn build_input_folder(
 ) -> anyhow::Result<()> {
     storage.clear_input_folder()?;
     let blob_estimator = BlobEstimator::default();
+    let mut added_counter = 0;
 
     loop {
         match queue.reserve_message_folder().await? {
@@ -30,17 +31,21 @@ async fn build_input_folder(
                         storage
                             .local_to_s3_folder_mapping
                             .insert(local_message_folder.clone(), s3_message_folder.clone());
-
+                        added_counter += 1;
                         storage.s3_message_folders.push(s3_message_folder)
                     }
                     Err(err) => {
                         log_warn!(err);
                         std::fs::remove_dir_all(Path::new(&local_message_folder))?;
+                        let mut status_value = String::new();
+                        // just one message exceed the limit - set that one message as rejected
+                        if added_counter == 0 {
+                            status_value = queue.rejected_status_value.clone();
+                        } else {
+                            status_value = queue.unprocessed_status_value.clone();
+                        }
                         queue
-                            .set_single_message_folder_status(
-                                s3_message_folder,
-                                queue.unprocessed_status_value.clone(),
-                            )
+                            .set_single_message_folder_status(s3_message_folder, status_value)
                             .await?;
                         break;
                     }
