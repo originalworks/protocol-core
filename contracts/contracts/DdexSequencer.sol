@@ -106,7 +106,25 @@ contract DdexSequencer is
         bytes32 _imageId,
         bytes memory _commitment,
         bytes32 _blobSha2
-    ) public _isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
+    ) external {
+        _submitNewBlob(_imageId, _commitment, _blobSha2, 0);
+    }
+
+    function submitNewBlob(
+        bytes32 _imageId,
+        bytes memory _commitment,
+        bytes32 _blobSha2,
+        uint256 blobIndex
+    ) external {
+        _submitNewBlob(_imageId, _commitment, _blobSha2, blobIndex);
+    }
+
+    function _submitNewBlob(
+        bytes32 _imageId,
+        bytes memory _commitment,
+        bytes32 _blobSha2,
+        uint256 blobIndex
+    ) internal _isWhitelistedOn(DATA_PROVIDERS_WHITELIST) {
         require(_imageId != bytes32(0), "DdexSequencer: ImageId cannot be 0");
 
         (bytes32 currentImageId, bytes32 previousImageId) = ddexEmitter
@@ -119,7 +137,7 @@ contract DdexSequencer is
 
         bytes32 newBlobhash;
         assembly {
-            newBlobhash := blobhash(0)
+            newBlobhash := blobhash(blobIndex)
         }
         require(
             newBlobhash != bytes32(0),
