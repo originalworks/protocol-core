@@ -6,13 +6,15 @@ import "./Whitelist/WhitelistConsumer.sol";
 import "./interfaces/IStakeVault.sol";
 import "./interfaces/IDdexEmitter.sol";
 import "./interfaces/IProverPublicOutputs.sol";
+import "./interfaces/IDdexSequencer.sol";
 
 pragma solidity ^0.8.24;
 
 contract DdexSequencer is
     WhitelistConsumer,
     OwnableUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    IDdexSequencer
 {
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
     event WhitelistingStatusChanged(bool current_status);
