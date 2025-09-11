@@ -1,6 +1,7 @@
 use alloy::{eips::eip4844::BYTES_PER_BLOB, primitives::FixedBytes};
 use log_macros::{format_error, log_info};
 use prover::SubmitProofInput;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -233,7 +234,7 @@ impl BlobAssignmentFiles {
     }
 
     pub async fn watch_json_file() -> anyhow::Result<()> {
-        let max_counter: i32 = rand::thread_rng().gen_range(1..=300) + 600;
+        let max_counter: i32 = rand::rng().random_range(1..=300) + 600;
         let json_file_path = Path::new(TEMP_FOLDER)
             .join(BLOB_ASSIGNMENT_FOLDER_NAME)
             .join(BLOB_ASSIGNMENT_JSON_FILE_NAME);
