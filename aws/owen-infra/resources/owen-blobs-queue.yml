@@ -26,7 +26,7 @@ Resources:
     Properties:
       Handler: bootstrap
       Role: !GetAtt BlobsBatchSenderLambdaRole.Arn
-      Timeout: 60
+      Timeout: 120
       CodeUri: ../../target/lambda/blobs_batch_sender
 
   MyLambdaEventSourceMapping:
