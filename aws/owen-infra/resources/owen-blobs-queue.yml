@@ -27,7 +27,7 @@ Resources:
       Handler: bootstrap
       Role: !GetAtt BlobsBatchSenderLambdaRole.Arn
       Timeout: 60
-      CodeUri: ../../target/lambda/aws_queue_consumer
+      CodeUri: ../../target/lambda/blobs_batch_sender
 
   MyLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

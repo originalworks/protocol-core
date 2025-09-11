@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "aws/aws_queue_consumer",
+    "aws/aws_queue_consumer", "aws/blobs_batch_sender",
     "blob_codec",
     "ddex_parser",
     "log_macros",
