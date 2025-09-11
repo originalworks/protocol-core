@@ -233,6 +233,7 @@ impl BlobAssignmentFiles {
     }
 
     pub async fn watch_json_file() -> anyhow::Result<()> {
+        let max_counter: i32 = rand::thread_rng().gen_range(1..=300) + 600;
         let json_file_path = Path::new(TEMP_FOLDER)
             .join(BLOB_ASSIGNMENT_FOLDER_NAME)
             .join(BLOB_ASSIGNMENT_JSON_FILE_NAME);
@@ -249,7 +250,7 @@ impl BlobAssignmentFiles {
             sleep(Duration::from_millis(1000)).await;
             let new_time = BlobAssignmentFiles::get_json_modified_time()?;
             // wait for 10min or for a file change
-            if last_modified != new_time || counter > 600 {
+            if last_modified != new_time || counter > max_counter {
                 return Ok(());
             }
         }
