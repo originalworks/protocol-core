@@ -1,0 +1,68 @@
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  LambdaScheduleRateMin:
+    Type: String
+
+Resources:
+  OwenBlobsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OwenBlobsQueueDLQ.Arn
+        maxReceiveCount: 1
+
+  OwenBlobsQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600 # 20160 min | 336 h | 14 days
+      FifoQueue: true
+      ContentBasedDeduplication: true
+
+  BlobsBatchSenderLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: bootstrap
+      Role: !GetAtt BlobsBatchSenderLambdaRole.Arn
+      Timeout: 60
+      CodeUri: ../../target/lambda/blobs_batch_sender
+
+  MyLambdaEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt OwenBlobsQueue.Arn
+      FunctionName: !Ref BlobsBatchSenderLambda
+      BatchSize: 5
+      MaximumBatchingWindowInSeconds: 60
+      Enabled: true
+
+  BlobsBatchSenderLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SQSPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource:
+                  - !GetAtt OwenBlobsQueue.Arn
+
+Outputs:
+  OwenBlobsQueueUrl:
+    Value: !Ref OwenBlobsQueue

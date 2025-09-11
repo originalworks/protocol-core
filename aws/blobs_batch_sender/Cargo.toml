@@ -1,0 +1,13 @@
+[package]
+name = "blobs_batch_sender"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aws-config = "1.8.6"
+aws-sdk-sqs = "1.83.0"
+aws_lambda_events = { version = "0.17.0", default-features = false, features = [
+    "sqs",
+] }
+lambda_runtime = "0.14.3"
+tokio = { workspace = true }
