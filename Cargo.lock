@@ -8699,6 +8699,7 @@ dependencies = [
  "once_cell",
  "pretty_env_logger",
  "prover",
+ "rand 0.9.2",
  "reqwest",
  "risc0-ethereum-contracts",
  "risc0-zkvm",

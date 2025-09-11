@@ -74,6 +74,7 @@ jobs:
           path: |
             target/lambda/owen_lambda
             target/lambda/aws_queue_consumer
+            target/lambda/blobs_batch_sender
 
   deploy-changes:
     runs-on: ubuntu-latest
