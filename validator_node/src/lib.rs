@@ -144,9 +144,10 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
             match next_starting_point {
                 BlobAssignmentStartingPoint::NewBlobSubmitted { block_number } => {
                     current_block_number = block_number;
-                    res = blob_assignment_manager
+                    let _ = blob_assignment_manager
                         .try_new_assignment(current_block_number)
                         .await;
+                    res = blob_assignment_manager.run(current_block_number).await;
                 }
                 BlobAssignmentStartingPoint::BlobProcessedOrRejected { block_number } => {
                     current_block_number = block_number;
