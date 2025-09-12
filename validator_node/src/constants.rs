@@ -9,7 +9,7 @@ pub const BLOB_ASSIGNMENT_FOLDER_NAME: &str = "blob_assignment";
 pub const DOWNLOADED_BLOBS_FOLDER_NAME: &str = "downloaded_blobs";
 pub const BLOB_ASSIGNMENT_JSON_FILE_NAME: &str = "blob_assignments.json";
 pub const IPFS_TEMP_FILES_FOLDER_NAME: &str = "ipfs_temp_files";
-pub const MAX_BLOB_ASSIGNMENTS: usize = 2;
+pub const MAX_BLOB_ASSIGNMENTS: usize = 5;
 pub const MAX_STORED_ASSIGNMENTS: usize = 20;
 #[allow(dead_code)]
 pub const IPFS_API_BASE_URL: &str = "https://w3s.link";
