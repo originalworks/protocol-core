@@ -9,7 +9,6 @@ use crate::{
     beacon_chain::BlobFinder,
     constants::{EMPTY_BYTES32, MAX_BLOB_ASSIGNMENTS},
     contracts::{ContractsManager, LocalImageVersion},
-    Config,
 };
 
 use super::files::BlobAssignmentFiles;
@@ -94,11 +93,7 @@ impl BlobAssignmentManager {
         Ok(())
     }
 
-    pub async fn run(
-        &self,
-        config: &Config,
-        start_block: u64,
-    ) -> anyhow::Result<BlobAssignmentStartingPoint> {
+    pub async fn run(&self, start_block: u64) -> anyhow::Result<BlobAssignmentStartingPoint> {
         let queue_head = self.contracts_manager.get_queue_head().await?;
 
         if queue_head.blobhash == EMPTY_BYTES32 {
@@ -173,7 +168,7 @@ impl BlobAssignmentManager {
             } else {
                 log_info!("ASSIGNMENT LOOP: Queue head is not assigned to this validator, trying new assignment");
 
-                Ok(self.try_new_assignment(config, start_block).await?)
+                Ok(self.try_new_assignment(start_block).await?)
             }
         }
     }
@@ -284,7 +279,6 @@ impl BlobAssignmentManager {
 
     pub async fn try_new_assignment(
         &self,
-        config: &Config,
         start_block: u64,
     ) -> anyhow::Result<BlobAssignmentStartingPoint> {
         let assignment_count: usize;

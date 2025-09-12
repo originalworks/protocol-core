@@ -103,7 +103,6 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let mut proof_calculation_consecutive_error_ct = 0;
     let threshold = 5;
 
-    let tokio_loop_config = config.clone();
     let mut next_starting_point = BlobAssignmentStartingPoint::CleanStart;
 
     let contracts_manager = Arc::new(ContractsManager::build(&config).await?);
@@ -146,20 +145,16 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
                 BlobAssignmentStartingPoint::NewBlobSubmitted { block_number } => {
                     current_block_number = block_number;
                     res = blob_assignment_manager
-                        .try_new_assignment(&tokio_loop_config, current_block_number)
+                        .try_new_assignment(current_block_number)
                         .await;
                 }
                 BlobAssignmentStartingPoint::BlobProcessedOrRejected { block_number } => {
                     current_block_number = block_number;
 
-                    res = blob_assignment_manager
-                        .run(&tokio_loop_config, current_block_number)
-                        .await;
+                    res = blob_assignment_manager.run(current_block_number).await;
                 }
                 BlobAssignmentStartingPoint::CleanStart => {
-                    res = blob_assignment_manager
-                        .run(&tokio_loop_config, current_block_number)
-                        .await;
+                    res = blob_assignment_manager.run(current_block_number).await;
                 }
             }
 
