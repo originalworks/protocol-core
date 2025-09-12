@@ -168,9 +168,15 @@ impl BlobProofManager {
 
         let public_outputs: ProverPublicOutputs = ProverPublicOutputs::abi_decode(&journal)?;
 
-        log_info!("Public outputs: {:?}", public_outputs);
-        log_info!("Journal: {:?}", journal);
-        log_info!("Seal: {:?}", seal);
+        log_info!("BLOB proved to be valid: {}", public_outputs.valid);
+        log_info!(
+            "Number of Messages in the BLOB: {}",
+            public_outputs.messages.len()
+        );
+
+        // log_info!("Public outputs: {:?}", public_outputs);
+        // log_info!("Journal: {:?}", journal);
+        // log_info!("Seal: {:?}", seal);
 
         timer.stop("produce the proof");
 
