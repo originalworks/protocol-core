@@ -106,14 +106,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let tokio_loop_config = config.clone();
     let mut next_starting_point = BlobAssignmentStartingPoint::CleanStart;
 
-    let contracts_manager = Arc::new(
-        ContractsManager::build(
-            config.ddex_sequencer_address,
-            &config.private_key,
-            &config.rpc_url,
-        )
-        .await?,
-    );
+    let contracts_manager = Arc::new(ContractsManager::build(&config).await?);
 
     let blob_finder = BlobFinder::new(config.beacon_rpc_url.clone());
 

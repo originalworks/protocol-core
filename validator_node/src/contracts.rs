@@ -96,33 +96,42 @@ type HardlyTypedProvider = FillProvider<
     RootProvider,
 >;
 
+type HardlyTypedWsProvider = FillProvider<
+    JoinFill<
+        Identity,
+        JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
+    >,
+    RootProvider,
+>;
+
 pub struct ContractsManager {
     pub sequencer: DdexSequencer::DdexSequencerInstance<HardlyTypedProvider>,
     pub emitter: DdexEmitter::DdexEmitterInstance<HardlyTypedProvider>,
     pub current_image_id: alloy::primitives::FixedBytes<32>,
     pub previous_image_id: alloy::primitives::FixedBytes<32>,
     pub provider: HardlyTypedProvider,
+    pub ws_provider: HardlyTypedWsProvider,
     pub chain_id: u64,
     pub signer: PrivateKeySigner,
 }
 
 impl ContractsManager {
-    pub async fn build(
-        ddex_sequencer_address: Address,
-        private_key: &String,
-        rpc_url: &String,
-    ) -> anyhow::Result<Self> {
-        let private_key_signer: PrivateKeySigner = private_key
+    pub async fn build(config: &Config) -> anyhow::Result<Self> {
+        let private_key_signer: PrivateKeySigner = config
+            .private_key
             .parse()
             .with_context(|| "Failed to parse PRIVATE_KEY")?;
         let wallet = EthereumWallet::from(private_key_signer.clone());
 
         let provider = ProviderBuilder::new()
             .wallet(wallet)
-            .connect_http(rpc_url.parse()?);
+            .connect_http(config.rpc_url.parse()?);
+
+        let ws_url = WsConnect::new(&config.ws_url);
+        let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
 
         let chain_id = provider.get_chain_id().await?;
-        let sequencer = DdexSequencer::new(ddex_sequencer_address, provider.clone());
+        let sequencer = DdexSequencer::new(config.ddex_sequencer_address, provider.clone());
 
         let emitter_address = sequencer.ddexEmitter().call().await?;
         let emitter = DdexEmitter::new(emitter_address, provider.clone());
@@ -138,6 +147,7 @@ impl ContractsManager {
             provider,
             chain_id,
             signer: private_key_signer,
+            ws_provider,
         })
     }
 
@@ -302,16 +312,13 @@ impl ContractsManager {
     }
     pub async fn subscribe_to_contracts(
         &self,
-        config: &Config,
         start_block: u64,
     ) -> anyhow::Result<BlobAssignmentStartingPoint> {
         log_info!("Subscribing to queue");
-        let ws_url = WsConnect::new(&config.ws_url);
-        let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
 
         let filter = Filter::new()
             .address(vec![
-                config.ddex_sequencer_address,
+                self.sequencer.address().clone(),
                 self.emitter.address().clone(),
             ])
             .events(vec![
@@ -322,7 +329,7 @@ impl ContractsManager {
             .from_block(start_block);
 
         log_info!("Subscribed to queue, waiting for changes...");
-        let subscription = ws_provider.subscribe_logs(&filter).await?;
+        let subscription = self.ws_provider.subscribe_logs(&filter).await?;
         let mut stream = subscription.into_stream();
 
         while let Some(log) = stream.next().await {
