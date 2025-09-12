@@ -105,7 +105,7 @@ impl BlobAssignmentManager {
             log_info!("ASSIGNMENT LOOP: Queue head is empty");
             let next_starting_point = self
                 .contracts_manager
-                .subscribe_to_contracts(config, start_block)
+                .subscribe_to_contracts(start_block)
                 .await?;
 
             Ok(next_starting_point)
@@ -297,7 +297,7 @@ impl BlobAssignmentManager {
 
             Ok(self
                 .contracts_manager
-                .subscribe_to_contracts(config, start_block)
+                .subscribe_to_contracts(start_block)
                 .await?)
         } else {
             log_info!("ASSIGNMENT LOOP: Max assignments not reached, checking next assignment");
@@ -318,7 +318,7 @@ impl BlobAssignmentManager {
                     log_info!("ASSIGNMENT LOOP: Next assignment is empty and queue head not expired, subscribing to contracts");
                     Ok(self
                         .contracts_manager
-                        .subscribe_to_contracts(config, start_block)
+                        .subscribe_to_contracts(start_block)
                         .await?)
                 }
             } else {
