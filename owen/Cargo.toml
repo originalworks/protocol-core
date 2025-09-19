@@ -6,7 +6,7 @@ default-run = "owen"
 
 [dependencies]
 reqwest = { workspace = true, features = ["stream", "multipart", "json"] }
-alloy = { version = "1.0.22", features = ["full"] }
+alloy = { version = "1.0.32", features = ["full"] }
 c-kzg = "2.1.1"
 dotenvy = { workspace = true }
 blob_codec = { workspace = true }
@@ -30,7 +30,7 @@ rgb = "0.8.52"
 once_cell = { workspace = true }
 aws-config = { version = "1.8.2", features = ["behavior-version-latest"] }
 aws-sdk-kms = "1.79.0"
-alloy-signer-aws = "1.0.22"
+alloy-signer-aws = "1.0.32"
 
 aws_lambda_events = { version = "0.17.0", default-features = false, features = [
     "cloudwatch_events",
