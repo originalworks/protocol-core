@@ -1,8 +1,8 @@
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  LambdaScheduleRateMin:
-    Type: String
+# Parameters:
+#   LambdaScheduleRateMin:
+#     Type: String
 
 Resources:
   OwenBlobsQueue:

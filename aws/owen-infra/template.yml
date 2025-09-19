@@ -238,7 +238,7 @@ Resources:
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
 
-  # OwenBlobsQueue:
-  #   Type: AWS::Serverless::Application
-  #   Properties:
-  #     Location: ./resources/owen-blobs-queue.yml
+  OwenBlobsQueue:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./resources/owen-blobs-queue.yml
