@@ -1,15 +1,12 @@
 Transform: AWS::Serverless-2016-10-31
 
-# Parameters:
-#   LambdaScheduleRateMin:
-#     Type: String
-
 Resources:
   OwenBlobsQueue:
     Type: AWS::SQS::Queue
     Properties:
       FifoQueue: true
       ContentBasedDeduplication: true
+      VisibilityTimeout: 240
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt OwenBlobsQueueDLQ.Arn
         maxReceiveCount: 1
@@ -22,12 +19,17 @@ Resources:
       ContentBasedDeduplication: true
 
   BlobsBatchSenderLambda:
-    Type: AWS::Lambda::Function
+    Type: AWS::Serverless::Function
     Properties:
-      Handler: bootstrap
       Role: !GetAtt BlobsBatchSenderLambdaRole.Arn
+      CodeUri: ../../../target/lambda/blobs_batch_sender
+      Runtime: "provided.al2023"
+      Architectures:
+        - x86_64
+      Handler: bootstrap
+      MemorySize: 128
       Timeout: 120
-      CodeUri: ../../target/lambda/blobs_batch_sender
+      ReservedConcurrentExecutions: 1
 
   MyLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
@@ -35,7 +37,6 @@ Resources:
       EventSourceArn: !GetAtt OwenBlobsQueue.Arn
       FunctionName: !Ref BlobsBatchSenderLambda
       BatchSize: 5
-      MaximumBatchingWindowInSeconds: 60
       Enabled: true
 
   BlobsBatchSenderLambdaRole:
