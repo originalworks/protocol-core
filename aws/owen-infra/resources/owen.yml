@@ -25,6 +25,12 @@ Parameters:
     Type: String
   UnprocessedStatusValue:
     Type: String
+  StorachaBridgeUrl:
+    Type: String
+  OwenBlobsQueueUrl:
+    Type: String
+  BlobsTempStorageBucketName:
+    Type: String
 
   MessageBucketPrefix:
     Type: String
@@ -50,9 +56,6 @@ Parameters:
   OutputFilesDir:
     Type: String
     Default: "/tmp/output_files"
-  StorachaBridgeUrl:
-    Type: String
-
 
 Conditions:
   OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
@@ -114,6 +117,7 @@ Resources:
           OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
           SIGNER_KMS_ID: !Ref OwenSignerKmsKey
           USE_KMS: true
+          OWEN_BLOBS_QUEUE_URL: !Ref OwenBlobsQueueUrl
           DDEX_SEQUENCER_ADDRESS: !If
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress

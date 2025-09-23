@@ -1,5 +1,9 @@
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  BlobsTempStorageBucketName:
+    Type: String
+
 Resources:
   OwenBlobsQueue:
     Type: AWS::SQS::Queue
@@ -30,6 +34,9 @@ Resources:
       MemorySize: 128
       Timeout: 120
       ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          BLOBS_TEMP_STORAGE_BUCKET_NAME: !Ref BlobsTempStorageBucketName
 
   MyLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
@@ -63,6 +70,16 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   - !GetAtt OwenBlobsQueue.Arn
+
+  BlobsTempStorage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BlobsTempStorageBucketName
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAfter14Days
+            Status: Enabled
+            ExpirationInDays: 14
 
 Outputs:
   OwenBlobsQueueUrl:
