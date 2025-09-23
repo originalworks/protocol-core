@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     blob_assignment::manager::{BlobAssignment, BlobAssignmentStartingPoint, BlobAssignmentStatus},
     is_local, Config,
@@ -242,7 +244,12 @@ impl ContractsManager {
 
         tx_builder = tx_builder.gas(10000000).nonce(nonce);
 
-        let receipt = tx_builder.send().await?.get_receipt().await?;
+        let receipt = tx_builder
+            .send()
+            .await?
+            .with_timeout(Some(Duration::from_millis(60000)))
+            .get_receipt()
+            .await?;
 
         if receipt.status() == false {
             return Err(log_error!(
@@ -470,7 +477,14 @@ impl ContractsManager {
                 .max_fee_per_gas(500000001);
         }
 
-        let receipt = tx_builder.nonce(nonce).send().await?.get_receipt().await?;
+        let receipt = tx_builder
+            .nonce(nonce)
+            .send()
+            .await?
+            .with_required_confirmations(2)
+            .with_timeout(Some(Duration::from_millis(60000)))
+            .get_receipt()
+            .await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));
