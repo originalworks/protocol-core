@@ -118,6 +118,7 @@ Resources:
           SIGNER_KMS_ID: !Ref OwenSignerKmsKey
           USE_KMS: true
           OWEN_BLOBS_QUEUE_URL: !Ref OwenBlobsQueueUrl
+          BLOBS_TEMP_STORAGE_BUCKET_NAME: !Ref BlobsTempStorageBucketName
           DDEX_SEQUENCER_ADDRESS: !If
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
