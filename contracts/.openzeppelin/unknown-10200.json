@@ -1320,6 +1320,265 @@
           ]
         }
       }
+    },
+    "7a13f561691657353877dbbc655f9a4f512b23ad863788384dcfa4d666135f17": {
+      "address": "0xeA76612079181C855Bc36D6eD1c58c70b36bf3D3",
+      "txHash": "0x28124bc87f64a5cd706dbc72c9b456bc4ad2477681e349131c95cfa6a9933476",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "whitelists",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_bytes1,t_address)",
+            "contract": "WhitelistConsumer",
+            "src": "contracts/Whitelist/WhitelistConsumer.sol:8"
+          },
+          {
+            "label": "blobQueueHead",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:40"
+          },
+          {
+            "label": "blobQueueTail",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:41"
+          },
+          {
+            "label": "stakeVault",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IStakeVault)2682",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:43"
+          },
+          {
+            "label": "ddexEmitter",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IDdexEmitter)2552",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:44"
+          },
+          {
+            "label": "whitelistsDisabled",
+            "offset": 20,
+            "slot": "4",
+            "type": "t_bool",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:47"
+          },
+          {
+            "label": "blobs",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_bytes32,t_struct(Blob)1682_storage)",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:49"
+          },
+          {
+            "label": "nextBlobAssignment",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_bytes32",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:51"
+          },
+          {
+            "label": "headProcessingStartBlock",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:53"
+          },
+          {
+            "label": "headProcessingTimeInBlocks",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:54"
+          },
+          {
+            "label": "blobLifetime",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:56"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_array(t_uint256)46_storage",
+            "contract": "DdexSequencer",
+            "src": "contracts/DdexSequencer.sol:58"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_uint256)46_storage": {
+            "label": "uint256[46]",
+            "numberOfBytes": "1472"
+          },
+          "t_bytes1": {
+            "label": "bytes1",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDdexEmitter)2552": {
+            "label": "contract IDdexEmitter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStakeVault)2682": {
+            "label": "contract IStakeVault",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes1,t_address)": {
+            "label": "mapping(bytes1 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Blob)1682_storage)": {
+            "label": "mapping(bytes32 => struct DdexSequencer.Blob)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Blob)1682_storage": {
+            "label": "struct DdexSequencer.Blob",
+            "members": [
+              {
+                "label": "nextBlob",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "submitted",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "proposer",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "blobId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "imageId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "assignedValidator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "submissionBlock",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
     }
   }
 }
