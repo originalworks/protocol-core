@@ -323,14 +323,10 @@ impl ContractsManager {
         let current_block = self.fetch_current_block().await?;
 
         let filter = Filter::new()
-            .address(vec![
-                self.sequencer.address().clone(),
-                self.emitter.address().clone(),
-            ])
+            .address(vec![self.sequencer.address().clone()])
             .events(vec![
                 DdexSequencer::NewBlobSubmitted::SIGNATURE,
-                DdexEmitter::BlobProcessed::SIGNATURE,
-                DdexEmitter::BlobRejected::SIGNATURE,
+                DdexSequencer::QueueMoved::SIGNATURE,
             ])
             .from_block(current_block);
 
@@ -343,8 +339,7 @@ impl ContractsManager {
                 &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
                     return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted);
                 }
-                &DdexEmitter::BlobProcessed::SIGNATURE_HASH
-                | &DdexEmitter::BlobRejected::SIGNATURE_HASH => {
+                &DdexSequencer::QueueMoved::SIGNATURE_HASH => {
                     return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected);
                 }
                 _ => (),
