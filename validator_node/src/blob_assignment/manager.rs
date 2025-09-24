@@ -14,8 +14,8 @@ use crate::{
 use super::files::BlobAssignmentFiles;
 
 pub enum BlobAssignmentStartingPoint {
-    NewBlobSubmitted { block_number: u64 },
-    BlobProcessedOrRejected { block_number: u64 },
+    NewBlobSubmitted,
+    BlobProcessedOrRejected,
     CleanStart,
 }
 
@@ -93,15 +93,12 @@ impl BlobAssignmentManager {
         Ok(())
     }
 
-    pub async fn run(&self, start_block: u64) -> anyhow::Result<BlobAssignmentStartingPoint> {
+    pub async fn run(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
         let queue_head = self.contracts_manager.get_queue_head().await?;
 
         if queue_head.blobhash == EMPTY_BYTES32 {
             log_info!("ASSIGNMENT LOOP: Queue head is empty");
-            let next_starting_point = self
-                .contracts_manager
-                .subscribe_to_contracts(start_block)
-                .await?;
+            let next_starting_point = self.contracts_manager.subscribe_to_contracts().await?;
 
             Ok(next_starting_point)
         } else {
@@ -168,7 +165,7 @@ impl BlobAssignmentManager {
             } else {
                 log_info!("ASSIGNMENT LOOP: Queue head is not assigned to this validator, trying new assignment");
 
-                Ok(self.try_new_assignment(start_block).await?)
+                Ok(self.try_new_assignment().await?)
             }
         }
     }
@@ -225,10 +222,6 @@ impl BlobAssignmentManager {
         Ok(assigned_blob)
     }
 
-    pub async fn fetch_current_block(&self) -> anyhow::Result<u64> {
-        Ok(self.contracts_manager.fetch_current_block().await?)
-    }
-
     async fn find_blob(
         &self,
         commitment: Bytes,
@@ -277,10 +270,7 @@ impl BlobAssignmentManager {
         }
     }
 
-    pub async fn try_new_assignment(
-        &self,
-        start_block: u64,
-    ) -> anyhow::Result<BlobAssignmentStartingPoint> {
+    pub async fn try_new_assignment(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
         let assignment_count: usize;
         {
             let blob_assignment_files = self.blob_assignment_files.lock().await;
@@ -289,10 +279,7 @@ impl BlobAssignmentManager {
         if assignment_count >= MAX_BLOB_ASSIGNMENTS {
             log_info!("ASSIGNMENT LOOP: Max assignments reached, subscribing to contracts");
 
-            Ok(self
-                .contracts_manager
-                .subscribe_to_contracts(start_block)
-                .await?)
+            Ok(self.contracts_manager.subscribe_to_contracts().await?)
         } else {
             log_info!("ASSIGNMENT LOOP: Max assignments not reached, checking next assignment");
 
@@ -310,10 +297,7 @@ impl BlobAssignmentManager {
                     Ok(self.handle_blob_assignment().await?)
                 } else {
                     log_info!("ASSIGNMENT LOOP: Next assignment is empty and queue head not expired, subscribing to contracts");
-                    Ok(self
-                        .contracts_manager
-                        .subscribe_to_contracts(start_block)
-                        .await?)
+                    Ok(self.contracts_manager.subscribe_to_contracts().await?)
                 }
             } else {
                 log_info!(

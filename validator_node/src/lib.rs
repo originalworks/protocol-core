@@ -12,7 +12,7 @@ use blob_assignment::manager::{BlobAssignmentManager, BlobAssignmentStartingPoin
 use blob_proofs::BlobProofManager;
 use contracts::ContractsManager;
 use ipfs::IpfsManager;
-use log_macros::log_error;
+use log_macros::{log_error, log_info};
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -129,7 +129,6 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
         config.segment_limit_po2.clone(),
     );
 
-    let mut current_block_number = blob_assignment_manager.fetch_current_block().await.unwrap();
     blob_assignment_manager.init_clear_inner_queue().await?;
 
     tokio::spawn(async move {
@@ -142,20 +141,18 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
             }
             let res: Result<BlobAssignmentStartingPoint, anyhow::Error>;
             match next_starting_point {
-                BlobAssignmentStartingPoint::NewBlobSubmitted { block_number } => {
-                    current_block_number = block_number;
-                    let _ = blob_assignment_manager
-                        .try_new_assignment(current_block_number)
-                        .await;
-                    res = blob_assignment_manager.run(current_block_number).await;
+                BlobAssignmentStartingPoint::NewBlobSubmitted => {
+                    log_info!("ASSIGNMENT LOOP: New Blob was submitted, trying new assignment");
+                    let _ = blob_assignment_manager.try_new_assignment().await;
+                    res = blob_assignment_manager.run().await;
                 }
-                BlobAssignmentStartingPoint::BlobProcessedOrRejected { block_number } => {
-                    current_block_number = block_number;
-
-                    res = blob_assignment_manager.run(current_block_number).await;
+                BlobAssignmentStartingPoint::BlobProcessedOrRejected => {
+                    log_info!("ASSIGNMENT LOOP: Queue head was moved, restart loop");
+                    res = blob_assignment_manager.run().await;
                 }
                 BlobAssignmentStartingPoint::CleanStart => {
-                    res = blob_assignment_manager.run(current_block_number).await;
+                    log_info!("ASSIGNMENT LOOP: Clean start");
+                    res = blob_assignment_manager.run().await;
                 }
             }
 

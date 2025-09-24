@@ -317,11 +317,10 @@ impl ContractsManager {
         };
         Ok(blob_assignment)
     }
-    pub async fn subscribe_to_contracts(
-        &self,
-        start_block: u64,
-    ) -> anyhow::Result<BlobAssignmentStartingPoint> {
+    pub async fn subscribe_to_contracts(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
         log_info!("Subscribing to queue");
+
+        let current_block = self.fetch_current_block().await?;
 
         let filter = Filter::new()
             .address(vec![
@@ -333,7 +332,7 @@ impl ContractsManager {
                 DdexEmitter::BlobProcessed::SIGNATURE,
                 DdexEmitter::BlobRejected::SIGNATURE,
             ])
-            .from_block(start_block);
+            .from_block(current_block);
 
         log_info!("Subscribed to queue, waiting for changes...");
         let subscription = self.ws_provider.subscribe_logs(&filter).await?;
@@ -342,23 +341,11 @@ impl ContractsManager {
         while let Some(log) = stream.next().await {
             match log.topic0().expect("Event log signature not found") {
                 &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
-                    let DdexSequencer::NewBlobSubmitted {
-                        commitment: _,
-                        image_id: _,
-                    } = log.log_decode()?.inner.data;
-                    let block_number = log
-                        .block_number
-                        .ok_or_else(|| format_error!("Block not found in log"))?;
-                    return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted { block_number });
+                    return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted);
                 }
                 &DdexEmitter::BlobProcessed::SIGNATURE_HASH
                 | &DdexEmitter::BlobRejected::SIGNATURE_HASH => {
-                    let block_number = log
-                        .block_number
-                        .ok_or_else(|| format_error!("Block not found in log"))?;
-                    return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected {
-                        block_number,
-                    });
+                    return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected);
                 }
                 _ => (),
             }
