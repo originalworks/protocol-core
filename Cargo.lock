@@ -2312,6 +2312,7 @@ dependencies = [
  "aws-sdk-sqs",
  "aws_lambda_events",
  "lambda_runtime",
+ "owen",
  "tokio",
 ]
 

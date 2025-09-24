@@ -1,6 +1,6 @@
-mod blob;
+pub mod blob;
 pub mod constants;
-mod contracts;
+pub mod contracts;
 mod image_processor;
 mod ipfs;
 pub mod logger;
@@ -16,6 +16,8 @@ use sentry::User;
 use serde_json::json;
 use std::env;
 use std::str::FromStr;
+
+use crate::contracts::ContractsConfig;
 
 #[cfg(any(feature = "aws-integration", feature = "local-s3"))]
 pub mod s3_message_storage;
@@ -137,6 +139,17 @@ impl Config {
 
         config
     }
+    pub fn create_contracts_config(&self) -> ContractsConfig {
+        let config = ContractsConfig {
+            rpc_url: self.rpc_url.clone(),
+            private_key: self.private_key.clone(),
+            ddex_sequencer_address: self.ddex_sequencer_address.clone(),
+            use_kms: self.use_kms.clone(),
+            signer_kms_id: self.signer_kms_id.clone(),
+        };
+
+        config
+    }
 }
 
 pub async fn run(
@@ -166,7 +179,7 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         scope.set_extra("config", json!(cloned_config));
     });
 
-    let contracts_manager = ContractsManager::build(&config).await?;
+    let contracts_manager = ContractsManager::build(&config.create_contracts_config()).await?;
 
     let message_dir_processing_context = run(&config, &contracts_manager).await.map_err(|e| {
         sentry::configure_scope(|scope| {
