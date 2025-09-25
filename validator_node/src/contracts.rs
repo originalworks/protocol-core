@@ -330,21 +330,28 @@ impl ContractsManager {
             ])
             .from_block(current_block);
 
-        log_info!("Subscribed to queue, waiting for changes...");
+        log_info!(
+            "Subscribed to queue from block {}, waiting for changes...",
+            current_block
+        );
         let subscription = self.ws_provider.subscribe_logs(&filter).await?;
+        let subscription_id = subscription.local_id().clone();
         let mut stream = subscription.into_stream();
 
         while let Some(log) = stream.next().await {
             match log.topic0().expect("Event log signature not found") {
                 &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
+                    self.ws_provider.unsubscribe(subscription_id).await?;
                     return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted);
                 }
                 &DdexSequencer::QueueMoved::SIGNATURE_HASH => {
+                    self.ws_provider.unsubscribe(subscription_id).await?;
                     return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected);
                 }
                 _ => (),
             }
         }
+        self.ws_provider.unsubscribe(subscription_id).await?;
         Ok(BlobAssignmentStartingPoint::CleanStart)
     }
 
