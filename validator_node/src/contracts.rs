@@ -351,6 +351,7 @@ impl ContractsManager {
                 _ => (),
             }
         }
+        self.ws_provider.unsubscribe(subscription_id).await?;
         Ok(BlobAssignmentStartingPoint::CleanStart)
     }
 
