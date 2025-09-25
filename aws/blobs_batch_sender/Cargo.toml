@@ -11,3 +11,4 @@ aws_lambda_events = { version = "0.17.0", default-features = false, features = [
 ] }
 lambda_runtime = "0.14.3"
 tokio = { workspace = true }
+owen = { workspace = true }

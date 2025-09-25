@@ -138,6 +138,15 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref OwenLambdaSecrets
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${BlobsTempStorageBucketPrefix}-${Environment}/*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:
+                  - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret

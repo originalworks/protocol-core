@@ -23,6 +23,14 @@ use log_macros::{format_error, log_info, log_warn};
 use serde_json::json;
 use DdexEmitter::getSupportedBlobImageIdsReturn;
 
+pub struct ContractsConfig {
+    pub rpc_url: String,
+    pub private_key: String,
+    pub ddex_sequencer_address: Address,
+    pub use_kms: bool,
+    pub signer_kms_id: Option<String>,
+}
+
 sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
@@ -55,7 +63,7 @@ pub struct ContractsManager {
 }
 
 impl ContractsManager {
-    pub async fn build(config: &Config) -> anyhow::Result<Self> {
+    pub async fn build(config: &ContractsConfig) -> anyhow::Result<Self> {
         let wallet = Self::build_wallet(config).await?;
 
         let provider = ProviderBuilder::new()
@@ -76,7 +84,7 @@ impl ContractsManager {
         })
     }
 
-    async fn build_wallet(config: &Config) -> anyhow::Result<EthereumWallet> {
+    async fn build_wallet(config: &ContractsConfig) -> anyhow::Result<EthereumWallet> {
         let wallet: EthereumWallet;
         if config.use_kms {
             let rpc_provider = ProviderBuilder::new().connect_http(config.rpc_url.parse()?);
