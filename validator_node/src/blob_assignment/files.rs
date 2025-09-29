@@ -256,7 +256,7 @@ impl BlobAssignmentFiles {
     }
 
     pub async fn watch_json_file() -> anyhow::Result<()> {
-        let max_counter: i32 = rand::rng().random_range(1..=30) + 95;
+        let max_counter: i32 = rand::rng().random_range(1..=30) + 165;
         let json_file_path = Path::new(TEMP_FOLDER)
             .join(BLOB_ASSIGNMENT_FOLDER_NAME)
             .join(BLOB_ASSIGNMENT_JSON_FILE_NAME);
