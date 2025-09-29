@@ -171,6 +171,28 @@ impl BlobAssignmentFiles {
         Ok(None)
     }
 
+    pub fn can_assign_new_blob(&self) -> anyhow::Result<bool> {
+        if let Some(queue_tail_blobhash) = self.inner_queue.last() {
+            if let Some(queue_tail_assignment) = self.assignments.get(queue_tail_blobhash) {
+                if queue_tail_assignment.status == BlobAssignmentStatus::Processed
+                    || queue_tail_assignment.status == BlobAssignmentStatus::Sent
+                    || queue_tail_assignment.status == BlobAssignmentStatus::Failed
+                {
+                    return Ok(true);
+                } else {
+                    return Ok(false);
+                }
+            } else {
+                return Err(format_error!(
+                    "Missing data for blob assignment: {}",
+                    queue_tail_blobhash
+                ));
+            }
+        } else {
+            return Ok(true);
+        }
+    }
+
     pub fn get_next_assignment_to_process(&self) -> anyhow::Result<Option<BlobAssignment>> {
         for blobhash in &self.inner_queue {
             if let Some(assignment) = self.assignments.get(blobhash) {

@@ -242,12 +242,15 @@ impl ContractsManager {
 
         let mut tx_builder = self.sequencer.assignBlob();
 
-        tx_builder = tx_builder.gas(10000000).nonce(nonce);
+        tx_builder = tx_builder
+            .max_priority_fee_per_gas(500000000)
+            .max_fee_per_gas(500000001)
+            .nonce(nonce);
 
         let receipt = tx_builder
             .send()
             .await?
-            .with_timeout(Some(Duration::from_millis(60000)))
+            .with_timeout(Some(Duration::from_millis(120000)))
             .get_receipt()
             .await?;
 

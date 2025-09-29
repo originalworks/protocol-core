@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     beacon_chain::BlobFinder,
-    constants::{EMPTY_BYTES32, MAX_BLOB_ASSIGNMENTS},
+    constants::EMPTY_BYTES32,
     contracts::{ContractsManager, LocalImageVersion},
 };
 
@@ -271,12 +271,12 @@ impl BlobAssignmentManager {
     }
 
     pub async fn try_new_assignment(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
-        let assignment_count: usize;
+        let can_assign_new_blob: bool;
         {
             let blob_assignment_files = self.blob_assignment_files.lock().await;
-            assignment_count = blob_assignment_files.inner_queue.len();
+            can_assign_new_blob = blob_assignment_files.can_assign_new_blob()?;
         }
-        if assignment_count >= MAX_BLOB_ASSIGNMENTS {
+        if can_assign_new_blob == false {
             log_info!("ASSIGNMENT LOOP: Max assignments reached, subscribing to contracts");
 
             Ok(self.contracts_manager.subscribe_to_contracts().await?)
