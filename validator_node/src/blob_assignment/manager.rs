@@ -277,9 +277,11 @@ impl BlobAssignmentManager {
             can_assign_new_blob = blob_assignment_files.can_assign_new_blob()?;
         }
         if can_assign_new_blob == false {
-            log_info!("ASSIGNMENT LOOP: Max assignments reached, subscribing to contracts");
-
-            Ok(self.contracts_manager.subscribe_to_contracts().await?)
+            log_info!(
+                "ASSIGNMENT LOOP: Max assignments reached, watching for changes in json file"
+            );
+            BlobAssignmentFiles::watch_json_file().await?;
+            Ok(BlobAssignmentStartingPoint::CleanStart)
         } else {
             log_info!("ASSIGNMENT LOOP: Max assignments not reached, checking next assignment");
 
