@@ -4,9 +4,9 @@ use sentry::User;
 use serde_json::json;
 use validator_node::Config;
 
-fn init_sentry(config: &Config) -> () {
+fn init_sentry(config: &Config) -> Option<sentry::ClientInitGuard> {
     if !config.disable_telemetry {
-        let _ = sentry::init((
+        let guard: sentry::ClientInitGuard = sentry::init((
             "https://8a5e3e61ac0beb391ad84b32086674df@o4508766269014016.ingest.us.sentry.io/4508805625217024",
             sentry::ClientOptions {
                 environment: Some(config.environment.to_owned().into()),
@@ -18,8 +18,10 @@ fn init_sentry(config: &Config) -> () {
             },
         ));
         log_info!("Telemetry has been initiated");
+        Some(guard)
     } else {
         log_info!("Telemetry has been disabled due to env var flag");
+        None
     }
 }
 
@@ -62,7 +64,7 @@ fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     let config = Config::build();
-    init_sentry(&config);
+    let _guard = init_sentry(&config);
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
