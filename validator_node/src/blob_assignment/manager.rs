@@ -132,8 +132,10 @@ impl BlobAssignmentManager {
                                 {
                                     let mut blob_assignment_files =
                                         self.blob_assignment_files.lock().await;
-                                    blob_assignment_files
-                                        .archive_head_assignment(receipt.transaction_hash)?;
+                                    blob_assignment_files.archive_assignment(
+                                        receipt.transaction_hash,
+                                        assigned_blob.blobhash,
+                                    )?;
                                 }
                             } else {
                                 log_warn!(

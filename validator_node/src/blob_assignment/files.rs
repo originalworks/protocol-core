@@ -204,7 +204,11 @@ impl BlobAssignmentFiles {
         Ok(None)
     }
 
-    pub fn archive_head_assignment(&mut self, tx_hash: FixedBytes<32>) -> anyhow::Result<()> {
+    pub fn archive_assignment(
+        &mut self,
+        tx_hash: FixedBytes<32>,
+        blobhash: FixedBytes<32>,
+    ) -> anyhow::Result<()> {
         let inner_queue_head = self
             .get_inner_queue_head()?
             .expect("Queue empty, can't archive head");
