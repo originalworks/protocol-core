@@ -171,6 +171,28 @@ impl BlobAssignmentFiles {
         Ok(None)
     }
 
+    pub fn can_assign_new_blob(&self) -> anyhow::Result<bool> {
+        if let Some(queue_tail_blobhash) = self.inner_queue.last() {
+            if let Some(queue_tail_assignment) = self.assignments.get(queue_tail_blobhash) {
+                if queue_tail_assignment.status == BlobAssignmentStatus::Processed
+                    || queue_tail_assignment.status == BlobAssignmentStatus::Sent
+                    || queue_tail_assignment.status == BlobAssignmentStatus::Failed
+                {
+                    return Ok(true);
+                } else {
+                    return Ok(false);
+                }
+            } else {
+                return Err(format_error!(
+                    "Missing data for blob assignment: {}",
+                    queue_tail_blobhash
+                ));
+            }
+        } else {
+            return Ok(true);
+        }
+    }
+
     pub fn get_next_assignment_to_process(&self) -> anyhow::Result<Option<BlobAssignment>> {
         for blobhash in &self.inner_queue {
             if let Some(assignment) = self.assignments.get(blobhash) {
@@ -182,7 +204,11 @@ impl BlobAssignmentFiles {
         Ok(None)
     }
 
-    pub fn archive_head_assignment(&mut self, tx_hash: FixedBytes<32>) -> anyhow::Result<()> {
+    pub fn archive_assignment(
+        &mut self,
+        tx_hash: FixedBytes<32>,
+        blobhash: FixedBytes<32>,
+    ) -> anyhow::Result<()> {
         let inner_queue_head = self
             .get_inner_queue_head()?
             .expect("Queue empty, can't archive head");
@@ -234,7 +260,7 @@ impl BlobAssignmentFiles {
     }
 
     pub async fn watch_json_file() -> anyhow::Result<()> {
-        let max_counter: i32 = rand::rng().random_range(1..=300) + 600;
+        let max_counter: i32 = rand::rng().random_range(1..=30) + 165;
         let json_file_path = Path::new(TEMP_FOLDER)
             .join(BLOB_ASSIGNMENT_FOLDER_NAME)
             .join(BLOB_ASSIGNMENT_JSON_FILE_NAME);

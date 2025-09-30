@@ -2,7 +2,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR="$SCRIPT_DIR/../../docker"
 
 echo "Launching Kurtosis local-eth-testnet..."
-kurtosis --enclave local-eth-testnet run github.com/ethpandaops/ethereum-package
+kurtosis --enclave local-eth-testnet run github.com/ethpandaops/ethereum-package@4.6.0
 sleep 20
 
 echo "Creating docker env file..."

@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     beacon_chain::BlobFinder,
-    constants::{EMPTY_BYTES32, MAX_BLOB_ASSIGNMENTS},
+    constants::EMPTY_BYTES32,
     contracts::{ContractsManager, LocalImageVersion},
 };
 
@@ -132,8 +132,10 @@ impl BlobAssignmentManager {
                                 {
                                     let mut blob_assignment_files =
                                         self.blob_assignment_files.lock().await;
-                                    blob_assignment_files
-                                        .archive_head_assignment(receipt.transaction_hash)?;
+                                    blob_assignment_files.archive_assignment(
+                                        receipt.transaction_hash,
+                                        assigned_blob.blobhash,
+                                    )?;
                                 }
                             } else {
                                 log_warn!(
@@ -271,15 +273,17 @@ impl BlobAssignmentManager {
     }
 
     pub async fn try_new_assignment(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
-        let assignment_count: usize;
+        let can_assign_new_blob: bool;
         {
             let blob_assignment_files = self.blob_assignment_files.lock().await;
-            assignment_count = blob_assignment_files.inner_queue.len();
+            can_assign_new_blob = blob_assignment_files.can_assign_new_blob()?;
         }
-        if assignment_count >= MAX_BLOB_ASSIGNMENTS {
-            log_info!("ASSIGNMENT LOOP: Max assignments reached, subscribing to contracts");
-
-            Ok(self.contracts_manager.subscribe_to_contracts().await?)
+        if can_assign_new_blob == false {
+            log_info!(
+                "ASSIGNMENT LOOP: Max assignments reached, watching for changes in json file"
+            );
+            BlobAssignmentFiles::watch_json_file().await?;
+            Ok(BlobAssignmentStartingPoint::CleanStart)
         } else {
             log_info!("ASSIGNMENT LOOP: Max assignments not reached, checking next assignment");
 
