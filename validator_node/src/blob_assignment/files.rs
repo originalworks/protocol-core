@@ -209,13 +209,16 @@ impl BlobAssignmentFiles {
         tx_hash: FixedBytes<32>,
         blobhash: FixedBytes<32>,
     ) -> anyhow::Result<()> {
-        let inner_queue_head = self
-            .get_inner_queue_head()?
-            .expect("Queue empty, can't archive head");
-        log_info!("Archiving assignment: {}", inner_queue_head.blobhash);
-        self.archived.push(inner_queue_head.blobhash);
-        self.inner_queue.remove(0);
-        if let Some(assignment) = self.assignments.get_mut(&inner_queue_head.blobhash) {
+        log_info!("Archiving assignment: {}", blobhash);
+
+        self.archived.push(blobhash);
+        let assignment_index = self
+            .inner_queue
+            .iter()
+            .position(|x| x == &blobhash)
+            .expect("Archived element not found in the inner queue");
+        self.inner_queue.remove(assignment_index);
+        if let Some(assignment) = self.assignments.get_mut(&blobhash) {
             assignment.status = BlobAssignmentStatus::Sent;
             assignment.proof_submission_tx_hash = Some(tx_hash);
         }
