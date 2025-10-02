@@ -92,8 +92,17 @@ impl MessageStorage {
 
         Ok(())
     }
+    fn ensure_trailing_slash(s: &String) -> String {
+        if s.ends_with('/') {
+            s.clone()
+        } else {
+            format!("{}/", s)
+        }
+    }
 
-    pub async fn sync_message_folder(&self, s3_message_folder: &String) -> Result<String> {
+    pub async fn sync_message_folder(&self, _s3_message_folder: &String) -> Result<String> {
+        let s3_message_folder = &MessageStorage::ensure_trailing_slash(_s3_message_folder);
+
         let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
             .file_name()
             .expect(format!("S3 message folder has no filename {}", &s3_message_folder).as_str())
