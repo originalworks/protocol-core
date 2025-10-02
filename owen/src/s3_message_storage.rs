@@ -42,7 +42,7 @@ impl MessageStorage {
         let (_, s3_parent_dir_file) = s3_folder_object_key
             .split_once(s3_message_folder)
             .expect("Could not split s3 folder key");
-        let local_object_path = format!("{local_message_folder}{s3_parent_dir_file}");
+        let local_object_path = format!("{local_message_folder}/{s3_parent_dir_file}");
         Ok(local_object_path)
     }
 
