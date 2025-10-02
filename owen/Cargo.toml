@@ -1,6 +1,6 @@
 [package]
 name = "owen"
-version = "0.2.32"
+version = "0.2.33"
 edition = "2021"
 default-run = "owen"
 
