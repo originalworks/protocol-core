@@ -84,3 +84,5 @@ Resources:
 Outputs:
   OwenBlobsQueueUrl:
     Value: !Ref OwenBlobsQueue
+  OwenBlobsQueueArn:
+    Value: !GetAtt OwenBlobsQueue.Arn
