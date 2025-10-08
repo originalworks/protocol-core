@@ -146,7 +146,7 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource:
-                  - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+                  - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueArn
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret
