@@ -1,6 +1,7 @@
 use alloy::primitives::{Bytes, FixedBytes};
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_sdk_s3::primitives::ByteStream;
+use log_macros::log_info;
 
 use crate::{blob::BlobTransactionData, constants::BLOBS_QUEUE_MESSAGE_GROUP_ID};
 use serde::{Deserialize, Serialize};
@@ -47,11 +48,7 @@ impl BlobsQueueProducer {
         let blobhash: FixedBytes<32> = commitment_to_blobhash(&kzg_commitment);
 
         self.send_to_s3(&transaction_data, &blobhash).await?;
-        self.enqueue(&blobhash).await?;
-
-        println!("enqueue blob here:");
-        println!("---send to s3---");
-        println!("---send pointer to sqs---");
+        self.send_to_sqs(&blobhash).await?;
         Ok(())
     }
 
@@ -60,6 +57,10 @@ impl BlobsQueueProducer {
         transaction_data: &BlobTransactionData,
         blobhash: &FixedBytes<32>,
     ) -> anyhow::Result<()> {
+        log_info!(
+            "Sending transaction data to S3 for: {}",
+            blobhash.to_string()
+        );
         let json_string = serde_json::to_string_pretty(&transaction_data)?;
 
         let put_object_output = self
@@ -76,7 +77,8 @@ impl BlobsQueueProducer {
         Ok(())
     }
 
-    async fn enqueue(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<()> {
+    async fn send_to_sqs(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<()> {
+        log_info!("Enqueue: {}", blobhash.to_string());
         let blobs_queue_message_body = BlobsQueueMessageBody {
             blobhash: blobhash.to_string(),
         };
