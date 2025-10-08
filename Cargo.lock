@@ -1589,9 +1589,9 @@ dependencies = [
 
 [[package]]
 name = "aws-credential-types"
-version = "1.2.6"
+version = "1.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d025db5d9f52cbc413b167136afb3d8aeea708c0d8884783cf6253be5e22f6f2"
+checksum = "799a1290207254984cb7c05245111bc77958b92a3c9bb449598044b36341cce6"
 dependencies = [
  "aws-smithy-async",
  "aws-smithy-runtime-api",
@@ -1624,9 +1624,9 @@ dependencies = [
 
 [[package]]
 name = "aws-runtime"
-version = "1.5.10"
+version = "1.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c034a1bc1d70e16e7f4e4caf7e9f7693e4c9c24cd91cf17c2a0b21abaebc7c8b"
+checksum = "2e1ed337dabcf765ad5f2fb426f13af22d576328aaf09eac8f70953530798ec0"
 dependencies = [
  "aws-credential-types",
  "aws-sigv4",
@@ -1749,9 +1749,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-sqs"
-version = "1.83.0"
+version = "1.85.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b3e9f9a923e6c20272c40de609faa8624b687d203bc77df99ccb86a5de5944b"
+checksum = "adbb6f1f258aace7ae08c897e695dad2dcc2d2b85509f1391e91c6167e09dc51"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -1897,9 +1897,9 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-eventstream"
-version = "0.60.10"
+version = "0.60.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "604c7aec361252b8f1c871a7641d5e0ba3a7f5a586e51b66bc9510a5519594d9"
+checksum = "182b03393e8c677347fb5705a04a9392695d47d20ef0a2f8cfe28c8e6b9b9778"
 dependencies = [
  "aws-smithy-types",
  "bytes",
@@ -5627,6 +5627,7 @@ dependencies = [
  "aws-sdk-kms",
  "aws-sdk-s3",
  "aws-sdk-secretsmanager",
+ "aws-sdk-sqs",
  "aws_lambda_events",
  "blob_codec",
  "c-kzg",
@@ -5649,6 +5650,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_valid",
+ "sha2 0.10.9",
  "tokio",
  "tokio-util",
 ]

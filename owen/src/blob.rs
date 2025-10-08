@@ -1,10 +1,12 @@
 use alloy::consensus::BlobTransactionSidecar;
 use blob_codec::BlobCodec;
-use c_kzg::{ethereum_kzg_settings, Blob, KzgCommitment};
+use c_kzg::{ethereum_kzg_settings, Blob};
 use log_macros::{format_error, log_info};
+use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize, Serialize)]
 pub struct BlobTransactionData {
-    pub kzg_commitment: KzgCommitment,
+    pub kzg_commitment: Vec<u8>,
     pub blob_sidecar: BlobTransactionSidecar,
     pub blob_sha2: [u8; 32],
 }
@@ -37,7 +39,7 @@ impl BlobTransactionData {
             );
 
             Ok(BlobTransactionData {
-                kzg_commitment,
+                kzg_commitment: kzg_commitment.to_vec(),
                 blob_sidecar,
                 blob_sha2,
             })

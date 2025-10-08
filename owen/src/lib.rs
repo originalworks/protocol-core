@@ -1,3 +1,6 @@
+#[cfg(feature = "aws-integration")]
+mod blobs_queue;
+
 mod blob;
 pub mod constants;
 mod contracts;
@@ -50,6 +53,7 @@ pub struct Config {
     pub ipfs_api_base_url: String,
     pub use_kms: bool,
     pub signer_kms_id: Option<String>,
+    pub use_batch_sender: bool,
 }
 
 impl Config {
@@ -113,6 +117,13 @@ impl Config {
             "1" | "true"
         );
 
+        let use_batch_sender = matches!(
+            std::env::var("USE_BATCH_SENDER")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+
         let mut signer_kms_id: Option<String> = None;
 
         if use_kms {
@@ -133,6 +144,7 @@ impl Config {
             storacha_bridge_url,
             use_kms,
             signer_kms_id,
+            use_batch_sender,
         };
 
         config
@@ -149,7 +161,20 @@ pub async fn run(
 
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
 
-    contracts_manager.send_blob(blob_transaction_data).await?;
+    if config.use_batch_sender == true {
+        if cfg!(feature = "aws-integration") {
+            let blobs_queue_producer = blobs_queue::BlobsQueueProducer::build().await?;
+            blobs_queue_producer
+                .enqueue_blob(blob_transaction_data)
+                .await?;
+        } else {
+            panic!(
+                "'USE_BATCH_SENDER' .env flag works only with 'aws-integration' feature enabled"
+            );
+        }
+    } else {
+        contracts_manager.send_blob(blob_transaction_data).await?;
+    }
 
     Ok(message_dir_processing_log)
 }

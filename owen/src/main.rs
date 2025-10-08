@@ -1,5 +1,3 @@
-use core::panic;
-
 use anyhow::Result;
 use owen::{
     logger::{init_logging, init_sentry},

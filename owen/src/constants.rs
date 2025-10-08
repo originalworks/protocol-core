@@ -9,6 +9,9 @@ pub const MAX_DDEX_PER_BLOB: i32 = 50;
 #[cfg(any(feature = "local-s3"))]
 pub const DEFAULT_DATABASE_NAME: &str = "sqlite";
 
+#[cfg(any(feature = "aws-integration"))]
+pub const BLOBS_QUEUE_MESSAGE_GROUP_ID: &str = "OwenBlobsQueueId";
+
 #[cfg(any(feature = "local-s3"))]
 pub const DEFAULT_TABLE_NAME: &str = "message_folders";
 
