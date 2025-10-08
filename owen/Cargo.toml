@@ -53,7 +53,6 @@ aws-integration = [
     "dep:aws-sdk-secretsmanager",
     "dep:aws-sdk-sqs",
     "dep:sha2",
-
 ]
 
 local-s3 = ["dep:aws-sdk-s3", "dep:rusqlite"]

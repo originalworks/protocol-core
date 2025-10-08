@@ -1,11 +1,16 @@
 use alloy::primitives::{Bytes, FixedBytes};
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_sdk_s3::primitives::ByteStream;
-// use c_kzg::KzgCommitment;
 
 use crate::{blob::BlobTransactionData, constants::BLOBS_QUEUE_MESSAGE_GROUP_ID};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{env, fs};
+use std::env;
+
+#[derive(Deserialize, Serialize)]
+pub struct BlobsQueueMessageBody {
+    blobhash: String,
+}
 
 pub struct BlobsQueueProducer {
     queue_url: String,
@@ -66,18 +71,25 @@ impl BlobsQueueProducer {
             .content_type("application/json")
             .send()
             .await?;
+
+        println!("put_object_output: {put_object_output:?}");
         Ok(())
     }
 
     async fn enqueue(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<()> {
+        let blobs_queue_message_body = BlobsQueueMessageBody {
+            blobhash: blobhash.to_string(),
+        };
+        let json_string = serde_json::to_string_pretty(&blobs_queue_message_body)?;
         let send_message_output = self
             .sqs_client
             .send_message()
             .queue_url(&self.queue_url)
-            .message_body("")
+            .message_body(json_string)
             .message_group_id(BLOBS_QUEUE_MESSAGE_GROUP_ID)
             .send()
             .await?;
+        println!("send_message_output: {send_message_output:?}");
         Ok(())
     }
 }
