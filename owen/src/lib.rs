@@ -163,7 +163,9 @@ pub async fn run(
 
     if config.use_batch_sender == true {
         if cfg!(feature = "aws-integration") {
+            #[cfg(feature = "aws-integration")]
             let blobs_queue_producer = blobs_queue::BlobsQueueProducer::build().await?;
+            #[cfg(feature = "aws-integration")]
             blobs_queue_producer
                 .enqueue_blob(blob_transaction_data)
                 .await?;
