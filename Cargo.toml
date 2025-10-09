@@ -1,7 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "aws/aws_queue_consumer", "aws/blobs_batch_sender",
+    "aws/aws_queue_consumer",
+    "aws/blobs_batch_sender",
     "blob_codec",
     "ddex_parser",
     "log_macros",
@@ -14,6 +15,7 @@ members = [
 log_macros = { path = "./log_macros" }
 blob_codec = { path = "./blob_codec" }
 ddex_parser = { path = "./ddex_parser" }
+owen = { path = "./owen" }
 prover = { path = "./prover" }
 log = "0.4.27"
 thiserror = "2.0.12"

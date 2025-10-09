@@ -4,10 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-aws-config = "1.8.6"
-aws-sdk-sqs = "1.83.0"
+aws-config = { version = "1.8.6", features = ["behavior-version-latest"] }
 aws_lambda_events = { version = "0.17.0", default-features = false, features = [
     "sqs",
 ] }
 lambda_runtime = "0.14.3"
 tokio = { workspace = true }
+owen = { workspace = true, features = ["aws-integration"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+aws-sdk-s3 = "1.98.0"

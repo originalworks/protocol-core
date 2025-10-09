@@ -10,7 +10,7 @@ use std::env;
 
 #[derive(Deserialize, Serialize)]
 pub struct BlobsQueueMessageBody {
-    blobhash: String,
+    pub blobhash: String,
 }
 
 pub struct BlobsQueueProducer {

@@ -1,4 +1,5 @@
 mod event_handler;
+mod s3;
 use event_handler::function_handler;
 use lambda_runtime::{Error, run, service_fn, tracing};
 
