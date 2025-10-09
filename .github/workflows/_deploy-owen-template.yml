@@ -53,7 +53,7 @@ jobs:
         working-directory: aws/blobs_batch_sender
         run: |
           source $HOME/.cargo/env
-          cargo lambda build --release
+          cargo lambda build --release --compiler cargo
 
       - name: "Build aws_queue_consumer"
         working-directory: aws/aws_queue_consumer
