@@ -2309,9 +2309,12 @@ name = "blobs_batch_sender"
 version = "0.1.0"
 dependencies = [
  "aws-config",
- "aws-sdk-sqs",
+ "aws-sdk-s3",
  "aws_lambda_events",
  "lambda_runtime",
+ "owen",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

@@ -1,7 +1,7 @@
 #[cfg(feature = "aws-integration")]
-mod blobs_queue;
+pub mod blobs_queue;
 
-mod blob;
+pub mod blob;
 pub mod constants;
 mod contracts;
 mod image_processor;
