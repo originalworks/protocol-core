@@ -8,17 +8,20 @@ mod image_processor;
 mod ipfs;
 pub mod logger;
 pub mod output_generator;
+mod wallet;
 use alloy::primitives::Address;
 use blob::BlobTransactionData;
 use contracts::ContractsManager;
 use ddex_parser::ParserError;
 pub use log;
-use log_macros::log_error;
+use log_macros::{format_error, log_error};
 use output_generator::MessageDirProcessingContext;
 use sentry::User;
 use serde_json::json;
 use std::env;
 use std::str::FromStr;
+
+use crate::wallet::OwenWallet;
 
 #[cfg(any(feature = "aws-integration", feature = "local-s3"))]
 pub mod s3_message_storage;
@@ -41,7 +44,7 @@ pub enum IpfsInterface {
 #[derive(Debug, serde::Serialize, Clone)]
 pub struct Config {
     pub rpc_url: String,
-    pub private_key: String,
+    pub private_key: Option<String>,
     pub folder_path: String,
     pub local_ipfs: bool,
     pub output_files_dir: String,
@@ -77,7 +80,6 @@ impl Config {
             .unwrap_or_else(|| Config::get_env_var("INPUT_FILES_DIR").to_string());
 
         let rpc_url = Config::get_env_var("RPC_URL");
-        let private_key = Config::get_env_var("PRIVATE_KEY");
         let local_ipfs = matches!(
             std::env::var("LOCAL_IPFS")
                 .unwrap_or_else(|_| "false".to_string())
@@ -110,6 +112,8 @@ impl Config {
         let ipfs_api_base_url = env::var("IPFS_API_BASE_URL")
             .unwrap_or_else(|_| constants::IPFS_API_BASE_URL.to_string());
 
+        let mut signer_kms_id = None;
+        let mut private_key = None;
         let use_kms = matches!(
             std::env::var("USE_KMS")
                 .unwrap_or_else(|_| "false".to_string())
@@ -117,18 +121,18 @@ impl Config {
             "1" | "true"
         );
 
+        if use_kms {
+            signer_kms_id = Some(Config::get_env_var("SIGNER_KMS_ID"));
+        } else {
+            private_key = Some(Config::get_env_var("PRIVATE_KEY"));
+        }
+
         let use_batch_sender = matches!(
             std::env::var("USE_BATCH_SENDER")
                 .unwrap_or_else(|_| "false".to_string())
                 .as_str(),
             "1" | "true"
         );
-
-        let mut signer_kms_id: Option<String> = None;
-
-        if use_kms {
-            signer_kms_id = Some(Config::get_env_var("SIGNER_KMS_ID"));
-        }
 
         let config = Config {
             rpc_url,
@@ -149,13 +153,39 @@ impl Config {
 
         config
     }
+
+    fn try_private_key(&self) -> anyhow::Result<&String> {
+        if self.use_kms == false {
+            self.private_key
+                .as_ref()
+                .ok_or_else(|| format_error!("Missing private_key"))
+        } else {
+            return Err(format_error!(
+                "private_key not available with USE_KMS=true flag"
+            ));
+        }
+    }
+
+    fn try_signer_kms_id(&self) -> anyhow::Result<&String> {
+        if self.use_kms == true {
+            self.signer_kms_id
+                .as_ref()
+                .ok_or_else(|| format_error!("Missing signer_kms_id"))
+        } else {
+            return Err(format_error!(
+                "signer_kms_id not available without USE_KMS=true flag"
+            ));
+        }
+    }
 }
 
 pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
-    let contracts_manager = ContractsManager::build(&config).await?;
+    let owen_wallet = OwenWallet::build(&config).await?;
+    let contracts_manager = ContractsManager::build(&config, &owen_wallet).await?;
     contracts_manager.check_image_compatibility().await?;
 
-    let message_dir_processing_log = output_generator::create_output_files(&config).await?;
+    let message_dir_processing_log =
+        output_generator::create_output_files(&config, &owen_wallet).await?;
 
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
 
@@ -185,10 +215,6 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
             username: Some(config.username.to_owned()),
             ..Default::default()
         }));
-
-        let mut cloned_config = config.clone();
-        cloned_config.private_key = "***".to_string();
-        scope.set_extra("config", json!(cloned_config));
     });
 
     let message_dir_processing_context = run(&config).await.map_err(|e| {
