@@ -1,6 +1,7 @@
 use crate::image_processor::optimize_image;
 use crate::ipfs::IpfsManager;
 use crate::logger::report_validation_error;
+use crate::wallet::OwenWallet;
 use crate::Config;
 use anyhow::Context;
 use blob_codec::BlobEstimator;
@@ -25,7 +26,7 @@ pub struct MessageDirProcessingContext {
 async fn pin_and_write_cid(
     message_dir_processing_context: &mut MessageDirProcessingContext,
     new_release_message: &mut NewReleaseMessage,
-    ipfs_manager: &IpfsManager,
+    ipfs_manager: &IpfsManager<'_>,
 ) -> anyhow::Result<()> {
     for image_resource in &mut new_release_message.resource_list.images {
         if let Some(technical_details) = image_resource.technical_details.get_mut(0) {
@@ -57,7 +58,7 @@ fn is_xml_file_empty(file_path: &Path) -> anyhow::Result<bool> {
 
 async fn process_message_folder(
     message_folder_path: PathBuf,
-    ipfs_manager: &IpfsManager,
+    ipfs_manager: &IpfsManager<'_>,
     config: &Config,
 ) -> anyhow::Result<MessageDirProcessingContext> {
     let mut message_dir_processing_context = MessageDirProcessingContext {
@@ -197,6 +198,7 @@ async fn process_message_folder(
 
 pub async fn create_output_files(
     config: &Config,
+    owen_wallet: &OwenWallet,
 ) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
     log_info!("Creating output files");
     let mut result: Vec<MessageDirProcessingContext> = Vec::new();
@@ -225,7 +227,7 @@ pub async fn create_output_files(
             )
         })?;
 
-        let ipfs_manager = IpfsManager::build(config).await?;
+        let ipfs_manager = IpfsManager::build(config, owen_wallet).await?;
 
         for message_folder in message_folders {
             empty_root_folder = false;
@@ -308,7 +310,7 @@ mod tests {
     async fn create_output_files_with_cids() -> anyhow::Result<()> {
         let config = Config {
             rpc_url: String::new(),
-            private_key: String::new(),
+            private_key: None,
             folder_path: String::from_str("./tests").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
@@ -322,7 +324,8 @@ mod tests {
             signer_kms_id: None,
             use_batch_sender: false,
         };
-        let processing_context_vec = create_output_files(&config).await?;
+        let owen_wallet = OwenWallet::build(&config).await?;
+        let processing_context_vec = create_output_files(&config, &owen_wallet).await?;
 
         let processed_count = processing_context_vec.len();
 
@@ -344,7 +347,7 @@ mod tests {
     async fn error_when_empty_directory() {
         let config = Config {
             rpc_url: String::new(),
-            private_key: String::new(),
+            private_key: None,
             folder_path: String::from_str("./tests/empty_dir").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
@@ -359,8 +362,8 @@ mod tests {
             use_batch_sender: false,
         };
         fs::create_dir_all(&config.folder_path).unwrap();
-
-        create_output_files(&config).await.unwrap();
+        let owen_wallet = OwenWallet::build(&config).await.unwrap();
+        create_output_files(&config, &owen_wallet).await.unwrap();
         fs::remove_dir_all(&config.folder_path).unwrap();
         ()
     }
