@@ -4,11 +4,6 @@ use owen::{
     run_with_sentry, Config,
 };
 
-async fn run(config: &Config) -> Result<()> {
-    run_with_sentry(&config).await?;
-    anyhow::Ok(())
-}
-
 fn main() -> Result<()> {
     init_logging()?;
     let config = Config::build();
@@ -18,5 +13,6 @@ fn main() -> Result<()> {
         .enable_all()
         .build()
         .unwrap()
-        .block_on(run(&config))
+        .block_on(run_with_sentry(&config))
+        .map(|_| ())
 }

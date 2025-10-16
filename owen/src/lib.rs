@@ -151,10 +151,8 @@ impl Config {
     }
 }
 
-pub async fn run(
-    config: &Config,
-    contracts_manager: &ContractsManager,
-) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+    let contracts_manager = ContractsManager::build(&config).await?;
     contracts_manager.check_image_compatibility().await?;
 
     let message_dir_processing_log = output_generator::create_output_files(&config).await?;
@@ -193,9 +191,7 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         scope.set_extra("config", json!(cloned_config));
     });
 
-    let contracts_manager = ContractsManager::build(&config).await?;
-
-    let message_dir_processing_context = run(&config, &contracts_manager).await.map_err(|e| {
+    let message_dir_processing_context = run(&config).await.map_err(|e| {
         sentry::configure_scope(|scope| {
             scope.set_tag("error_type", {
                 if e.is::<ParserError>() {
@@ -210,5 +206,5 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         log_error!("{e}")
     })?;
 
-    Ok(message_dir_processing_context)
+    anyhow::Ok(message_dir_processing_context)
 }
