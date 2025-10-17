@@ -88,11 +88,11 @@ async fn function_handler(
     println!("synced directories: {s3_message_folders:?}");
 
     match owen::run_with_sentry(&owen_config).await {
-        Ok(message_processing_context) => {
+        Ok(ddex_messages) => {
             queue
                 .sync_message_folder_statuses(
                     local_to_s3_folder_mapping,
-                    message_processing_context,
+                    ddex_messages,
                     s3_message_folders,
                 )
                 .await

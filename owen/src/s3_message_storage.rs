@@ -5,7 +5,7 @@ use log_macros::log_warn;
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
-use crate::output_generator::MessageDirProcessingContext;
+use crate::output_generator::DdexMessage;
 
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
@@ -267,7 +267,7 @@ impl MessageStorage {
 
     pub async fn clear_s3_folders(
         &self,
-        s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext>,
+        s3_folder_to_ddex_message_map: HashMap<String, DdexMessage>,
         s3_message_folders: &Vec<String>,
     ) -> Result<()> {
         let mut objects_to_delete = Vec::new();
@@ -281,14 +281,14 @@ impl MessageStorage {
                 .send()
                 .await?;
 
-            let processing_context = s3_folder_to_processing_context_map
+            let ddex_message = s3_folder_to_ddex_message_map
                 .get(s3_message_folder)
                 .expect("Could not retrieve processing context");
             if let Some(folder_contents) = folder_objects.contents {
                 for folder_object in folder_contents {
                     if let Some(key) = folder_object.key {
                         objects_to_delete.push(ObjectIdentifier::builder().key(&key).build()?);
-                        if processing_context.excluded {
+                        if ddex_message.excluded {
                             objects_to_copy_to_fallback_bucket.push(key);
                         }
                     }
