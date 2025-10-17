@@ -216,7 +216,7 @@ pub async fn create_output_files(
         })
     })?;
 
-    let input_folder_path = Path::new(&config.folder_path);
+    let input_folder_path = Path::new(&config.input_files_dir);
     let mut empty_root_folder = true;
 
     if input_folder_path.is_dir() {
@@ -238,19 +238,19 @@ pub async fn create_output_files(
         }
     } else {
         return Err(format_error!(
-            "Provided folder_path is not a directory: {}",
+            "Provided input_files_dir is not a directory: {}",
             input_folder_path.to_string_lossy().to_string()
         ))?;
     }
     if empty_root_folder {
         return Err(format_error!(
-            "Folder under provided folder_path is empty: {}",
-            config.folder_path.to_string()
+            "Folder under provided input_files_dir is empty: {}",
+            config.input_files_dir.to_string()
         ))?;
     }
 
     let blob_estimator = BlobEstimator::default();
-    blob_estimator.estimate_and_check(Path::new(&config.folder_path))?;
+    blob_estimator.estimate_and_check(Path::new(&config.input_files_dir))?;
 
     print_output(&result)?;
     Ok(result)
@@ -311,7 +311,7 @@ mod tests {
         let config = Config {
             rpc_url: String::new(),
             private_key: None,
-            folder_path: String::from_str("./tests").unwrap(),
+            input_files_dir: String::from_str("./tests").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
@@ -348,7 +348,7 @@ mod tests {
         let config = Config {
             rpc_url: String::new(),
             private_key: None,
-            folder_path: String::from_str("./tests/empty_dir").unwrap(),
+            input_files_dir: String::from_str("./tests/empty_dir").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
             environment: String::from_str("dev").unwrap(),
@@ -361,10 +361,10 @@ mod tests {
             signer_kms_id: None,
             use_batch_sender: false,
         };
-        fs::create_dir_all(&config.folder_path).unwrap();
+        fs::create_dir_all(&config.input_files_dir).unwrap();
         let owen_wallet = OwenWallet::build(&config).await.unwrap();
         create_output_files(&config, &owen_wallet).await.unwrap();
-        fs::remove_dir_all(&config.folder_path).unwrap();
+        fs::remove_dir_all(&config.input_files_dir).unwrap();
         ()
     }
 }

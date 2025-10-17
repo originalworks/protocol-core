@@ -45,7 +45,7 @@ pub enum IpfsInterface {
 pub struct Config {
     pub rpc_url: String,
     pub private_key: Option<String>,
-    pub folder_path: String,
+    pub input_files_dir: String,
     pub local_ipfs: bool,
     pub output_files_dir: String,
     pub username: String,
@@ -75,7 +75,7 @@ impl Config {
         let mut args = std::env::args();
         args.next();
 
-        let folder_path = args
+        let input_files_dir = args
             .next()
             .unwrap_or_else(|| Config::get_env_var("INPUT_FILES_DIR").to_string());
 
@@ -137,7 +137,7 @@ impl Config {
         let config = Config {
             rpc_url,
             private_key,
-            folder_path,
+            input_files_dir,
             local_ipfs,
             ipfs_api_base_url,
             output_files_dir,
