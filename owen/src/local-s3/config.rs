@@ -1,6 +1,6 @@
+use anyhow::Result;
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion, Region, SdkConfig};
 use std::env;
-
 pub struct LocalS3Config {
     pub owen_config: owen::Config,
     pub aws_sdk_config: SdkConfig,
@@ -11,8 +11,8 @@ impl LocalS3Config {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
 
-    pub async fn build() -> Self {
-        let owen_config = owen::Config::build();
+    pub async fn build() -> Result<Self> {
+        let owen_config = owen::Config::build()?;
         let aws_default_region = LocalS3Config::get_env_var("AWS_DEFAULT_REGION");
 
         let region_provider =
@@ -23,9 +23,9 @@ impl LocalS3Config {
             .load()
             .await;
 
-        Self {
+        Ok(Self {
             owen_config,
             aws_sdk_config,
-        }
+        })
     }
 }

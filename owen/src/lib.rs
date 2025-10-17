@@ -65,7 +65,7 @@ impl Config {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
 
-    pub fn build() -> Config {
+    pub fn build() -> anyhow::Result<Config> {
         if is_local() {
             println!("Running local setup");
             dotenvy::from_filename(".env.local").unwrap();
@@ -152,7 +152,7 @@ impl Config {
             use_batch_sender,
         };
 
-        config
+        Ok(config)
     }
 
     fn try_private_key(&self) -> anyhow::Result<&String> {

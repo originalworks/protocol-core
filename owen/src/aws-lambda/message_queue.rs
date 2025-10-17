@@ -21,8 +21,8 @@ impl MessageQueue {
     pub fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Self {
-        Self {
+    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Result<Self> {
+        Ok(Self {
             client: aws_sdk_dynamodb::Client::new(aws_main_config),
             table_name: MessageQueue::get_env_var("MESSAGE_STATUS_TABLE_NAME"),
             index_name: MessageQueue::get_env_var("PROCESSING_STATUS_INDEX_NAME"),
@@ -36,7 +36,7 @@ impl MessageQueue {
             reserved_status_value: MessageQueue::get_env_var("RESERVED_STATUS_VALUE"),
             rejected_status_value: MessageQueue::get_env_var("REJECTED_STATUS_VALUE"),
             owen_instance_name: MessageQueue::get_env_var("USERNAME"),
-        }
+        })
     }
 
     pub async fn reserve_message_folder(&self) -> Result<Option<String>> {

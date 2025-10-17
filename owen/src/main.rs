@@ -6,8 +6,8 @@ use owen::{
 
 fn main() -> Result<()> {
     init_logging()?;
-    let config = Config::build();
-    let _guard = init_sentry(&config);
+    let config = Config::build()?;
+    let _guard = init_sentry();
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
