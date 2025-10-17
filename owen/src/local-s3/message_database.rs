@@ -12,7 +12,7 @@ pub struct MessageDatabase {
 }
 
 impl MessageDatabase {
-    pub fn build() -> Self {
+    pub fn build() -> Result<Self> {
         let database_name =
             std::env::var("DATABASE_NAME").unwrap_or_else(|_| DEFAULT_DATABASE_NAME.to_string());
 
@@ -39,10 +39,10 @@ impl MessageDatabase {
             .map_err(|err| format!("Create database table error: {}", err))
             .expect("Create database table: unknown error");
 
-        Self {
+        Ok(Self {
             connection,
             table_name,
-        }
+        })
     }
 
     pub fn save_message_folders(

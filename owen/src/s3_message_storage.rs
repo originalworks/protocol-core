@@ -21,8 +21,8 @@ impl MessageStorage {
     pub fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Self {
-        Self {
+    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Result<Self> {
+        Ok(Self {
             client: aws_sdk_s3::Client::new(aws_main_config),
             bucket_name: MessageStorage::get_env_var("MESSAGES_BUCKET_NAME"),
             input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
@@ -30,7 +30,7 @@ impl MessageStorage {
             fallback_bucket_name: MessageStorage::get_env_var("FALLBACK_BUCKET_NAME"),
             local_to_s3_folder_mapping: HashMap::new(),
             s3_message_folders: vec![],
-        }
+        })
     }
 
     fn build_local_object_path(

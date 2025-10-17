@@ -15,12 +15,12 @@ async fn main() -> Result<()> {
     let LocalS3Config {
         owen_config,
         aws_sdk_config,
-    } = LocalS3Config::build().await;
+    } = LocalS3Config::build().await?;
 
-    let _guard = init_sentry(&owen_config);
+    let _guard = init_sentry();
 
-    let mut storage = owen::s3_message_storage::MessageStorage::build(&aws_sdk_config);
-    let mut database = message_database::MessageDatabase::build();
+    let mut storage = owen::s3_message_storage::MessageStorage::build(&aws_sdk_config)?;
+    let mut database = message_database::MessageDatabase::build()?;
 
     storage.clear_input_folder()?;
     let max_s3_message_folders: Vec<String> = storage
