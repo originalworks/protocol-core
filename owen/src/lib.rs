@@ -15,12 +15,13 @@ use contracts::ContractsManager;
 use ddex_parser::ParserError;
 pub use log;
 use log_macros::{format_error, log_error};
-use output_generator::MessageDirProcessingContext;
 use sentry::User;
 use serde_json::json;
 use std::env;
 use std::str::FromStr;
 
+use crate::ipfs::IpfsManager;
+use crate::output_generator::{DdexMessage, OutputFilesGenerator};
 use crate::wallet::OwenWallet;
 
 #[cfg(any(feature = "aws-integration", feature = "local-s3"))]
@@ -45,7 +46,7 @@ pub enum IpfsInterface {
 pub struct Config {
     pub rpc_url: String,
     pub private_key: Option<String>,
-    pub folder_path: String,
+    pub input_files_dir: String,
     pub local_ipfs: bool,
     pub output_files_dir: String,
     pub username: String,
@@ -75,7 +76,7 @@ impl Config {
         let mut args = std::env::args();
         args.next();
 
-        let folder_path = args
+        let input_files_dir = args
             .next()
             .unwrap_or_else(|| Config::get_env_var("INPUT_FILES_DIR").to_string());
 
@@ -137,7 +138,7 @@ impl Config {
         let config = Config {
             rpc_url,
             private_key,
-            folder_path,
+            input_files_dir,
             local_ipfs,
             ipfs_api_base_url,
             output_files_dir,
@@ -179,13 +180,14 @@ impl Config {
     }
 }
 
-pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+pub async fn run(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
     let owen_wallet = OwenWallet::build(&config).await?;
     let contracts_manager = ContractsManager::build(&config, &owen_wallet).await?;
     contracts_manager.check_image_compatibility().await?;
 
-    let message_dir_processing_log =
-        output_generator::create_output_files(&config, &owen_wallet).await?;
+    let ipfs_manager = IpfsManager::build(&config, &owen_wallet).await?;
+    let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
+    let ddex_messages = output_files_generator.generate_files().await?;
 
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
 
@@ -205,11 +207,10 @@ pub async fn run(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingCont
     } else {
         contracts_manager.send_blob(blob_transaction_data).await?;
     }
-
-    Ok(message_dir_processing_log)
+    Ok(ddex_messages)
 }
 
-pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirProcessingContext>> {
+pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
     sentry::configure_scope(|scope| {
         scope.set_user(Some(User {
             username: Some(config.username.to_owned()),
@@ -217,7 +218,7 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         }));
     });
 
-    let message_dir_processing_context = run(&config).await.map_err(|e| {
+    let ddex_messages = run(&config).await.map_err(|e| {
         sentry::configure_scope(|scope| {
             scope.set_tag("error_type", {
                 if e.is::<ParserError>() {
@@ -232,5 +233,5 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<MessageDirPr
         log_error!("{e}")
     })?;
 
-    anyhow::Ok(message_dir_processing_context)
+    anyhow::Ok(ddex_messages)
 }

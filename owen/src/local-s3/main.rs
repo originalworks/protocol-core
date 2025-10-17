@@ -34,15 +34,15 @@ async fn main() -> Result<()> {
     let s3_message_folders = storage.s3_message_folders.clone();
 
     match owen::run_with_sentry(&owen_config).await {
-        Ok(message_processing_context) => {
-            let s3_folder_to_processing_context_map = database.save_message_folders(
+        Ok(ddex_messages) => {
+            let s3_folder_to_ddex_message_map = database.save_message_folders(
                 local_to_s3_folder_mapping,
-                message_processing_context,
+                ddex_messages,
                 &s3_message_folders,
             )?;
 
             storage
-                .clear_s3_folders(s3_folder_to_processing_context_map, &s3_message_folders)
+                .clear_s3_folders(s3_folder_to_ddex_message_map, &s3_message_folders)
                 .await?;
         }
         Err(e)
