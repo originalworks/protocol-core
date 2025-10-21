@@ -7,3 +7,6 @@
 [submodule "contracts/lib/risc0-ethereum"]
 	path = contracts/lib/risc0-ethereum
 	url = https://github.com/risc0/risc0-ethereum
+[submodule "submodules/account-abstraction"]
+	path = submodules/account-abstraction
+	url = https://github.com/originalworks/account-abstraction.git
