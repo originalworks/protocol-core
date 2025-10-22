@@ -1,15 +1,10 @@
 use crate::{
     constants::{self, IPFS_API_ADD_FILE, REQWEST_CLIENT},
+    wallet::OwenWallet,
     Config,
 };
-use alloy::{
-    hex,
-    providers::{Provider, ProviderBuilder},
-    signers::{local::PrivateKeySigner, Signer},
-};
-use alloy_signer_aws::AwsSigner;
+use alloy::hex;
 use anyhow::Context;
-use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use log_macros::{format_error, log_info};
 use reqwest::{multipart, Body};
 use serde::{Deserialize, Serialize};
@@ -27,56 +22,20 @@ struct StorachaBridgeResponse {
     url: String,
 }
 
-pub struct IpfsManager {
+pub struct IpfsManager<'a> {
     local_ipfs: bool,
     ipfs_api_base_url: String,
     storacha_bridge_url: String,
-    private_key_signer: Option<PrivateKeySigner>,
-    use_kms: bool,
-    kms_signer: Option<AwsSigner>,
+    owen_wallet: &'a OwenWallet,
 }
 
-impl IpfsManager {
-    pub async fn build(config: &Config) -> anyhow::Result<Self> {
-        let rpc_provider = ProviderBuilder::new().connect_http(config.rpc_url.parse()?);
-        let chain_id = rpc_provider.get_chain_id().await?;
-        let mut kms_signer: Option<AwsSigner> = None;
-        let mut private_key_signer: Option<PrivateKeySigner> = None;
-
-        if config.use_kms {
-            let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
-            let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
-                .region(region_provider)
-                .load()
-                .await;
-
-            let client = aws_sdk_kms::Client::new(&aws_main_config);
-
-            let key_id = config
-                .signer_kms_id
-                .clone()
-                .expect("'use_kms' is set to true but 'signer_kms_id' is missing");
-
-            kms_signer = Some(
-                AwsSigner::new(client, key_id, Some(chain_id))
-                    .await
-                    .unwrap(),
-            );
-        } else {
-            let private_key_signer_parsed: PrivateKeySigner = config
-                .private_key
-                .parse()
-                .with_context(|| "Failed to parse PRIVATE_KEY")?;
-            private_key_signer = Some(private_key_signer_parsed);
-        }
-
+impl<'a> IpfsManager<'a> {
+    pub async fn build(config: &Config, owen_wallet: &'a OwenWallet) -> anyhow::Result<Self> {
         Ok(Self {
             local_ipfs: config.local_ipfs.clone(),
             ipfs_api_base_url: config.ipfs_api_base_url.clone(),
             storacha_bridge_url: config.storacha_bridge_url.clone(),
-            use_kms: config.use_kms,
-            kms_signer,
-            private_key_signer,
+            owen_wallet,
         })
     }
 
@@ -121,20 +80,8 @@ impl IpfsManager {
     }
 
     async fn sign_authorization_header(&self) -> anyhow::Result<String> {
-        let signature;
-        if self.use_kms {
-            let kms_signer = self
-                .kms_signer
-                .clone()
-                .expect("IpfsManager: Failed to get kms_signer");
-            signature = kms_signer.sign_message(constants::CLIENT).await?;
-        } else {
-            let private_key_signer = self
-                .private_key_signer
-                .clone()
-                .expect("IpfsManager: Failed to get private_key_signer");
-            signature = private_key_signer.sign_message(constants::CLIENT).await?;
-        }
+        let signature = self.owen_wallet.sign_message(constants::CLIENT).await?;
+
         let authorization = format!("{}::0x{}", "OWEN", hex::encode(signature.as_bytes()));
         Ok(authorization)
     }

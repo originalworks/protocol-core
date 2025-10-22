@@ -5,7 +5,7 @@ use log_macros::log_warn;
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
-use crate::output_generator::MessageDirProcessingContext;
+use crate::output_generator::DdexMessage;
 
 pub struct MessageStorage {
     client: aws_sdk_s3::Client,
@@ -21,8 +21,8 @@ impl MessageStorage {
     pub fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Self {
-        Self {
+    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Result<Self> {
+        Ok(Self {
             client: aws_sdk_s3::Client::new(aws_main_config),
             bucket_name: MessageStorage::get_env_var("MESSAGES_BUCKET_NAME"),
             input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
@@ -30,7 +30,7 @@ impl MessageStorage {
             fallback_bucket_name: MessageStorage::get_env_var("FALLBACK_BUCKET_NAME"),
             local_to_s3_folder_mapping: HashMap::new(),
             s3_message_folders: vec![],
-        }
+        })
     }
 
     fn build_local_object_path(
@@ -42,7 +42,7 @@ impl MessageStorage {
         let (_, s3_parent_dir_file) = s3_folder_object_key
             .split_once(s3_message_folder)
             .expect("Could not split s3 folder key");
-        let local_object_path = format!("{local_message_folder}{s3_parent_dir_file}");
+        let local_object_path = format!("{local_message_folder}/{s3_parent_dir_file}");
         Ok(local_object_path)
     }
 
@@ -92,8 +92,17 @@ impl MessageStorage {
 
         Ok(())
     }
+    fn ensure_trailing_slash(s: &String) -> String {
+        if s.ends_with('/') {
+            s.clone()
+        } else {
+            format!("{}/", s)
+        }
+    }
 
-    pub async fn sync_message_folder(&self, s3_message_folder: &String) -> Result<String> {
+    pub async fn sync_message_folder(&self, _s3_message_folder: &String) -> Result<String> {
+        let s3_message_folder = &MessageStorage::ensure_trailing_slash(_s3_message_folder);
+
         let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
             .file_name()
             .expect(format!("S3 message folder has no filename {}", &s3_message_folder).as_str())
@@ -258,7 +267,7 @@ impl MessageStorage {
 
     pub async fn clear_s3_folders(
         &self,
-        s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext>,
+        s3_folder_to_ddex_message_map: HashMap<String, DdexMessage>,
         s3_message_folders: &Vec<String>,
     ) -> Result<()> {
         let mut objects_to_delete = Vec::new();
@@ -272,14 +281,14 @@ impl MessageStorage {
                 .send()
                 .await?;
 
-            let processing_context = s3_folder_to_processing_context_map
+            let ddex_message = s3_folder_to_ddex_message_map
                 .get(s3_message_folder)
                 .expect("Could not retrieve processing context");
             if let Some(folder_contents) = folder_objects.contents {
                 for folder_object in folder_contents {
                     if let Some(key) = folder_object.key {
                         objects_to_delete.push(ObjectIdentifier::builder().key(&key).build()?);
-                        if processing_context.excluded {
+                        if ddex_message.excluded {
                             objects_to_copy_to_fallback_bucket.push(key);
                         }
                     }

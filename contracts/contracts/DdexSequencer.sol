@@ -17,6 +17,7 @@ contract DdexSequencer is
     IDdexSequencer
 {
     event NewBlobSubmitted(bytes commitment, bytes32 image_id);
+    event QueueMoved();
     event WhitelistingStatusChanged(bool current_status);
     event BlobAssigned(bytes32 blob, address assignedValidator);
     event BlobExpired(bytes32 blobhash);
@@ -251,6 +252,7 @@ contract DdexSequencer is
             blobQueueHead = newBlobQueueHead;
             headProcessingStartBlock = block.number;
         }
+        emit QueueMoved();
     }
 
     function moveQueue() external onlyOwner {

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -9,7 +10,12 @@ struct OwenSecretEnvs {
     PRIVATE_KEY: String,
 }
 
-pub async fn set_secret_envs(aws_main_config: &aws_config::SdkConfig) -> Result<()> {
+pub async fn set_secret_envs() -> Result<()> {
+    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
+    let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
+        .region(region_provider)
+        .load()
+        .await;
     let client = aws_sdk_secretsmanager::Client::new(&aws_main_config);
     let owen_lambda_secrets_name = env::var("OWEN_LAMBDA_SECRETS_NAME")
         .expect(format!("Missing env variable: OWEN_LAMBDA_SECRETS_NAME").as_str());

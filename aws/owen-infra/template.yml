@@ -36,6 +36,9 @@ Parameters:
   StorachaBridgeUrl:
     Type: String
     Default: ""
+  BlobsTempStorageBucketPrefix:
+    Default: owen-blobs-temp-storage
+    Type: String
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
@@ -135,6 +138,15 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref OwenLambdaSecrets
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${BlobsTempStorageBucketPrefix}-${Environment}/*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:
+                  - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueArn
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret
@@ -205,7 +217,7 @@ Resources:
     Properties:
       Location: ./resources/owen.yml
       Parameters:
-        LambdaScheduleRateMin: "6"
+        LambdaScheduleRateMin: "8"
         MessagesBucketName: !Ref MessagesBucketName
         MessageStatusTableName: !Ref MessageStatusTableName
         MessagePerBlob: !Ref MessagePerBlob
@@ -218,13 +230,15 @@ Resources:
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
   OwenTwo:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./resources/owen.yml
       Parameters:
-        LambdaScheduleRateMin: "6"
+        LambdaScheduleRateMin: "8"
         MessagesBucketName: !Ref MessagesBucketName
         MessageStatusTableName: !Ref MessageStatusTableName
         MessagePerBlob: !Ref MessagePerBlob
@@ -237,3 +251,33 @@ Resources:
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+
+  OwenThree:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./resources/owen.yml
+      Parameters:
+        LambdaScheduleRateMin: "8"
+        MessagesBucketName: !Ref MessagesBucketName
+        MessageStatusTableName: !Ref MessageStatusTableName
+        MessagePerBlob: !Ref MessagePerBlob
+        Environment: !Ref Environment
+        OwenUsername: !Sub "owen_${Environment}_lambda_3"
+        OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
+        DdexSequencerAddress: !Ref DdexSequencerAddress
+        LambdaExecutionRoleArn: !GetAtt LambdaExecutionRole.Arn
+        ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
+        MessageFolderAttributeName: !Ref MessageFolderAttributeName
+        UnprocessedStatusValue: !Ref UnprocessedStatusValue
+        StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+
+  OwenBlobsQueue:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./resources/owen-blobs-queue.yml
+      Parameters:
+        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"

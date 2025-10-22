@@ -1,7 +1,7 @@
 use anyhow::Result;
 use owen::{
     constants::{DEFAULT_DATABASE_NAME, DEFAULT_TABLE_NAME},
-    output_generator::MessageDirProcessingContext,
+    output_generator::DdexMessage,
 };
 use rusqlite::{params, Connection};
 use std::collections::HashMap;
@@ -12,7 +12,7 @@ pub struct MessageDatabase {
 }
 
 impl MessageDatabase {
-    pub fn build() -> Self {
+    pub fn build() -> Result<Self> {
         let database_name =
             std::env::var("DATABASE_NAME").unwrap_or_else(|_| DEFAULT_DATABASE_NAME.to_string());
 
@@ -39,43 +39,37 @@ impl MessageDatabase {
             .map_err(|err| format!("Create database table error: {}", err))
             .expect("Create database table: unknown error");
 
-        Self {
+        Ok(Self {
             connection,
             table_name,
-        }
+        })
     }
 
     pub fn save_message_folders(
         &self,
         local_to_s3_folder_mapping: HashMap<String, String>,
-        message_processing_context_vec: Vec<MessageDirProcessingContext>,
+        ddex_messages: Vec<DdexMessage>,
         message_folders: &Vec<String>,
-    ) -> Result<HashMap<String, MessageDirProcessingContext>> {
-        let mut s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext> =
-            HashMap::new();
+    ) -> Result<HashMap<String, DdexMessage>> {
+        let mut s3_folder_to_ddex_message_map: HashMap<String, DdexMessage> = HashMap::new();
 
-        for message_processing_context in message_processing_context_vec {
+        for ddex_message in ddex_messages {
             let s3_path = local_to_s3_folder_mapping
-                .get(&message_processing_context.message_dir_path)
+                .get(&ddex_message.message_dir_path)
                 .expect(
                     format!(
                         "Could not retrieve s3 path from mapping to local folder. Local folder: {}",
-                        message_processing_context.message_dir_path
+                        ddex_message.message_dir_path
                     )
                     .as_str(),
                 );
 
-            s3_folder_to_processing_context_map.insert(s3_path.clone(), message_processing_context);
+            s3_folder_to_ddex_message_map.insert(s3_path.clone(), ddex_message);
         }
         for s3_message_folder in message_folders {
-            let message_processing_context =
-                s3_folder_to_processing_context_map.get(s3_message_folder);
-            if let Some(message_processing_context) = message_processing_context {
-                if &message_processing_context.excluded == &true {
-                    let reason = message_processing_context
-                        .reason
-                        .as_ref()
-                        .expect("Could not retrieve exclusion reason from processing context");
+            if let Some(ddex_message) = s3_folder_to_ddex_message_map.get(s3_message_folder) {
+                if &ddex_message.excluded == &true {
+                    let reason = ddex_message.reason.as_deref().unwrap_or("");
                     self.connection.execute(
                         format!(
                             "INSERT INTO {} (message_folder, status, reason) VALUES (?1, ?2, ?3)",
@@ -105,7 +99,7 @@ impl MessageDatabase {
                 )?;
             }
         }
-        Ok(s3_folder_to_processing_context_map)
+        Ok(s3_folder_to_ddex_message_map)
     }
 
     pub fn save_message_folders_with_status(

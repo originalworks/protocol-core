@@ -5,11 +5,19 @@ use sentry::protocol::Attachment;
 use serde_json::json;
 use std::io::Read;
 
-pub fn init_sentry(config: &Config) -> () {
-    if !config.disable_telemetry {
-        let _ = sentry::init(("https://2cea3d6af1cb8e4bd9c7c39530d390a1@o4508766269014016.ingest.us.sentry.io/4508766275043328",
+pub fn init_sentry() -> Option<sentry::ClientInitGuard> {
+    let disable_telemetry: bool = matches!(
+        std::env::var("DISABLE_TELEMETRY")
+            .unwrap_or_else(|_| "false".to_string())
+            .as_str(),
+        "1" | "true"
+    );
+
+    let environment = Config::get_env_var("ENVIRONMENT");
+    if !disable_telemetry {
+        let guard: sentry::ClientInitGuard = sentry::init(("https://2cea3d6af1cb8e4bd9c7c39530d390a1@o4508766269014016.ingest.us.sentry.io/4508766275043328",
             sentry::ClientOptions {
-                environment: Some(config.environment.to_owned().into()),
+                environment: Some(environment.to_owned().into()),
                 release: sentry::release_name!(),
                 attach_stacktrace: false,
                 auto_session_tracking: true,
@@ -17,8 +25,10 @@ pub fn init_sentry(config: &Config) -> () {
             },
         ));
         log_info!("Telemetry has been initiated");
+        Some(guard)
     } else {
         log_info!("Telemetry has been disabled due to env var flag");
+        None
     }
 }
 

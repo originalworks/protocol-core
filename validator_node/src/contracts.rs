@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     blob_assignment::manager::{BlobAssignment, BlobAssignmentStartingPoint, BlobAssignmentStatus},
     is_local, Config,
@@ -96,33 +98,42 @@ type HardlyTypedProvider = FillProvider<
     RootProvider,
 >;
 
+type HardlyTypedWsProvider = FillProvider<
+    JoinFill<
+        Identity,
+        JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
+    >,
+    RootProvider,
+>;
+
 pub struct ContractsManager {
     pub sequencer: DdexSequencer::DdexSequencerInstance<HardlyTypedProvider>,
     pub emitter: DdexEmitter::DdexEmitterInstance<HardlyTypedProvider>,
     pub current_image_id: alloy::primitives::FixedBytes<32>,
     pub previous_image_id: alloy::primitives::FixedBytes<32>,
     pub provider: HardlyTypedProvider,
+    pub ws_provider: HardlyTypedWsProvider,
     pub chain_id: u64,
     pub signer: PrivateKeySigner,
 }
 
 impl ContractsManager {
-    pub async fn build(
-        ddex_sequencer_address: Address,
-        private_key: &String,
-        rpc_url: &String,
-    ) -> anyhow::Result<Self> {
-        let private_key_signer: PrivateKeySigner = private_key
+    pub async fn build(config: &Config) -> anyhow::Result<Self> {
+        let private_key_signer: PrivateKeySigner = config
+            .private_key
             .parse()
             .with_context(|| "Failed to parse PRIVATE_KEY")?;
         let wallet = EthereumWallet::from(private_key_signer.clone());
 
         let provider = ProviderBuilder::new()
             .wallet(wallet)
-            .connect_http(rpc_url.parse()?);
+            .connect_http(config.rpc_url.parse()?);
+
+        let ws_url = WsConnect::new(&config.ws_url);
+        let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
 
         let chain_id = provider.get_chain_id().await?;
-        let sequencer = DdexSequencer::new(ddex_sequencer_address, provider.clone());
+        let sequencer = DdexSequencer::new(config.ddex_sequencer_address, provider.clone());
 
         let emitter_address = sequencer.ddexEmitter().call().await?;
         let emitter = DdexEmitter::new(emitter_address, provider.clone());
@@ -138,6 +149,7 @@ impl ContractsManager {
             provider,
             chain_id,
             signer: private_key_signer,
+            ws_provider,
         })
     }
 
@@ -230,9 +242,17 @@ impl ContractsManager {
 
         let mut tx_builder = self.sequencer.assignBlob();
 
-        tx_builder = tx_builder.gas(10000000).nonce(nonce);
+        tx_builder = tx_builder
+            .max_priority_fee_per_gas(500000000)
+            .max_fee_per_gas(500000001)
+            .nonce(nonce);
 
-        let receipt = tx_builder.send().await?.get_receipt().await?;
+        let receipt = tx_builder
+            .send()
+            .await?
+            .with_timeout(Some(Duration::from_millis(120000)))
+            .get_receipt()
+            .await?;
 
         if receipt.status() == false {
             return Err(log_error!(
@@ -300,55 +320,41 @@ impl ContractsManager {
         };
         Ok(blob_assignment)
     }
-    pub async fn subscribe_to_contracts(
-        &self,
-        config: &Config,
-        start_block: u64,
-    ) -> anyhow::Result<BlobAssignmentStartingPoint> {
+    pub async fn subscribe_to_contracts(&self) -> anyhow::Result<BlobAssignmentStartingPoint> {
         log_info!("Subscribing to queue");
-        let ws_url = WsConnect::new(&config.ws_url);
-        let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
+
+        let current_block = self.fetch_current_block().await?;
 
         let filter = Filter::new()
-            .address(vec![
-                config.ddex_sequencer_address,
-                self.emitter.address().clone(),
-            ])
+            .address(vec![self.sequencer.address().clone()])
             .events(vec![
                 DdexSequencer::NewBlobSubmitted::SIGNATURE,
-                DdexEmitter::BlobProcessed::SIGNATURE,
-                DdexEmitter::BlobRejected::SIGNATURE,
+                DdexSequencer::QueueMoved::SIGNATURE,
             ])
-            .from_block(start_block);
+            .from_block(current_block);
 
-        log_info!("Subscribed to queue, waiting for changes...");
-        let subscription = ws_provider.subscribe_logs(&filter).await?;
+        log_info!(
+            "Subscribed to queue from block {}, waiting for changes...",
+            current_block
+        );
+        let subscription = self.ws_provider.subscribe_logs(&filter).await?;
+        let subscription_id = subscription.local_id().clone();
         let mut stream = subscription.into_stream();
 
         while let Some(log) = stream.next().await {
             match log.topic0().expect("Event log signature not found") {
                 &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
-                    let DdexSequencer::NewBlobSubmitted {
-                        commitment: _,
-                        image_id: _,
-                    } = log.log_decode()?.inner.data;
-                    let block_number = log
-                        .block_number
-                        .ok_or_else(|| format_error!("Block not found in log"))?;
-                    return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted { block_number });
+                    self.ws_provider.unsubscribe(subscription_id).await?;
+                    return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted);
                 }
-                &DdexEmitter::BlobProcessed::SIGNATURE_HASH
-                | &DdexEmitter::BlobRejected::SIGNATURE_HASH => {
-                    let block_number = log
-                        .block_number
-                        .ok_or_else(|| format_error!("Block not found in log"))?;
-                    return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected {
-                        block_number,
-                    });
+                &DdexSequencer::QueueMoved::SIGNATURE_HASH => {
+                    self.ws_provider.unsubscribe(subscription_id).await?;
+                    return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected);
                 }
                 _ => (),
             }
         }
+        self.ws_provider.unsubscribe(subscription_id).await?;
         Ok(BlobAssignmentStartingPoint::CleanStart)
     }
 
@@ -463,7 +469,14 @@ impl ContractsManager {
                 .max_fee_per_gas(500000001);
         }
 
-        let receipt = tx_builder.nonce(nonce).send().await?.get_receipt().await?;
+        let receipt = tx_builder
+            .nonce(nonce)
+            .send()
+            .await?
+            .with_required_confirmations(2)
+            .with_timeout(Some(Duration::from_millis(60000)))
+            .get_receipt()
+            .await?;
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));

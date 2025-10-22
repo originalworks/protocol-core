@@ -1,6 +1,6 @@
 use anyhow::Result;
 use aws_sdk_dynamodb::types::AttributeValue;
-use owen::output_generator::MessageDirProcessingContext;
+use owen::output_generator::DdexMessage;
 use std::{collections::HashMap, env};
 
 pub struct MessageQueue {
@@ -21,8 +21,8 @@ impl MessageQueue {
     pub fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Self {
-        Self {
+    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Result<Self> {
+        Ok(Self {
             client: aws_sdk_dynamodb::Client::new(aws_main_config),
             table_name: MessageQueue::get_env_var("MESSAGE_STATUS_TABLE_NAME"),
             index_name: MessageQueue::get_env_var("PROCESSING_STATUS_INDEX_NAME"),
@@ -36,7 +36,7 @@ impl MessageQueue {
             reserved_status_value: MessageQueue::get_env_var("RESERVED_STATUS_VALUE"),
             rejected_status_value: MessageQueue::get_env_var("REJECTED_STATUS_VALUE"),
             owen_instance_name: MessageQueue::get_env_var("USERNAME"),
-        }
+        })
     }
 
     pub async fn reserve_message_folder(&self) -> Result<Option<String>> {
@@ -156,29 +156,27 @@ impl MessageQueue {
     pub async fn sync_message_folder_statuses(
         &self,
         local_to_s3_folder_mapping: HashMap<String, String>,
-        message_processing_context_vec: Vec<MessageDirProcessingContext>,
+        ddex_messages: Vec<DdexMessage>,
         message_folders: Vec<String>,
     ) -> Result<()> {
-        let mut s3_folder_to_processing_context_map: HashMap<String, MessageDirProcessingContext> =
-            HashMap::new();
+        let mut s3_folder_to_ddex_message_map: HashMap<String, DdexMessage> = HashMap::new();
 
-        for message_processing_context in message_processing_context_vec {
+        for ddex_message in ddex_messages {
             let s3_path = local_to_s3_folder_mapping
-                .get(&message_processing_context.message_dir_path)
+                .get(&ddex_message.message_dir_path)
                 .expect(
                     format!(
                         "Could not retrieve s3 path from mapping to local folder. Local folder: {}",
-                        message_processing_context.message_dir_path
+                        ddex_message.message_dir_path
                     )
                     .as_str(),
                 );
 
-            s3_folder_to_processing_context_map.insert(s3_path.clone(), message_processing_context);
+            s3_folder_to_ddex_message_map.insert(s3_path.clone(), ddex_message);
         }
         for folder in message_folders {
-            let message_processing_context = s3_folder_to_processing_context_map.get(&folder);
-            if let Some(message_processing_context) = message_processing_context {
-                if message_processing_context.excluded {
+            if let Some(ddex_message) = s3_folder_to_ddex_message_map.get(&folder) {
+                if ddex_message.excluded {
                     self.set_single_message_folder_status(
                         folder.clone(),
                         self.rejected_status_value.to_string(),

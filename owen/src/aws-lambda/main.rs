@@ -70,10 +70,10 @@ async fn function_handler(
         .load()
         .await;
 
-    let owen_config = owen::Config::build();
+    let owen_config = owen::Config::build()?;
 
-    let queue = MessageQueue::build(&aws_main_config);
-    let mut storage = MessageStorage::build(&aws_main_config);
+    let queue = MessageQueue::build(&aws_main_config)?;
+    let mut storage = MessageStorage::build(&aws_main_config)?;
 
     build_input_folder(&queue, &mut storage).await?;
 
@@ -88,11 +88,11 @@ async fn function_handler(
     println!("synced directories: {s3_message_folders:?}");
 
     match owen::run_with_sentry(&owen_config).await {
-        Ok(message_processing_context) => {
+        Ok(ddex_messages) => {
             queue
                 .sync_message_folder_statuses(
                     local_to_s3_folder_mapping,
-                    message_processing_context,
+                    ddex_messages,
                     s3_message_folders,
                 )
                 .await
@@ -147,16 +147,11 @@ async fn function_handler(
 async fn main() -> Result<(), lambda_runtime::Error> {
     println!("Lambda cold start");
 
-    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
-    let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
-        .region(region_provider)
-        .load()
-        .await;
-    set_secret_envs(&aws_main_config)
+    set_secret_envs()
         .await
         .map_err(|err| format!("Setting secret envs failed: {err}"))?;
-    let owen_config = owen::Config::build();
-    let _guard = init_sentry(&owen_config);
+
+    let _guard = init_sentry();
     init_logging()?;
 
     tracing::init_default_subscriber();
