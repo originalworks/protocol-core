@@ -4,7 +4,7 @@ use c_kzg::{ethereum_kzg_settings, Blob};
 use log_macros::{format_error, log_info};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct BlobTransactionData {
     pub kzg_commitment: Vec<u8>,
     pub blob_sidecar: BlobTransactionSidecar,

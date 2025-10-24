@@ -8,13 +8,13 @@ mod image_processor;
 mod ipfs;
 pub mod logger;
 pub mod output_generator;
-mod wallet;
+pub mod wallet;
 use alloy::primitives::Address;
 use blob::BlobTransactionData;
 use contracts::ContractsManager;
 use ddex_parser::ParserError;
 pub use log;
-use log_macros::{format_error, log_error};
+use log_macros::log_error;
 use sentry::User;
 use serde_json::json;
 use std::env;
@@ -22,7 +22,7 @@ use std::str::FromStr;
 
 use crate::ipfs::IpfsManager;
 use crate::output_generator::{DdexMessage, OutputFilesGenerator};
-use crate::wallet::OwenWallet;
+use crate::wallet::{OwenWallet, OwenWalletConfig};
 
 #[cfg(any(feature = "aws-integration", feature = "local-s3"))]
 pub mod s3_message_storage;
@@ -154,34 +154,11 @@ impl Config {
 
         Ok(config)
     }
-
-    fn try_private_key(&self) -> anyhow::Result<&String> {
-        if self.use_kms == false {
-            self.private_key
-                .as_ref()
-                .ok_or_else(|| format_error!("Missing private_key"))
-        } else {
-            return Err(format_error!(
-                "private_key not available with USE_KMS=true flag"
-            ));
-        }
-    }
-
-    fn try_signer_kms_id(&self) -> anyhow::Result<&String> {
-        if self.use_kms == true {
-            self.signer_kms_id
-                .as_ref()
-                .ok_or_else(|| format_error!("Missing signer_kms_id"))
-        } else {
-            return Err(format_error!(
-                "signer_kms_id not available without USE_KMS=true flag"
-            ));
-        }
-    }
 }
 
 pub async fn run(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
-    let owen_wallet = OwenWallet::build(&config).await?;
+    let owen_wallet_config = OwenWalletConfig::from(config)?;
+    let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
     let contracts_manager = ContractsManager::build(&config, &owen_wallet).await?;
     contracts_manager.check_image_compatibility().await?;
 
@@ -193,11 +170,12 @@ pub async fn run(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
 
     if config.use_batch_sender == true {
         if cfg!(feature = "aws-integration") {
+            let image_id = contracts_manager.image_id;
             #[cfg(feature = "aws-integration")]
             let blobs_queue_producer = blobs_queue::BlobsQueueProducer::build().await?;
             #[cfg(feature = "aws-integration")]
             blobs_queue_producer
-                .enqueue_blob(blob_transaction_data)
+                .enqueue_blob(blob_transaction_data, image_id)
                 .await?;
         } else {
             panic!(
