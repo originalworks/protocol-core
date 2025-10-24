@@ -306,7 +306,7 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wallet::OwenWallet;
+    use crate::wallet::{OwenWallet, OwenWalletConfig};
     use alloy::primitives::Address;
     use std::str::FromStr;
 
@@ -335,7 +335,8 @@ mod tests {
             signer_kms_id: None,
             use_batch_sender: false,
         };
-        let owen_wallet = OwenWallet::build(&config).await?;
+        let owen_wallet_config = OwenWalletConfig::from(&config)?;
+        let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
         let ipfs_manager = IpfsManager::build(&config, &owen_wallet).await?;
         let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
         let ddex_messages = output_files_generator.generate_files().await?;
@@ -374,7 +375,8 @@ mod tests {
             use_batch_sender: false,
         };
         fs::create_dir_all(&config.input_files_dir).unwrap();
-        let owen_wallet = OwenWallet::build(&config).await.unwrap();
+        let owen_wallet_config = OwenWalletConfig::from(&config).unwrap();
+        let owen_wallet = OwenWallet::build(&owen_wallet_config).await.unwrap();
         let ipfs_manager = IpfsManager::build(&config, &owen_wallet).await.unwrap();
         let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager).unwrap();
         let _ = output_files_generator.generate_files().await.unwrap();

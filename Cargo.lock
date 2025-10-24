@@ -2308,6 +2308,7 @@ dependencies = [
 name = "blobs_batch_sender"
 version = "0.1.0"
 dependencies = [
+ "alloy",
  "aws-config",
  "aws-sdk-s3",
  "aws_lambda_events",

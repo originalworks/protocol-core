@@ -14,3 +14,4 @@ owen = { workspace = true, features = ["aws-integration"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 aws-sdk-s3 = "1.98.0"
+alloy = { version = "1.0.32", features = ["full"] }
