@@ -41,7 +41,7 @@ struct SendBatchTxInput {
 
 pub struct SmartEoaManager {
     ddex_sequencer_address: Address,
-    s_eoa: sEOA::sEOAInstance<HardlyTypedProvider>, // rpc_url: String,
+    s_eoa: sEOA::sEOAInstance<HardlyTypedProvider>,
 }
 
 impl SmartEoaManager {

@@ -11,7 +11,7 @@ use std::env;
 #[derive(Deserialize, Serialize)]
 pub struct BlobsQueueMessageBody {
     pub blobhash: String,
-    // pub owen_instance: String,
+    pub owen_instance: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -22,6 +22,7 @@ pub struct BlobsQueueS3JsonFile {
 
 pub struct BlobsQueueProducer {
     queue_url: String,
+    owen_instance: String,
     blobs_temp_storage_bucket_name: String,
     s3_client: aws_sdk_s3::Client,
     sqs_client: aws_sdk_sqs::Client,
@@ -31,6 +32,7 @@ impl BlobsQueueProducer {
     pub async fn build() -> anyhow::Result<Self> {
         let queue_url = Self::get_env_var("OWEN_BLOBS_QUEUE_URL");
         let blobs_temp_storage_bucket_name = Self::get_env_var("BLOBS_TEMP_STORAGE_BUCKET_NAME");
+        let owen_instance = Self::get_env_var("USERNAME");
         let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
 
         let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
@@ -42,6 +44,7 @@ impl BlobsQueueProducer {
 
         Ok(Self {
             queue_url,
+            owen_instance,
             s3_client,
             sqs_client,
             blobs_temp_storage_bucket_name,
@@ -98,6 +101,7 @@ impl BlobsQueueProducer {
         log_info!("Enqueue: {}", blobhash.to_string());
         let blobs_queue_message_body = BlobsQueueMessageBody {
             blobhash: blobhash.to_string(),
+            owen_instance: self.owen_instance.clone(),
         };
         let json_string = serde_json::to_string_pretty(&blobs_queue_message_body)?;
         let send_message_output = self
