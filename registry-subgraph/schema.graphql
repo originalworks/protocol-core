@@ -130,6 +130,7 @@ type Release @entity(immutable: false) {
   display_artist_names: [String!]
   sound_recordings: [Track!]
   image: String!
+  imageMetadata: ImageMetadata
   timestamp: BigInt!
 }
 
@@ -142,6 +143,7 @@ type Track @entity(immutable: false) {
   display_title_text: String!
   label: String
   image: String!
+  imageMetadata: ImageMetadata
   releases: [Release!]
   timestamp: BigInt!
 }
@@ -159,6 +161,11 @@ type TracksAddedPerMonth @entity(immutable: false) {
   month: String!
   year: String!
   amount: BigInt!
+}
+
+type ImageMetadata @entity(immutable: true) {
+  id: ID!
+  images: [String!]!
 }
 
 type AssetMetadata @entity(immutable: true) {
