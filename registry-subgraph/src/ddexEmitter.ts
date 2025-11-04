@@ -27,9 +27,6 @@ import {
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
 
-// Just an example: we create a data source up to 70 files.
-const maxFiles = 70;
-
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
   const messages = proverPublicOutputs.messages;
@@ -162,6 +159,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.display_title_text = soundRecordings[j].display_title_text;
               track.label = pLine.p_line_text.replace(pLine.year.toString(), "").trim();
               track.image = image;
+              track.imageMetadata = cid.id;
               track.releases = [release.id];
               track.timestamp = event.block.timestamp;
               track.save();
@@ -199,6 +197,7 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                 track.display_title_text = soundRecordings[j].display_title_text;
                 track.label = pLine.p_line_text.replace(pLine.year.toString(), "").trim();
                 track.image = image;
+                track.imageMetadata = cid.id;
                 if (track.releases == null) {
                   track.releases = [release.id];
                 } else {

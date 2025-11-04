@@ -1,7 +1,7 @@
-import { Bytes, dataSource, json } from '@graphprotocol/graph-ts';
+import { Bytes, dataSource, json } from "@graphprotocol/graph-ts";
 
-import { AssetMetadata, ImageMetadata } from './types/schema';
-import { getArray, getObject, getValueIfExist } from './helpers';
+import { AssetMetadata, ImageMetadata } from "./types/schema";
+import { getArray, getObject, getValueIfExist } from "./helpers";
 
 export function handleAssetMetadata(content: Bytes): void {
   const cid = dataSource.stringParam();
