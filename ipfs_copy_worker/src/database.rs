@@ -1,9 +1,9 @@
 use crate::{
-    ProcessingStatus,
     constants::{DATABASE_FILE_NAME, DB_TABLE_NAME},
+    ProcessingStatus,
 };
 use anyhow::Result;
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 
 #[derive(Debug)]
 pub struct DatabaseRecord {
@@ -50,7 +50,7 @@ impl DatabaseManager {
             Ok(DatabaseRecord {
                 cid: row.get(0)?,
                 status,
-                timestamp: row.get(2)?, // or parse into chrono if you prefer
+                timestamp: row.get(2)?,
             })
         });
 

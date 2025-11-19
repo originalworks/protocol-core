@@ -107,8 +107,6 @@ impl UploadManager {
                 return Ok(processing_context);
             }
         }
-
-        // Ok(processing_context)
     }
 
     pub async fn upload_to_s3(
