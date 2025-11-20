@@ -15,7 +15,6 @@ use alloy::{
     },
     sol,
 };
-
 use log_macros::{format_error, log_info, log_warn};
 use serde_json::json;
 use DdexEmitter::getSupportedBlobImageIdsReturn;
