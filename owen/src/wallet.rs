@@ -11,14 +11,102 @@ use aws_config::BehaviorVersion;
 use log_macros::{format_error, log_info};
 
 pub struct OwenWallet {
-    use_kms: bool,
+    pub use_kms: bool,
     aws_signer: Option<AwsSigner>,
     private_key_signer: Option<PrivateKeySigner>,
     pub wallet: EthereumWallet,
 }
 
+pub trait HasOwenWalletFields {
+    fn use_kms(&self) -> bool;
+    fn rpc_url(&self) -> String;
+    fn private_key(&self) -> Option<String>;
+    fn signer_kms_id(&self) -> Option<String>;
+}
+
+impl HasOwenWalletFields for Config {
+    fn use_kms(&self) -> bool {
+        self.use_kms
+    }
+    fn rpc_url(&self) -> String {
+        self.rpc_url.clone()
+    }
+    fn private_key(&self) -> Option<String> {
+        self.private_key.clone()
+    }
+    fn signer_kms_id(&self) -> Option<String> {
+        self.signer_kms_id.clone()
+    }
+}
+
+pub struct OwenWalletConfig {
+    pub use_kms: bool,
+    pub rpc_url: String,
+    pub private_key: Option<String>,
+    pub signer_kms_id: Option<String>,
+}
+
+impl OwenWalletConfig {
+    pub fn build() -> anyhow::Result<Self> {
+        let rpc_url = Config::get_env_var("RPC_URL");
+        let mut signer_kms_id = None;
+        let mut private_key = None;
+        let use_kms = matches!(
+            std::env::var("USE_KMS")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+
+        if use_kms {
+            signer_kms_id = Some(Config::get_env_var("SIGNER_KMS_ID"));
+        } else {
+            private_key = Some(Config::get_env_var("PRIVATE_KEY"));
+        }
+
+        Ok(Self {
+            use_kms,
+            rpc_url,
+            private_key,
+            signer_kms_id,
+        })
+    }
+
+    pub fn from<C: HasOwenWalletFields>(config_source: &C) -> anyhow::Result<Self> {
+        Ok(Self {
+            use_kms: config_source.use_kms(),
+            rpc_url: config_source.rpc_url(),
+            private_key: config_source.private_key(),
+            signer_kms_id: config_source.signer_kms_id(),
+        })
+    }
+    fn try_private_key(&self) -> anyhow::Result<&String> {
+        if self.use_kms == false {
+            self.private_key
+                .as_ref()
+                .ok_or_else(|| format_error!("Missing private_key"))
+        } else {
+            return Err(format_error!(
+                "private_key not available with USE_KMS=true flag"
+            ));
+        }
+    }
+
+    fn try_signer_kms_id(&self) -> anyhow::Result<&String> {
+        if self.use_kms == true {
+            self.signer_kms_id
+                .as_ref()
+                .ok_or_else(|| format_error!("Missing signer_kms_id"))
+        } else {
+            return Err(format_error!(
+                "signer_kms_id not available without USE_KMS=true flag"
+            ));
+        }
+    }
+}
+
 impl OwenWallet {
-    pub async fn build(config: &Config) -> anyhow::Result<Self> {
+    pub async fn build(config: &OwenWalletConfig) -> anyhow::Result<Self> {
         let wallet: EthereumWallet;
         let mut aws_signer = None;
         let mut private_key_signer: Option<PrivateKeySigner> = None;

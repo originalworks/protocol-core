@@ -1,3 +1,4 @@
+mod contract;
 mod event_handler;
 mod s3;
 use event_handler::function_handler;

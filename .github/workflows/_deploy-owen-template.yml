@@ -30,7 +30,12 @@ jobs:
           source $HOME/.cargo/env
 
       - name: "Install dependencies with dnf"
-        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nodejs nasm
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nasm
+
+      - name: Install Node.js 22
+        run: |
+          curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+          dnf install -y nodejs
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
@@ -43,8 +48,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: "Compile conracts"
+      - name: "Compile Protocol's conracts"
         working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
+
+      - name: "Compile Account Abstraction conracts"
+        working-directory: submodules/account-abstraction/contracts
         run: |
           npm i
           npx hardhat compile
