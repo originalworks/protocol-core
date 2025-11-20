@@ -43,8 +43,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: "Compile conracts"
+      - name: "Compile Protocol's conracts"
         working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
+
+      - name: "Compile Account Abstraction conracts"
+        working-directory: submodules/account-abstraction/contracts
         run: |
           npm i
           npx hardhat compile
