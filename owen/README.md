@@ -22,18 +22,21 @@ You can currenlty use OWEN to send DDEX packages (that include `.xml` files) as 
 ## Steps to run OWEN on Docker (recommended approach)
 
 Copy the sample of the enviorment file and edit accordigly
+
 ```bash
 cp .env.sample .env
 ```
 
 Build container
+
 ```bash
 docker build --no-cache -t owen .
 ```
 
 Run container
+
 ```bash
-docker run 
+docker run
   --privileged \
   --env-file .env \
   -it \
@@ -43,7 +46,6 @@ docker run
 ```
 
 You only need to run it with under the tab `priviliged` if you plan to mount an S3 AWS bucket in OWEN.
-
 
 ## Steps to install OWEN on a clean Debian system
 
@@ -61,6 +63,7 @@ curl -L https://foundry.paradigm.xyz | bash
 source $HOME/.bashrc
 foundryup
 ```
+
 4. Clone the repo with its submodules and enter its folder
 
 ```
@@ -76,6 +79,7 @@ rzup install
 ```
 
 6. Compile contracts with
+
 ```
 cd contracts
 npm install hardhat
@@ -152,6 +156,7 @@ TransactionReceipt { inner: Eip4844(ReceiptWithBloom { receipt: Receipt { status
 # HOW TO USE OWEN WITH LOCAL TESTNET
 
 ### TL;DR
+
 Run `make local-up` in the root of this repo.
 
 ### 1. Install and run kurtosis testnet:
@@ -241,14 +246,13 @@ kurtosis clean
 docker compose -f ./docker/run-local.yml down
 ```
 
-
 # HOW TO RUN OWEN AS AL LAMBDA LAYER ON AWS
 
 1. Clone this repository with its submodules `git clone -recurse-submodules https://github.com/originalworks/protocol-core`
 2. Make bundle of owen by running `/owen/bundle.sh` that will generate a file named `owen.zip`.
 3. Log into AWS Console, and go to Lambda -> layers -> owen:
-![alt text](image.png)
+   ![alt text](image.png)
 4. Click on Create version:
-![alt text](image-2.png)
+   ![alt text](image-2.png)
 5. Upload the newley generated file`owen.zip
-![alt text](image-1.png)
+   ![alt text](image-1.png)
