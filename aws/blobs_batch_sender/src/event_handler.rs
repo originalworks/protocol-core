@@ -1,10 +1,29 @@
 use aws_lambda_events::event::sqs::SqsEvent;
+use blobs_batch_sender::BlobsBatchSenderConfig;
 use lambda_runtime::{Error, LambdaEvent};
-use owen::blobs_queue::BlobsQueueMessageBody;
+use owen::{
+    blobs_queue::BlobsQueueMessageBody,
+    wallet::{OwenWallet, OwenWalletConfig},
+};
 
-use crate::s3;
+use crate::{contract::SmartEoaManager, s3::BlobsStorage};
 
 pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
+    let config = BlobsBatchSenderConfig::build()?;
+    let blobs_storage = BlobsStorage::build(&config).await?;
+    let owen_wallet_config = OwenWalletConfig::from(&config)?;
+    let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
+    let smart_eoa_manager = SmartEoaManager::build(&config, owen_wallet.wallet)?;
+
+    let blobhashes = extract_blobhashes(event)?;
+    let blob_tx_data_vec = blobs_storage.read(blobhashes).await?;
+
+    smart_eoa_manager.send_batch(blob_tx_data_vec).await?;
+
+    Ok(())
+}
+
+fn extract_blobhashes(event: LambdaEvent<SqsEvent>) -> Result<Vec<String>, Error> {
     let messages: Vec<BlobsQueueMessageBody> = event
         .payload
         .records
@@ -24,8 +43,5 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
         .iter()
         .map(|message| message.blobhash.clone())
         .collect();
-
-    s3::read_blobs(blobhashes).await?;
-
-    Ok(())
+    Ok(blobhashes)
 }

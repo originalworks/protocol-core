@@ -11,10 +11,18 @@ use std::env;
 #[derive(Deserialize, Serialize)]
 pub struct BlobsQueueMessageBody {
     pub blobhash: String,
+    pub owen_instance: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct BlobsQueueS3JsonFile {
+    pub tx_data: BlobTransactionData,
+    pub image_id: FixedBytes<32>,
 }
 
 pub struct BlobsQueueProducer {
     queue_url: String,
+    owen_instance: String,
     blobs_temp_storage_bucket_name: String,
     s3_client: aws_sdk_s3::Client,
     sqs_client: aws_sdk_sqs::Client,
@@ -24,6 +32,7 @@ impl BlobsQueueProducer {
     pub async fn build() -> anyhow::Result<Self> {
         let queue_url = Self::get_env_var("OWEN_BLOBS_QUEUE_URL");
         let blobs_temp_storage_bucket_name = Self::get_env_var("BLOBS_TEMP_STORAGE_BUCKET_NAME");
+        let owen_instance = Self::get_env_var("USERNAME");
         let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
 
         let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
@@ -35,6 +44,7 @@ impl BlobsQueueProducer {
 
         Ok(Self {
             queue_url,
+            owen_instance,
             s3_client,
             sqs_client,
             blobs_temp_storage_bucket_name,
@@ -43,11 +53,16 @@ impl BlobsQueueProducer {
     fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub async fn enqueue_blob(&self, transaction_data: BlobTransactionData) -> anyhow::Result<()> {
+    pub async fn enqueue_blob(
+        &self,
+        transaction_data: BlobTransactionData,
+        image_id: FixedBytes<32>,
+    ) -> anyhow::Result<()> {
         let kzg_commitment = Bytes::from(transaction_data.kzg_commitment.to_vec());
         let blobhash: FixedBytes<32> = commitment_to_blobhash(&kzg_commitment);
 
-        self.send_to_s3(&transaction_data, &blobhash).await?;
+        self.send_to_s3(&transaction_data, image_id, &blobhash)
+            .await?;
         self.send_to_sqs(&blobhash).await?;
         Ok(())
     }
@@ -55,13 +70,18 @@ impl BlobsQueueProducer {
     async fn send_to_s3(
         &self,
         transaction_data: &BlobTransactionData,
+        image_id: FixedBytes<32>,
         blobhash: &FixedBytes<32>,
     ) -> anyhow::Result<()> {
         log_info!(
             "Sending transaction data to S3 for: {}",
             blobhash.to_string()
         );
-        let json_string = serde_json::to_string_pretty(&transaction_data)?;
+        let blobs_queue_s3_json_file = BlobsQueueS3JsonFile {
+            tx_data: transaction_data.clone(),
+            image_id,
+        };
+        let json_string = serde_json::to_string_pretty(&blobs_queue_s3_json_file)?;
 
         let put_object_output = self
             .s3_client
@@ -81,6 +101,7 @@ impl BlobsQueueProducer {
         log_info!("Enqueue: {}", blobhash.to_string());
         let blobs_queue_message_body = BlobsQueueMessageBody {
             blobhash: blobhash.to_string(),
+            owen_instance: self.owen_instance.clone(),
         };
         let json_string = serde_json::to_string_pretty(&blobs_queue_message_body)?;
         let send_message_output = self
