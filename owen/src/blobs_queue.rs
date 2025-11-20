@@ -1,9 +1,8 @@
+use crate::{blob::BlobTransactionData, constants::BLOBS_QUEUE_MESSAGE_GROUP_ID};
 use alloy::primitives::{Bytes, FixedBytes};
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_sdk_s3::primitives::ByteStream;
 use log_macros::log_info;
-
-use crate::{blob::BlobTransactionData, constants::BLOBS_QUEUE_MESSAGE_GROUP_ID};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::env;
