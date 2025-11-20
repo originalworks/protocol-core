@@ -1,0 +1,8 @@
+/temp
+/target
+.env
+failed_uploads.txt
+timeouts.txt
+timeout_paths.txt
+failed_unknown.txt
+ProcessingLog.db
