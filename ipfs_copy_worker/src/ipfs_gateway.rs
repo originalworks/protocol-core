@@ -100,10 +100,12 @@ impl Gateway {
         let blob_folder_path = Path::new(TEMP_FOLDER_PATH).join(cid).join("blob");
         let images_folder_path = Path::new(TEMP_FOLDER_PATH).join(cid).join("images");
         let json_folder_path = Path::new(TEMP_FOLDER_PATH).join(cid).join("json");
+        let zips_folder_path = Path::new(TEMP_FOLDER_PATH).join("zips");
 
         fs::create_dir_all(blob_folder_path)?;
         fs::create_dir_all(images_folder_path)?;
         fs::create_dir_all(json_folder_path)?;
+        fs::create_dir_all(zips_folder_path)?;
 
         let mut downloaded_vec = Vec::new();
 

@@ -71,7 +71,7 @@ impl UploadManager {
     ) -> anyhow::Result<ProcessingContext> {
         let folder_path = Path::new(TEMP_FOLDER_PATH).join(&processing_context.cid);
         let zip_file_local_path = Path::new(TEMP_FOLDER_PATH)
-            .join(&processing_context.cid)
+            .join("zips")
             .join(format!("{}.zip", &processing_context.cid));
         zip_directory(
             &folder_path,
