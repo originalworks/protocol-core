@@ -9,6 +9,7 @@ members = [
     "owen",
     "prover",
     "validator_node",
+    "ipfs_copy_worker",
 ]
 
 [workspace.dependencies]
