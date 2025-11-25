@@ -9,13 +9,16 @@ use owen::{
 use crate::{contract::SmartEoaManager, s3::BlobsStorage};
 
 pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
+    println!("Building...");
     let config = BlobsBatchSenderConfig::build()?;
     let blobs_storage = BlobsStorage::build(&config).await?;
     let owen_wallet_config = OwenWalletConfig::from(&config)?;
     let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
     let smart_eoa_manager = SmartEoaManager::build(&config, owen_wallet.wallet)?;
 
+    println!("Build complate");
     let blobhashes = extract_blobhashes(event)?;
+    println!("Extracted blobhashes: {blobhashes:?}");
     let blob_tx_data_vec = blobs_storage.read(blobhashes).await?;
 
     smart_eoa_manager.send_batch(blob_tx_data_vec).await?;
