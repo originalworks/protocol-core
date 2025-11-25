@@ -3,6 +3,15 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   BlobsTempStorageBucketName:
     Type: String
+  OwenLambdaSecretsName:
+    Type: String
+  DdexSequencerAddress:
+    Type: String
+  SeoaAddress:
+    Type: String
+
+Conditions:
+  OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
 
 Resources:
   OwenBlobsQueue:
@@ -37,6 +46,13 @@ Resources:
       Environment:
         Variables:
           BLOBS_TEMP_STORAGE_BUCKET_NAME: !Ref BlobsTempStorageBucketName
+          OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
+          USE_KMS: false
+          S_EOA_ADDRESS: !Ref SeoaAddress
+          DDEX_SEQUENCER_ADDRESS: !If
+            - OverwriteDdexSequencerAddress
+            - !Ref DdexSequencerAddress
+            - !Ref "AWS::NoValue"
 
   MyLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
