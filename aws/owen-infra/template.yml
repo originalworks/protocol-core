@@ -39,6 +39,8 @@ Parameters:
   BlobsTempStorageBucketPrefix:
     Default: owen-blobs-temp-storage
     Type: String
+  SeoaAddress:
+    Type: String
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
@@ -281,3 +283,6 @@ Resources:
       Location: ./resources/owen-blobs-queue.yml
       Parameters:
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+        OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
+        DdexSequencerAddress: !Ref DdexSequencerAddress
+        SeoaAddress: !Ref SeoaAddress
