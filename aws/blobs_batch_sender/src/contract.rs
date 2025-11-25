@@ -112,12 +112,18 @@ impl SmartEoaManager {
         &self,
         blob_tx_data_vec: Vec<BlobsQueueS3JsonFile>,
     ) -> Result<(), Error> {
+        println!("Sending tx...");
         let batch_input = Self::parse_batch_input(blob_tx_data_vec)?;
-        let mut _tx_builder = self
+        let tx_builder = self
             .s_eoa
             .submitNewBlobBatch(batch_input.tx_params, self.ddex_sequencer_address)
             .sidecar(batch_input.sidecar)
             .max_fee_per_blob_gas(1000000001);
+
+        let receipt = tx_builder.send().await?.get_receipt().await?;
+
+        println!("Receipt: {receipt:#?}");
+
         Ok(())
     }
 }
