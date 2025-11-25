@@ -95,6 +95,13 @@ Resources:
                   - s3:GetObject
                   - s3:ListBucket
                 Resource: !Sub "${BlobsTempStorage.Arn}/*"
+        - PolicyName: OwenLambdaSecretsAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${OwenLambdaSecretsName}*"
 
   BlobsTempStorage:
     Type: AWS::S3::Bucket
