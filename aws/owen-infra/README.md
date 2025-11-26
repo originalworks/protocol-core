@@ -17,8 +17,8 @@ OWEN is software developed and maintained by **_The Protocol_**. It processes an
 ## Steps
 
 1. In your [AWS Console](https://console.aws.amazon.com/) manually create a bucket named `owen-artifacts` to store your deployment artifacts
-2. On your local machine login to aws with `aws configure`
-3. Inside `owen/aws/deploy-infra` run `make deploy-infra-stage`.
+2. On your local machine login to AWS (e.g. `aws configure` or `aws sso login (...)`)
+3. Inside `owen/aws/deploy-infra` run `make deploy-infra-prod`.
 
 <br>
 
