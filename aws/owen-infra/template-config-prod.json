@@ -1,0 +1,17 @@
+{
+    "Parameters": {
+        "MessagesBucketName": "ddex-messages-prod",
+        "MessageStatusTableName": "DdexMessageStatusProd",
+        "TriggerFilePattern": "BatchComplete_",
+        "ProcessingStatusIndexName": "ProcessingStatusIndex",
+        "MessageFolderAttributeName": "messageFolder",
+        "ProcessingStatusAttributeName": "processingStatus",
+        "CreatedTimestampAttributeName": "createdTimestamp",
+        "UpdatedTimestampAttributeName": "updatedTimestamp",
+        "UnprocessedStatusValue": "unprocessed",
+        "MessagePerBlob": "5",
+        "Environment": "prod",
+        "OwenLambdaSecretsName": "OwenLambdaSecretsProd",
+        "SeoaAddress": "your-seoa-address"
+    }
+}
