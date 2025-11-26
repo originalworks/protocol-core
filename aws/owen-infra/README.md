@@ -32,7 +32,7 @@ The OWEN infrastructure stack was designed to scale easily. In file `aws/owen-in
 
 ### Account Abstraction
 
-By default, the OWEN infrastructure is configured so that all DDEX messages are batched and sent from one address. Set this address in `aws/owen-infra/template-config-prod.json` => `SeoaAddress`. This should be the address of your EOA delegated to our smart account implementation. Instructions on how to perform this delegation can be found here: <TODO>.
+By default, the OWEN infrastructure is configured so that all DDEX messages are batched and sent from one address. Set this address in `aws/owen-infra/template-config-prod.json` => `SeoaAddress`. This should be the address of your EOA delegated to our smart account implementation. Instructions on how to perform this delegation can be found here: TOADD
 
 ### KMS integration
 
@@ -44,7 +44,7 @@ Several private keys are required for this infrastructure to operate:
 By default, all of these keys are created during deployment as dedicated KMS key pairs. This maintains a clear separation of responsibilities but requires additional configuration before use.
 
 **_Use without KMS_** <br>
-If you prefer not to use separate KMS keys for each instance and for the batch sender, change `USE_KMS` to false in:
+If you prefer not to use separate KMS keys for each instance and for the batch sender, change `USE_KMS` to `false` in:
 
 - `aws/owen-infra/resources/owen.yml`
 - `aws/owen-infra/resources/owen-blobs-queue.yml`
@@ -54,14 +54,14 @@ Then store a single private key in Secrets Manager (see `Setting Secrets`).
 However:
 
 - you must still register the associated public key in the Protocol’s whitelist
-- you must still grant it the BLOB_SENDER_ROLE. See here: <TODO>
+- you must still grant it the `BLOB_SENDER_ROLE`. See here: TOADD
 
 **_Use with KMS_** <br>
 If you choose to use KMS, complete the following additional steps:
 Because OWEN instances sign requests to the Protocol's IPFS bridge using unique KMS private keys, each corresponding public address must be registered on the Protocol’s whitelist.
 
 1. In your [AWS Console](https://console.aws.amazon.com/) go to: `KMS → Customer managed keys`. Locate the keys associated with your OWEN Lambdas (visible in resource descriptions) and with `BlobsBatchSender`. Alternatively, inspect the Lambdas’ `SIGNER_KMS_ID` environment variable.
-2. Resolve each key locally to obtain its public key: `[INSTRUCTIONS](https://luhenning.medium.com/the-dark-side-of-the-elliptic-curve-signing-ethereum-transactions-with-aws-kms-in-javascript-83610d9a6f81)`
+2. Resolve each key locally to obtain its public key: [INSTRUCTIONS](https://luhenning.medium.com/the-dark-side-of-the-elliptic-curve-signing-ethereum-transactions-with-aws-kms-in-javascript-83610d9a6f81)
 3. Send all public addresses of OWEN to The Protocol so we can register them
 4. If not done already during sEOA delegation, grant `BLOB_SENDER_ROLE` to the public address of `BlobsBatchSender`.
 
@@ -75,10 +75,6 @@ Set:
 - (optional when you use default `USE_KMS=false`) `PRIVATE_KEY`
 
 ## Trigger file
-
-You enqueue messages for processing by upload them to your newly created S3 bucket: `ddex-messages-prod`.
-Each message should be in separate message folder with optional resources like images in the subfolders.
-By default, to trigger the flow of digesting and processing the message you should also include a special file in the message folder. The filenanme should start with `BatchComplete_` and can be 0 bytes and should be uploaded as the last item in the folder to avoid triggering the flow before the whole folder is uploaded. You can define the pattern of the trigger file name here: `aws/owen-infra/template-config-prod.json` => `TriggerFilePattern`
 
 To enqueue a message for processing, upload it to the S3 bucket: `ddex-messages-prod`.
 Each message should be placed in a separate folder; optional assets such as images can go in subfolders.
@@ -101,7 +97,7 @@ Depending on which option you choose, it will be either:
 
 # 3. HOW TO USE IT TO SEND DDEX MESSAGES
 
-After deploying and configuring your stack, and after assigning the correct roles to your sEOA, you can begin sending DDEX messages. Upload each message (in its own folder) to the `ddex-messages-prod bucket`.
-Make sure each folder includes a trigger file as described earlier in `Trigger file`.
+After deploying and configuring your stack, and after assigning the correct roles to your sEOA, you can begin sending DDEX messages. Upload each message (in its own folder) to the `ddex-messages-prod` bucket.
+Make sure each folder includes a trigger file as described earlier in `Trigger file` section.
 
 You can monitor processing progress in the DynamoDB table (default name: `DdexMessageStatusProd`).
