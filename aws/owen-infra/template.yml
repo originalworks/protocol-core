@@ -219,7 +219,7 @@ Resources:
     Properties:
       Location: ./resources/owen.yml
       Parameters:
-        LambdaScheduleRateMin: "8"
+        LambdaScheduleRateMin: "8" # 8min is recommended minimum
         MessagesBucketName: !Ref MessagesBucketName
         MessageStatusTableName: !Ref MessageStatusTableName
         MessagePerBlob: !Ref MessagePerBlob
