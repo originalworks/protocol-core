@@ -4,8 +4,8 @@ import {
   BlobRejectedEventId,
   recordBlobsStatuses,
   BlobProcessedEventId,
-  recordHealthStatusValidatorData,
-} from "./helpers";
+  recordHealthStatusValidatorData, deduplicateStringList,
+} from './helpers';
 import {
   Cid,
   Track,
@@ -26,9 +26,6 @@ import {
 } from "./types/schema";
 import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
 import { AssetMetadataTemplate, BlobMetadataTemplate } from "./types/templates";
-
-// Just an example: we create a data source up to 70 files.
-const maxFiles = 70;
 
 export function handleBlobProcessed(event: BlobProcessed): void {
   const proverPublicOutputs = event.params.proverPublicOutputs;
@@ -143,6 +140,8 @@ export function handleBlobProcessed(event: BlobProcessed): void {
       }
     }
 
+    const displayArtistNamesList = displayArtistNames.map<string>((artist) => artist.display_artist_name.toString());
+
     const soundRecordings = message.sound_recordings;
     if (soundRecordings.length > 0) {
       for (let j = 0; j < soundRecordings.length; j++) {
@@ -162,6 +161,11 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.label = pLine.p_line_text.replace(pLine.year.toString(), "").trim();
               track.image = image;
               track.releases = [release.id];
+              if (displayArtistNamesList.length > 0) {
+                track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(', '));
+              } else {
+                track.display_artist_names = '';
+              }
               track.timestamp = event.block.timestamp;
               track.save();
 
@@ -202,6 +206,21 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                   track.releases = [release.id];
                 } else {
                   track.releases = [release.id].concat(track.releases!);
+                }
+                if (track.display_artist_names == null) {
+                  if (displayArtistNamesList.length > 0) {
+                    track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                  } else {
+                    track.display_artist_names = '';
+                  }
+                } else {
+                  if (displayArtistNamesList.length > 0) {
+                    if (track.display_artist_names.length > 0) {
+                      track.display_artist_names = deduplicateStringList(track.display_artist_names + ", " + displayArtistNamesList.join(", "));
+                    } else {
+                      track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                    }
+                  }
                 }
                 track.timestamp = event.block.timestamp;
                 track.save();
