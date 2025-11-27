@@ -4,8 +4,9 @@ import {
   BlobRejectedEventId,
   recordBlobsStatuses,
   BlobProcessedEventId,
-  recordHealthStatusValidatorData, deduplicateStringList,
-} from './helpers';
+  deduplicateStringList,
+  recordHealthStatusValidatorData,
+} from "./helpers";
 import {
   Cid,
   Track,
@@ -162,9 +163,9 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.image = image;
               track.releases = [release.id];
               if (displayArtistNamesList.length > 0) {
-                track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(', '));
+                track.artist_names = deduplicateStringList(displayArtistNamesList.join(', '));
               } else {
-                track.display_artist_names = '';
+                track.artist_names = '';
               }
               track.timestamp = event.block.timestamp;
               track.save();
@@ -207,18 +208,18 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                 } else {
                   track.releases = [release.id].concat(track.releases!);
                 }
-                if (track.display_artist_names == null) {
+                if (track.artist_names == null) {
                   if (displayArtistNamesList.length > 0) {
-                    track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                    track.artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
                   } else {
-                    track.display_artist_names = '';
+                    track.artist_names = '';
                   }
                 } else {
                   if (displayArtistNamesList.length > 0) {
-                    if (track.display_artist_names.length > 0) {
-                      track.display_artist_names = deduplicateStringList(track.display_artist_names + ", " + displayArtistNamesList.join(", "));
+                    if (track.artist_names.length > 0) {
+                      track.artist_names = deduplicateStringList(track.artist_names + ", " + displayArtistNamesList.join(", "));
                     } else {
-                      track.display_artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                      track.artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
                     }
                   }
                 }

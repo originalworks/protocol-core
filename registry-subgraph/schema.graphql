@@ -5,7 +5,7 @@ type _Schema_
     algorithm: rank
     include: [{
       entity: "Track",
-      fields: [{ name: "isrc" }, { name: "display_title_text" }, { name: "display_artist_names" }]
+      fields: [{ name: "isrc" }, { name: "display_title_text" }, { name: "artist_names" }]
     }]
   )
 
@@ -154,7 +154,7 @@ type Track @entity(immutable: false) {
   label: String
   image: String!
   releases: [Release!]
-  display_artist_names: String!
+  artist_names: String!
   timestamp: BigInt!
 }
 
