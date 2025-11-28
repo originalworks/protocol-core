@@ -108,3 +108,11 @@ export function getValueIfExist(
     return null;
   }
 }
+
+export function getObject(value: JSONValue | null): TypedMap<string, JSONValue> | null {
+  return value && value.kind == JSONValueKind.OBJECT ? value.toObject() : null;
+}
+
+export function getArray(value: JSONValue | null): JSONValue[] | null {
+  return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
+}
