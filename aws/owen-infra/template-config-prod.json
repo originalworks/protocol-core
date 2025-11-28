@@ -1,7 +1,7 @@
 {
     "Parameters": {
-        "MessagesBucketName": "ddex-messages-dev",
-        "MessageStatusTableName": "DdexMessageStatusDev",
+        "MessagesBucketName": "ddex-messages-prod",
+        "MessageStatusTableName": "DdexMessageStatusProd",
         "TriggerFilePattern": "BatchComplete_",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
         "MessageFolderAttributeName": "messageFolder",
@@ -10,10 +10,8 @@
         "UpdatedTimestampAttributeName": "updatedTimestamp",
         "UnprocessedStatusValue": "unprocessed",
         "MessagePerBlob": "5",
-        "Environment": "development",
-        "OwenLambdaSecretsName": "OwenLambdaSecretsDev",
-        "DdexSequencerAddress": "75AbeCf07C26368F0f4AA0b0d3637A732E25467e",
-        "StorachaBridgeUrl": "https://lwdrum6osj.execute-api.us-east-1.amazonaws.com/stage/",
-        "SeoaAddress": "18f6d8e8b6b72bd9088dd452c63af0a79e2b58b3"
+        "Environment": "prod",
+        "OwenLambdaSecretsName": "OwenLambdaSecretsProd",
+        "SeoaAddress": "your-seoa-address"
     }
 }
