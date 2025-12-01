@@ -112,11 +112,9 @@ impl ContractsManager {
             .sidecar(transaction_data.blob_sidecar)
             .max_fee_per_blob_gas(1000000001);
 
-        if is_local() {
-            tx_builder = tx_builder
-                .max_priority_fee_per_gas(500000000)
-                .max_fee_per_gas(500000001);
-        }
+        tx_builder = tx_builder
+            .max_priority_fee_per_gas(5000000000)
+            .max_fee_per_gas(5000000001);
 
         let tx_request = tx_builder.into_transaction_request().gas_limit(300000);
 
