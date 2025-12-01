@@ -11,6 +11,8 @@
         "UnprocessedStatusValue": "unprocessed",
         "MessagePerBlob": "5",
         "Environment": "stage",
-        "OwenLambdaSecretsName": "OwenLambdaSecretsStage"
+        "OwenLambdaSecretsName": "OwenLambdaSecretsStage",
+        "SeoaAddress": "your-seoa-address",
+        "DdexSequencerAddress": "88c430c91Cbb608b41cDB2fCe27604E12233233f"
     }
 }
