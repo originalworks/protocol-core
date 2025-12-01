@@ -116,3 +116,19 @@ export function getObject(value: JSONValue | null): TypedMap<string, JSONValue> 
 export function getArray(value: JSONValue | null): JSONValue[] | null {
   return value && value.kind == JSONValueKind.ARRAY ? value.toArray() : null;
 }
+
+export function deduplicateStringList(input: string): string {
+  let items = input.split(",");
+  let seen = new Map<string, boolean>();
+  let unique: string[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    let item = items[i].trim();
+    if (!seen.has(item)) {
+      seen.set(item, true);
+      unique.push(item);
+    }
+  }
+
+  return unique.join(", ");
+}

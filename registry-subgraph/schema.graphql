@@ -1,3 +1,14 @@
+type _Schema_
+  @fulltext(
+    name: "trackSearch"
+    language: en
+    algorithm: rank
+    include: [{
+      entity: "Track",
+      fields: [{ name: "isrc" }, { name: "display_title_text" }, { name: "artist_names" }]
+    }]
+  )
+
 type HealthStatus @entity(immutable: false) {
   id: String!
   txAmount: BigInt!
@@ -145,6 +156,7 @@ type Track @entity(immutable: false) {
   image: String!
   imageMetadata: ImageMetadata
   releases: [Release!]
+  artist_names: String!
   timestamp: BigInt!
 }
 

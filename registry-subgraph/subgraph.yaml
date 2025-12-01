@@ -3,6 +3,8 @@ description: example of a subgraph
 repository: https://github.com/graphprotocol/graph-tooling.git
 schema:
   file: ./schema.graphql
+features:
+  - fullTextSearch
 dataSources:
   - kind: ethereum/contract
     name: DdexSequencer

@@ -4,6 +4,7 @@ import {
   BlobRejectedEventId,
   recordBlobsStatuses,
   BlobProcessedEventId,
+  deduplicateStringList,
   recordHealthStatusValidatorData,
 } from "./helpers";
 import {
@@ -141,6 +142,8 @@ export function handleBlobProcessed(event: BlobProcessed): void {
       }
     }
 
+    const displayArtistNamesList = displayArtistNames.map<string>((artist) => artist.display_artist_name.toString());
+
     const soundRecordings = message.sound_recordings;
     if (soundRecordings.length > 0) {
       for (let j = 0; j < soundRecordings.length; j++) {
@@ -161,6 +164,11 @@ export function handleBlobProcessed(event: BlobProcessed): void {
               track.image = image;
               track.imageMetadata = cid.id;
               track.releases = [release.id];
+              if (displayArtistNamesList.length > 0) {
+                track.artist_names = deduplicateStringList(displayArtistNamesList.join(', '));
+              } else {
+                track.artist_names = '';
+              }
               track.timestamp = event.block.timestamp;
               track.save();
 
@@ -202,6 +210,21 @@ export function handleBlobProcessed(event: BlobProcessed): void {
                   track.releases = [release.id];
                 } else {
                   track.releases = [release.id].concat(track.releases!);
+                }
+                if (track.artist_names == null) {
+                  if (displayArtistNamesList.length > 0) {
+                    track.artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                  } else {
+                    track.artist_names = '';
+                  }
+                } else {
+                  if (displayArtistNamesList.length > 0) {
+                    if (track.artist_names.length > 0) {
+                      track.artist_names = deduplicateStringList(track.artist_names + ", " + displayArtistNamesList.join(", "));
+                    } else {
+                      track.artist_names = deduplicateStringList(displayArtistNamesList.join(", "));
+                    }
+                  }
                 }
                 track.timestamp = event.block.timestamp;
                 track.save();
