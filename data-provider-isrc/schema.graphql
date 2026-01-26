@@ -1,0 +1,10 @@
+type NewBlob @entity(immutable: false) {
+  id: String!
+  blobSubmitter: Bytes!
+}
+
+type BlobProcessedWithSubmitter @entity(immutable: false) {
+  id: String!
+  submitter: Bytes!
+  firstProvedMessageReleaseText: String!
+}

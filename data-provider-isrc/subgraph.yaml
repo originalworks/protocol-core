@@ -1,0 +1,51 @@
+specVersion: 0.0.5
+description: example of a subgraph
+repository: https://github.com/graphprotocol/graph-tooling.git
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DdexSequencer
+    network: chiado
+    source:
+      abi: DdexSequencer
+      address: "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
+      startBlock: 19163927
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - NewBlob
+      abis:
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      # eventHandlers:
+      #   - event: NewBlobSubmitted(bytes,bytes32)
+      #     handler: handleNewBlobSubmitted
+      callHandlers:
+        - function: submitNewBlob(bytes32,bytes,bytes32)
+          handler: handleNewBlobSubmitted
+  - kind: ethereum/contract
+    name: DdexEmitter
+    network: chiado
+    source:
+      abi: DdexEmitter
+      address: "0xDe804E8fc13883C447092d05F7968f86D1fD6847"
+      startBlock: 19163927
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - ProvedMessageSubmitter
+      abis:
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      eventHandlers:
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
+          handler: handleBlobProcessed
