@@ -1,11 +1,11 @@
 use alloy::primitives::Address;
 use lambda_runtime::Error;
+use ow_wallet::HasOwWalletFields;
 use owen::constants;
-use owen::wallet::HasOwenWalletFields;
 use std::env;
 use std::str::FromStr;
 
-impl HasOwenWalletFields for BlobsBatchSenderConfig {
+impl HasOwWalletFields for BlobsBatchSenderConfig {
     fn use_kms(&self) -> bool {
         self.use_kms
     }

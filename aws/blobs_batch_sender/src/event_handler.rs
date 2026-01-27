@@ -1,10 +1,8 @@
 use aws_lambda_events::event::sqs::SqsEvent;
 use blobs_batch_sender::BlobsBatchSenderConfig;
 use lambda_runtime::{Error, LambdaEvent};
-use owen::{
-    blobs_queue::BlobsQueueMessageBody,
-    wallet::{OwenWallet, OwenWalletConfig},
-};
+use ow_wallet::{OwWallet, OwWalletConfig};
+use owen::blobs_queue::BlobsQueueMessageBody;
 
 use crate::{contract::SmartEoaManager, s3::BlobsStorage};
 
@@ -12,9 +10,9 @@ pub(crate) async fn function_handler(event: LambdaEvent<SqsEvent>) -> Result<(),
     println!("Building...");
     let config = BlobsBatchSenderConfig::build()?;
     let blobs_storage = BlobsStorage::build(&config).await?;
-    let owen_wallet_config = OwenWalletConfig::from(&config)?;
-    let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
-    let smart_eoa_manager = SmartEoaManager::build(&config, owen_wallet.wallet)?;
+    let ow_wallet_config = OwWalletConfig::from(&config)?;
+    let ow_wallet = OwWallet::build(&ow_wallet_config).await?;
+    let smart_eoa_manager = SmartEoaManager::build(&config, ow_wallet.wallet)?;
 
     println!("Build complate");
     let blobhashes = extract_blobhashes(event)?;
