@@ -1,11 +1,11 @@
 use crate::{
     constants::{self, IPFS_API_ADD_FILE, REQWEST_CLIENT},
-    wallet::OwenWallet,
     Config,
 };
 use alloy::hex;
 use anyhow::Context;
 use log_macros::{format_error, log_info};
+use ow_wallet::OwWallet;
 use reqwest::{multipart, Body};
 use serde::{Deserialize, Serialize};
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -26,16 +26,16 @@ pub struct IpfsManager<'a> {
     local_ipfs: bool,
     ipfs_api_base_url: String,
     storacha_bridge_url: String,
-    owen_wallet: &'a OwenWallet,
+    ow_wallet: &'a OwWallet,
 }
 
 impl<'a> IpfsManager<'a> {
-    pub async fn build(config: &Config, owen_wallet: &'a OwenWallet) -> anyhow::Result<Self> {
+    pub async fn build(config: &Config, ow_wallet: &'a OwWallet) -> anyhow::Result<Self> {
         Ok(Self {
             local_ipfs: config.local_ipfs.clone(),
             ipfs_api_base_url: config.ipfs_api_base_url.clone(),
             storacha_bridge_url: config.storacha_bridge_url.clone(),
-            owen_wallet,
+            ow_wallet,
         })
     }
 
@@ -80,7 +80,7 @@ impl<'a> IpfsManager<'a> {
     }
 
     async fn sign_authorization_header(&self) -> anyhow::Result<String> {
-        let signature = self.owen_wallet.sign_message(constants::CLIENT).await?;
+        let signature = self.ow_wallet.sign_message(constants::CLIENT).await?;
 
         let authorization = format!("{}::0x{}", "OWEN", hex::encode(signature.as_bytes()));
         Ok(authorization)

@@ -8,13 +8,13 @@ mod image_processor;
 mod ipfs;
 pub mod logger;
 pub mod output_generator;
-pub mod wallet;
 use alloy::primitives::Address;
 use blob::BlobTransactionData;
 use contracts::ContractsManager;
 use ddex_parser::ParserError;
 pub use log;
 use log_macros::log_error;
+use ow_wallet::{HasOwWalletFields, OwWallet, OwWalletConfig};
 use sentry::User;
 use serde_json::json;
 use std::env;
@@ -22,7 +22,6 @@ use std::str::FromStr;
 
 use crate::ipfs::IpfsManager;
 use crate::output_generator::{DdexMessage, OutputFilesGenerator};
-use crate::wallet::{OwenWallet, OwenWalletConfig};
 
 #[cfg(any(feature = "aws-integration", feature = "local-s3"))]
 pub mod s3_message_storage;
@@ -157,12 +156,12 @@ impl Config {
 }
 
 pub async fn run(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
-    let owen_wallet_config = OwenWalletConfig::from(config)?;
-    let owen_wallet = OwenWallet::build(&owen_wallet_config).await?;
-    let contracts_manager = ContractsManager::build(&config, &owen_wallet).await?;
+    let ow_wallet_config = OwWalletConfig::from(config)?;
+    let ow_wallet = OwWallet::build(&ow_wallet_config).await?;
+    let contracts_manager = ContractsManager::build(&config, &ow_wallet).await?;
     contracts_manager.check_image_compatibility().await?;
 
-    let ipfs_manager = IpfsManager::build(&config, &owen_wallet).await?;
+    let ipfs_manager = IpfsManager::build(&config, &ow_wallet).await?;
     let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
     let ddex_messages = output_files_generator.generate_files().await?;
 
@@ -212,4 +211,19 @@ pub async fn run_with_sentry(config: &Config) -> anyhow::Result<Vec<DdexMessage>
     })?;
 
     anyhow::Ok(ddex_messages)
+}
+
+impl HasOwWalletFields for Config {
+    fn use_kms(&self) -> bool {
+        self.use_kms
+    }
+    fn rpc_url(&self) -> String {
+        self.rpc_url.clone()
+    }
+    fn private_key(&self) -> Option<String> {
+        self.private_key.clone()
+    }
+    fn signer_kms_id(&self) -> Option<String> {
+        self.signer_kms_id.clone()
+    }
 }

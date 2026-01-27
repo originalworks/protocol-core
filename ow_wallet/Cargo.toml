@@ -1,0 +1,14 @@
+[package]
+name = "ow_wallet"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+alloy = "1.5.2"
+alloy-signer-aws = "1.5.2"
+anyhow.workspace = true
+aws-config = "1.8.12"
+aws-sdk-kms = "1.98.0"
+dotenvy.workspace = true
+log = { workspace = true }
+log_macros.workspace = true

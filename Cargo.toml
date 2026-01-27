@@ -6,6 +6,7 @@ members = [
     "blob_codec",
     "ddex_parser",
     "log_macros",
+    "ow_wallet",
     "owen",
     "prover",
     "validator_node",
@@ -16,6 +17,7 @@ log_macros = { path = "./log_macros" }
 blob_codec = { path = "./blob_codec" }
 ddex_parser = { path = "./ddex_parser" }
 owen = { path = "./owen" }
+ow_wallet = { path = "./ow_wallet" }
 prover = { path = "./prover" }
 log = "0.4.27"
 thiserror = "2.0.12"

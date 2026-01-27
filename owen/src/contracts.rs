@@ -1,6 +1,5 @@
 use crate::blob::BlobTransactionData;
-use crate::wallet::OwenWallet;
-use crate::{is_local, Config};
+use crate::Config;
 use alloy::primitives::FixedBytes;
 use alloy::providers::{Provider, ProviderBuilder};
 use alloy::sol_types::private::Bytes;
@@ -16,6 +15,7 @@ use alloy::{
     sol,
 };
 use log_macros::{format_error, log_info, log_warn};
+use ow_wallet::OwWallet;
 use serde_json::json;
 use DdexEmitter::getSupportedBlobImageIdsReturn;
 
@@ -51,8 +51,8 @@ pub struct ContractsManager {
 }
 
 impl ContractsManager {
-    pub async fn build(config: &Config, owen_wallet: &OwenWallet) -> anyhow::Result<Self> {
-        let wallet = owen_wallet.wallet.clone();
+    pub async fn build(config: &Config, ow_wallet: &OwWallet) -> anyhow::Result<Self> {
+        let wallet = ow_wallet.wallet.clone();
 
         let provider = ProviderBuilder::new()
             .wallet(wallet)

@@ -1,54 +1,39 @@
-use crate::Config;
 use alloy::network::EthereumWallet;
 use alloy::primitives::Address;
 use alloy::providers::{Provider, ProviderBuilder};
-use alloy::signers::local::PrivateKeySigner;
 use alloy::signers::Signer;
+use alloy::signers::local::PrivateKeySigner;
 use alloy_signer_aws::AwsSigner;
 use anyhow::Context;
-use aws_config::meta::region::RegionProviderChain;
 use aws_config::BehaviorVersion;
+use aws_config::meta::region::RegionProviderChain;
 use log_macros::{format_error, log_info};
+use std::env;
 
-pub struct OwenWallet {
+pub struct OwWallet {
     pub use_kms: bool,
     aws_signer: Option<AwsSigner>,
     private_key_signer: Option<PrivateKeySigner>,
     pub wallet: EthereumWallet,
 }
 
-pub trait HasOwenWalletFields {
+pub trait HasOwWalletFields {
     fn use_kms(&self) -> bool;
     fn rpc_url(&self) -> String;
     fn private_key(&self) -> Option<String>;
     fn signer_kms_id(&self) -> Option<String>;
 }
 
-impl HasOwenWalletFields for Config {
-    fn use_kms(&self) -> bool {
-        self.use_kms
-    }
-    fn rpc_url(&self) -> String {
-        self.rpc_url.clone()
-    }
-    fn private_key(&self) -> Option<String> {
-        self.private_key.clone()
-    }
-    fn signer_kms_id(&self) -> Option<String> {
-        self.signer_kms_id.clone()
-    }
-}
-
-pub struct OwenWalletConfig {
+pub struct OwWalletConfig {
     pub use_kms: bool,
     pub rpc_url: String,
     pub private_key: Option<String>,
     pub signer_kms_id: Option<String>,
 }
 
-impl OwenWalletConfig {
+impl OwWalletConfig {
     pub fn build() -> anyhow::Result<Self> {
-        let rpc_url = Config::get_env_var("RPC_URL");
+        let rpc_url = Self::get_env_var("RPC_URL");
         let mut signer_kms_id = None;
         let mut private_key = None;
         let use_kms = matches!(
@@ -59,9 +44,9 @@ impl OwenWalletConfig {
         );
 
         if use_kms {
-            signer_kms_id = Some(Config::get_env_var("SIGNER_KMS_ID"));
+            signer_kms_id = Some(Self::get_env_var("SIGNER_KMS_ID"));
         } else {
-            private_key = Some(Config::get_env_var("PRIVATE_KEY"));
+            private_key = Some(Self::get_env_var("PRIVATE_KEY"));
         }
 
         Ok(Self {
@@ -72,7 +57,11 @@ impl OwenWalletConfig {
         })
     }
 
-    pub fn from<C: HasOwenWalletFields>(config_source: &C) -> anyhow::Result<Self> {
+    fn get_env_var(key: &str) -> String {
+        env::var(key).expect(format!("Missing env variable: {key}").as_str())
+    }
+
+    pub fn from<C: HasOwWalletFields>(config_source: &C) -> anyhow::Result<Self> {
         Ok(Self {
             use_kms: config_source.use_kms(),
             rpc_url: config_source.rpc_url(),
@@ -105,8 +94,8 @@ impl OwenWalletConfig {
     }
 }
 
-impl OwenWallet {
-    pub async fn build(config: &OwenWalletConfig) -> anyhow::Result<Self> {
+impl OwWallet {
+    pub async fn build(config: &OwWalletConfig) -> anyhow::Result<Self> {
         let wallet: EthereumWallet;
         let mut aws_signer = None;
         let mut private_key_signer: Option<PrivateKeySigner> = None;
