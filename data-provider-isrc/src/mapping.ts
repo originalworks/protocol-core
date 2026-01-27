@@ -1,5 +1,5 @@
 // import { BigInt } from "@graphprotocol/graph-ts";
-import { NewBlob, BlobProcessedWithSubmitter } from "./types/schema";
+import { NewBlob, TrackProcessedWithSubmitter } from "./types/schema";
 
 import {
   DdexSequencer,
@@ -7,7 +7,29 @@ import {
   SubmitNewBlobCall,
 } from "./types/DdexSequencer/DdexSequencer";
 import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
-import { Address } from "@graphprotocol/graph-ts";
+
+export function handleNewBlobSubmitted(call: SubmitNewBlobCall): void {
+  const id = call.inputs._blobSha2.toHex().toString();
+  const from = call.transaction.from;
+
+  let newBlob = NewBlob.load(id);
+  if (newBlob == null) {
+    newBlob = new NewBlob(id);
+    newBlob.blobSubmitters = [];
+  }
+
+  if (newBlob.blobSubmitters.length > 0) {
+    const submitters = newBlob.blobSubmitters;
+    const index = submitters.indexOf(from);
+    if (index < 0) {
+      newBlob.blobSubmitters = submitters.concat([from]);
+    }
+  } else {
+    newBlob.blobSubmitters = [from];
+  }
+
+  newBlob.save();
+}
 
 // export function handleNewBlobSubmitted(event: NewBlobSubmitted): void {
 //   const id = event.params.commitment.toHex().toString();
@@ -30,22 +52,59 @@ export function handleBlobProcessed(event: BlobProcessed): void {
   const blobSha2 = event.params.proverPublicOutputs.digest;
 
   let submittedBlob = NewBlob.load(blobSha2.toHex().toString());
-  if (submittedBlob) {
-    const id = event.transaction.hash.toHex().toString();
-    const blobProcessedWithSubmitter = new BlobProcessedWithSubmitter(id);
-    blobProcessedWithSubmitter.firstProvedMessageReleaseText =
-      event.params.proverPublicOutputs.messages[0].release.title_text;
-    blobProcessedWithSubmitter.submitter = submittedBlob.blobSubmitter;
-    blobProcessedWithSubmitter.save();
-  } else {
-    const id = event.transaction.hash.toHex().toString();
-    const blobProcessedWithSubmitter = new BlobProcessedWithSubmitter(id);
-    blobProcessedWithSubmitter.firstProvedMessageReleaseText =
-      "here submitter is a blobsha2";
-    blobProcessedWithSubmitter.submitter = blobSha2;
-    blobProcessedWithSubmitter.save();
+
+  const messages = event.params.proverPublicOutputs.messages;
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    const recordings = message.sound_recordings;
+    for (let j = 0; j < recordings.length; j++) {
+      const editions = message.sound_recordings[j].sound_recording_editions;
+      for (let k = 0; k < editions.length; k++) {
+        const isrc = editions[k].isrc;
+
+        if (submittedBlob == null) {
+          let trackProcessed = TrackProcessedWithSubmitter.load(isrc);
+          if (trackProcessed == null) {
+            trackProcessed = new TrackProcessedWithSubmitter(isrc);
+            trackProcessed.isrc = isrc;
+            trackProcessed.submitters = [blobSha2];
+            trackProcessed.save();
+          } else {
+            trackProcessed.submitters = [blobSha2];
+            trackProcessed.save();
+          }
+        } else {
+          let trackProcessed = TrackProcessedWithSubmitter.load(isrc);
+          if (trackProcessed == null) {
+            trackProcessed = new TrackProcessedWithSubmitter(isrc);
+            trackProcessed.isrc = isrc;
+            trackProcessed.submitters = submittedBlob.blobSubmitters;
+            trackProcessed.save();
+          } else {
+            trackProcessed.submitters = submittedBlob.blobSubmitters;
+            trackProcessed.save();
+          }
+        }
+      }
+    }
   }
 
+  // if (submittedBlob) {
+  //   const id = event.transaction.hash.toHex().toString();
+  //   const blobProcessedWithSubmitter = new BlobProcessedWithSubmitter(id);
+  //   blobProcessedWithSubmitter.firstProvedMessageReleaseText =
+  //     event.params.proverPublicOutputs.messages[0].release.title_text;
+  //   blobProcessedWithSubmitter.submitter = submittedBlob.blobSubmitter;
+  //   blobProcessedWithSubmitter.save();
+  // } else {
+  //   const id = event.transaction.hash.toHex().toString();
+  //   const blobProcessedWithSubmitter = new BlobProcessedWithSubmitter(id);
+  //   blobProcessedWithSubmitter.firstProvedMessageReleaseText =
+  //     "here submitter is a blobsha2";
+  //   blobProcessedWithSubmitter.submitter = blobSha2;
+  //   blobProcessedWithSubmitter.save();
+  // }
+  //
   //   blobProcessedWithSubmitter.submitter =
   // if (provedMessageSubmitter == null) {
   // provedMessageSubmitter.blobDigest = event.params.proverPublicOutputs.digest;
@@ -62,12 +121,4 @@ export function handleBlobProcessed(event: BlobProcessed): void {
 
   // provedMessageSubmitter.save();
   //   }
-}
-
-export function handleNewBlobSubmitted(call: SubmitNewBlobCall): void {
-  const id = call.inputs._blobSha2.toHex().toString();
-  const newBlob = new NewBlob(id);
-  newBlob.blobSubmitter = call.transaction.from;
-
-  newBlob.save();
 }
