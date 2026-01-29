@@ -1,0 +1,15 @@
+type Submitter @entity(immutable: true) {
+  id: Bytes!
+  address: Bytes!
+}
+
+type NewBlob @entity(immutable: false) {
+  id: String!
+  blobSubmitters: [Bytes!]!
+}
+
+type TrackProcessedWithSubmitter @entity(immutable: false) {
+  id: String!
+  isrc: String!
+  submitters: [Bytes!]!
+}
