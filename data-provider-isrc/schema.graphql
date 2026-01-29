@@ -1,3 +1,8 @@
+type Submitter @entity(immutable: true) {
+  id: Bytes!
+  address: Bytes!
+}
+
 type NewBlob @entity(immutable: false) {
   id: String!
   blobSubmitters: [Bytes!]!

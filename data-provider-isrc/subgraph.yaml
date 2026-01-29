@@ -18,12 +18,10 @@ dataSources:
       file: ./src/mapping.ts
       entities:
         - NewBlob
+        - Submitter
       abis:
         - name: DdexSequencer
           file: ./abis/DdexSequencer.json
-      # eventHandlers:
-      #   - event: NewBlobSubmitted(bytes,bytes32)
-      #     handler: handleNewBlobSubmitted
       callHandlers:
         - function: submitNewBlob(bytes32,bytes,bytes32)
           handler: handleNewBlobSubmitted

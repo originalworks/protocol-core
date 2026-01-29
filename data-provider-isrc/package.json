@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
-    "build-gnosis": "graph build --network=gnosis",
-    "build-chiado": "graph build --network=gnosis-chiado",
+    "build-gnosis": "graph build --network=xdai",
+    "build-chiado": "graph build --network=chiado",
     "build": "graph build subgraph.yaml",
     "build-ipfs": "graph build --ipfs /ip4/127.0.0.1/tcp/5001 subgraph.yaml",
     "build-wast": "graph build -t wast subgraph.yaml"

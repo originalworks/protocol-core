@@ -1,5 +1,5 @@
 // import { BigInt } from "@graphprotocol/graph-ts";
-import { NewBlob, TrackProcessedWithSubmitter } from "./types/schema";
+import { NewBlob, Submitter, TrackProcessedWithSubmitter } from "./types/schema";
 
 import {
   DdexSequencer,
@@ -11,6 +11,13 @@ import { BlobProcessed } from "./types/DdexEmitter/DdexEmitter";
 export function handleNewBlobSubmitted(call: SubmitNewBlobCall): void {
   const id = call.inputs._blobSha2.toHex().toString();
   const from = call.transaction.from;
+
+  let submitter = Submitter.load(from);
+  if (submitter == null) {
+    submitter = new Submitter(from);
+    submitter.address = from;
+    submitter.save();
+  }
 
   let newBlob = NewBlob.load(id);
   if (newBlob == null) {
