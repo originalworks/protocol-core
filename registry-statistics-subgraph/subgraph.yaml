@@ -52,6 +52,12 @@ dataSources:
         - ValidatorTxPerDay
         - ValidatorTxPerMonth
         - MessagesProcessedPerDay
+        - Artist
+        - ArtistsAddedPerDay
+        - ArtistsAddedPerMonth
+        - Track
+        - TracksAddedPerDay
+        - TracksAddedPerMonth
       abis:
         - name: DdexEmitter
           file: ./abis/DdexEmitter.json

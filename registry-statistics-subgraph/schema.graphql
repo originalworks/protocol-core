@@ -84,3 +84,41 @@ type MessagesProcessedPerDay @entity(immutable: false) {
   year: String!
   amount: BigInt!
 }
+
+type Artist @entity(immutable: true) {
+  id: ID!
+}
+
+type ArtistsAddedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type ArtistsAddedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
+
+type Track @entity(immutable: true) {
+  id: ID!
+}
+
+type TracksAddedPerDay @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  day: String!
+  year: String!
+  amount: BigInt!
+}
+
+type TracksAddedPerMonth @entity(immutable: false) {
+  id: String! # date
+  month: String!
+  year: String!
+  amount: BigInt!
+}
