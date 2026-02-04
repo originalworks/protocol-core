@@ -1,39 +1,9 @@
-specVersion: 0.0.5
-description: example of a subgraph
-repository: https://github.com/graphprotocol/graph-tooling.git
+specVersion: 1.2.0
 schema:
   file: ./schema.graphql
 features:
   - fullTextSearch
 dataSources:
-  - kind: ethereum/contract
-    name: DdexSequencer
-    network: gnosis-chiado
-    source:
-      abi: DdexSequencer
-      address: "0x75AbeCf07C26368F0f4AA0b0d3637A732E25467e"
-      startBlock: 14932699
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./src/ddexSequencer.ts
-      entities:
-        - HealthStatus
-        - BlobsStatus
-        - BlobsSubmittedPerDay
-        - BlobsSubmittedPerMonth
-      abis:
-        - name: DdexSequencer
-          file: ./abis/DdexSequencer.json
-      eventHandlers:
-        - event: Initialized(uint64)
-          handler: handleInitialized
-        - event: NewBlobSubmitted(bytes,bytes32)
-          handler: handleNewBlobSubmitted
-      callHandlers:
-        - function: moveQueue()
-          handler: handleMoveQueue
   - kind: ethereum/contract
     name: DdexEmitter
     network: gnosis-chiado
@@ -43,18 +13,10 @@ dataSources:
       startBlock: 14932704
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/ddexEmitter.ts
       entities:
-        - HealthStatus
-        - BlobsStatus
-        - BlobsProcessedPerDay
-        - BlobsProcessedPerMonth
-        - BlobsRejectedPerDay
-        - BlobsRejectedPerMonth
-        - ValidatorTxPerDay
-        - ValidatorTxPerMonth
         - ProvedMessage
         - Artist
         - ArtistsAddedPerDay
@@ -72,13 +34,11 @@ dataSources:
       eventHandlers:
         - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
           handler: handleBlobProcessed
-        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
-          handler: handleBlobRejected
 templates:
   - kind: file/ipfs
     name: AssetMetadataTemplate
     mapping:
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - ImageMetadata
@@ -92,7 +52,7 @@ templates:
   - kind: file/ipfs
     name: BlobMetadataTemplate
     mapping:
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - BlobMetadata
