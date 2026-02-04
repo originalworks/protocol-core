@@ -1,0 +1,62 @@
+specVersion: 1.2.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: DdexSequencer
+    network: gnosis
+    source:
+      abi: DdexSequencer
+      address: "0x88c430c91Cbb608b41cDB2fCe27604E12233233f"
+      startBlock: 40899762
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/ddexSequencer.ts
+      entities:
+        - HealthStatus
+        - BlobsStatus
+        - BlobsSubmittedPerDay
+        - BlobsSubmittedPerMonth
+      abis:
+        - name: DdexSequencer
+          file: ./abis/DdexSequencer.json
+      eventHandlers:
+        - event: Initialized(uint64)
+          handler: handleInitialized
+        - event: NewBlobSubmitted(bytes,bytes32)
+          handler: handleNewBlobSubmitted
+      callHandlers:
+        - function: moveQueue()
+          handler: handleMoveQueue
+  - kind: ethereum/contract
+    name: DdexEmitter
+    network: gnosis
+    source:
+      abi: DdexEmitter
+      address: "0x88d6667e9183571D35650ab19884b7990C228A01"
+      startBlock: 40899766
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/ddexEmitter.ts
+      entities:
+        - HealthStatus
+        - BlobsStatus
+        - BlobsProcessedPerDay
+        - BlobsProcessedPerMonth
+        - BlobsRejectedPerDay
+        - BlobsRejectedPerMonth
+        - ValidatorTxPerDay
+        - ValidatorTxPerMonth
+        - MessagesProcessedPerDay
+      abis:
+        - name: DdexEmitter
+          file: ./abis/DdexEmitter.json
+      eventHandlers:
+        - event: BlobProcessed((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
+          handler: handleBlobProcessed
+        - event: BlobRejected((bool,bytes32,((string,string,string,string[],(string,int32,string[])[],(string,string,string)[],(string,string,string[])),(string,string,string,(string,(uint16,string)[],(string,string,string)[])[],(string)[],(string,int32,string[])[],(string,string,string[]))[])[],string[]),string)
+          handler: handleBlobRejected

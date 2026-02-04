@@ -1,0 +1,140 @@
+import { BigInt } from "@graphprotocol/graph-ts";
+
+import {
+  BlobRejectedEventId,
+  recordBlobsStatuses,
+  BlobProcessedEventId,
+  recordHealthStatusValidatorData,
+} from "./helpers";
+import {
+  ValidatorTxPerDay,
+  BlobsRejectedPerDay,
+  ValidatorTxPerMonth,
+  BlobsProcessedPerDay,
+  BlobsRejectedPerMonth,
+  BlobsProcessedPerMonth,
+  MessagesProcessedPerDay,
+} from "./types/schema";
+import { BlobProcessed, BlobRejected } from "./types/DdexEmitter/DdexEmitter";
+
+export function handleBlobProcessed(event: BlobProcessed): void {
+  const proverPublicOutputs = event.params.proverPublicOutputs;
+  const messages = proverPublicOutputs.messages;
+
+  const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
+
+  let messagesProcessed = MessagesProcessedPerDay.load(id);
+
+  if (messagesProcessed == null) {
+    messagesProcessed = new MessagesProcessedPerDay(id);
+    messagesProcessed.amount = BigInt.zero();
+  }
+
+  messagesProcessed.month = (date.getUTCMonth() + 1).toString();
+  messagesProcessed.day = date.getUTCDate().toString();
+  messagesProcessed.year = date.getUTCFullYear().toString();
+  messagesProcessed.amount = messagesProcessed.amount.plus(BigInt.fromI32(messages.length));
+
+  messagesProcessed.save();
+
+  recordBlobsStatuses(BlobProcessedEventId, event.block.timestamp, event.transaction.hash);
+  recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
+  handleValidatorData(event.block.timestamp);
+
+  let blobsProcessed = BlobsProcessedPerDay.load(id);
+
+  if (blobsProcessed == null) {
+    blobsProcessed = new BlobsProcessedPerDay(id);
+    blobsProcessed.amount = BigInt.zero();
+  }
+
+  blobsProcessed.month = (date.getUTCMonth() + 1).toString();
+  blobsProcessed.day = date.getUTCDate().toString();
+  blobsProcessed.year = date.getUTCFullYear().toString();
+  blobsProcessed.amount = blobsProcessed.amount.plus(BigInt.fromI32(1));
+
+  blobsProcessed.save();
+
+  let processedPerMonth = BlobsProcessedPerMonth.load(idPerMonth);
+
+  if (processedPerMonth == null) {
+    processedPerMonth = new BlobsProcessedPerMonth(idPerMonth);
+    processedPerMonth.amount = BigInt.zero();
+  }
+
+  processedPerMonth.month = (date.getUTCMonth() + 1).toString();
+  processedPerMonth.year = date.getUTCFullYear().toString();
+  processedPerMonth.amount = processedPerMonth.amount.plus(BigInt.fromI32(1));
+
+  processedPerMonth.save();
+}
+
+export function handleBlobRejected(event: BlobRejected): void {
+  recordBlobsStatuses(BlobRejectedEventId, event.block.timestamp, event.transaction.hash);
+  recordHealthStatusValidatorData(event.block.timestamp, event.transaction.hash);
+  handleValidatorData(event.block.timestamp);
+
+  const date = new Date(BigInt.fromString(`${event.block.timestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  let blobsRejected = BlobsRejectedPerDay.load(id);
+
+  if (blobsRejected == null) {
+    blobsRejected = new BlobsRejectedPerDay(id);
+    blobsRejected.amount = BigInt.zero();
+  }
+
+  blobsRejected.month = (date.getUTCMonth() + 1).toString();
+  blobsRejected.day = date.getUTCDate().toString();
+  blobsRejected.year = date.getUTCFullYear().toString();
+  blobsRejected.amount = blobsRejected.amount.plus(BigInt.fromI32(1));
+
+  blobsRejected.save();
+
+  const idPerMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
+  let rejectedPerMonth = BlobsRejectedPerMonth.load(idPerMonth);
+
+  if (rejectedPerMonth == null) {
+    rejectedPerMonth = new BlobsRejectedPerMonth(idPerMonth);
+    rejectedPerMonth.amount = BigInt.zero();
+  }
+
+  rejectedPerMonth.month = (date.getUTCMonth() + 1).toString();
+  rejectedPerMonth.year = date.getUTCFullYear().toString();
+  rejectedPerMonth.amount = rejectedPerMonth.amount.plus(BigInt.fromI32(1));
+
+  rejectedPerMonth.save();
+}
+
+function handleValidatorData(validationTimestamp: BigInt): void {
+  const date = new Date(BigInt.fromString(`${validationTimestamp.toI64()}000`).toI64());
+  const id = `${date.getUTCMonth() + 1}-${(date.getUTCDate())}-${date.getUTCFullYear()}`;
+  let validatorDay = ValidatorTxPerDay.load(id);
+
+  if (validatorDay == null) {
+    validatorDay = new ValidatorTxPerDay(id);
+    validatorDay.amount = BigInt.zero();
+  }
+
+  validatorDay.month = (date.getUTCMonth() + 1).toString();
+  validatorDay.day = date.getUTCDate().toString();
+  validatorDay.year = date.getUTCFullYear().toString();
+  validatorDay.amount = validatorDay.amount.plus(BigInt.fromI32(1));
+
+  validatorDay.save();
+
+  const idMonth = `${date.getUTCMonth() + 1}-1-${date.getUTCFullYear()}`;
+  let validatorMonth = ValidatorTxPerMonth.load(idMonth);
+
+  if (validatorMonth == null) {
+    validatorMonth = new ValidatorTxPerMonth(idMonth);
+    validatorMonth.amount = BigInt.zero();
+  }
+
+  validatorMonth.month = (date.getUTCMonth() + 1).toString();
+  validatorMonth.year = date.getUTCFullYear().toString();
+  validatorMonth.amount = validatorMonth.amount.plus(BigInt.fromI32(1));
+
+  validatorMonth.save();
+}
