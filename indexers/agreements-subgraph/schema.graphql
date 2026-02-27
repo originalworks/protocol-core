@@ -1,4 +1,4 @@
-type AgreementImplementation @entity {
+type AgreementImplementation @entity(immutable: true) {
   id: ID!
   network: String!
   timestamp: BigInt!
@@ -6,7 +6,7 @@ type AgreementImplementation @entity {
   implementationAddress: Bytes!
 }
 
-type AgreementImplementationChanged @entity {
+type AgreementImplementationChanged @entity(immutable: true) {
   id: ID!
   network: String!
   contract: Bytes!
@@ -18,7 +18,7 @@ type AgreementImplementationChanged @entity {
   agreementImplementation: Bytes!
 }
 
-type AgreementCreated @entity {
+type AgreementCreated @entity(immutable: false) {
   id: ID!
   network: String!
   contract: Bytes!
@@ -28,13 +28,13 @@ type AgreementCreated @entity {
   transactionHash: Bytes!
   logIndex: BigInt!
   tokenStandard: Int!
-  agreementImplementation: Bytes!
+  # agreementImplementation: Bytes!
   agreement: Agreement!
   holders: [AgreementHolder!]!
   fee: BigInt!
 }
 
-type HolderFundsClaimed @entity {
+type HolderFundsClaimed @entity(immutable: true) {
   id: ID!
   network: String!
   contract: Bytes!
@@ -54,7 +54,7 @@ type HolderFundsClaimed @entity {
   fee: BigInt!
 }
 
-type SplitTransferToAgreement @entity {
+type SplitTransferToAgreement @entity(immutable: true) {
   id: ID!
   currencyAddress: Bytes!
   inLendingCurrency: Boolean!
@@ -71,7 +71,7 @@ type SplitTransferToAgreement @entity {
   fee: BigInt!
 }
 
-type Agreement @entity {
+type Agreement @entity(immutable: false) {
   id: ID!
   network: String!
   factoryContract: Bytes!
@@ -82,12 +82,13 @@ type Agreement @entity {
   holders: [AgreementHolder!]!
   timestamp: BigInt!
   creationTxHash: Bytes!
-  implementationAddress: Bytes!
+  # implementationAddress: Bytes!
   contractURI: String
-  revenueStreamURIs: [String!]
+  # revenueStreamURIs: [String!]
+  rwaID: String!
 }
 
-type AgreementTransfer @entity {
+type AgreementTransfer @entity(immutable: true) {
   id: ID!
   agreement: Agreement!
   network: String!
@@ -103,7 +104,7 @@ type AgreementTransfer @entity {
   fee: BigInt!
 }
 
-type AgreementHolder @entity {
+type AgreementHolder @entity(immutable: false) {
   id: ID!
   network: String!
   agreement: Agreement!
@@ -113,7 +114,7 @@ type AgreementHolder @entity {
   isAdmin: Boolean!
 }
 
-type AgreementMetadata @entity {
+type AgreementMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
   type: String
@@ -123,7 +124,7 @@ type AgreementMetadata @entity {
   assetURI: String
 }
 
-type ConnectedAgreement @entity {
+type ConnectedAgreement @entity(immutable: true) {
   id: ID!
   connectionTimestamp: BigInt!
   agreement: Agreement

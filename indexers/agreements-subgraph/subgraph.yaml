@@ -8,7 +8,7 @@ dataSources:
     source:
       abi: AgreementFactory
       address: "0x27333d40af2C5a01eaa5Fd0b890181B9D525255d"
-      startBlock: 40899762
+      startBlock: 38041250
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -21,11 +21,9 @@ dataSources:
         - name: AgreementFactory
           file: ./abis/AgreementFactory.json
       eventHandlers:
-        - event: AgreementCreated(address,address)
+        - event: AgreementCreated(address,uint8,string)
           handler: handleAgreementCreated
           receipt: true
         - event: AgreementImplementationChanged(address,uint8)
           handler: handleAgreementImplementationChanged
-        - event: InitialRevenueStreamURISet(address,string[],address)
-          handler: handleInitialRevenueStreamURISet
       file: ./src/agreementFactory.ts
