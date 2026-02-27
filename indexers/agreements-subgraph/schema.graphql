@@ -1,0 +1,133 @@
+type AgreementImplementation @entity {
+  id: ID!
+  network: String!
+  timestamp: BigInt!
+  tokenStandard: Int!
+  implementationAddress: Bytes!
+}
+
+type AgreementImplementationChanged @entity {
+  id: ID!
+  network: String!
+  contract: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  agreementImplementation: Bytes!
+}
+
+type AgreementCreated @entity {
+  id: ID!
+  network: String!
+  contract: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  tokenStandard: Int!
+  agreementImplementation: Bytes!
+  agreement: Agreement!
+  holders: [AgreementHolder!]!
+  fee: BigInt!
+}
+
+type HolderFundsClaimed @entity {
+  id: ID!
+  network: String!
+  contract: Bytes!
+  agreement: Agreement!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  account: Bytes!
+  value: BigInt!
+  currencyAddress: Bytes!
+  inLendingCurrency: Boolean!
+  inNativeCoin: Boolean!
+  isRoyaltyPayout: Boolean!
+  originalPayoutTxHash: Bytes!
+  fee: BigInt!
+}
+
+type SplitTransferToAgreement @entity {
+  id: ID!
+  currencyAddress: Bytes!
+  inLendingCurrency: Boolean!
+  inNativeCoin: Boolean!
+  agreement: Agreement!
+  from: Bytes!
+  to: Bytes!
+  value: BigInt!
+  isRoyaltyPayout: Boolean!
+  transactionHash: Bytes!
+  timestamp: BigInt!
+  network: String!
+  payoutRequester: String
+  fee: BigInt!
+}
+
+type Agreement @entity {
+  id: ID!
+  network: String!
+  factoryContract: Bytes!
+  address: Bytes!
+  tokenStandard: Int!
+  transfers: [AgreementTransfer!]!
+  totalSupply: BigInt!
+  holders: [AgreementHolder!]!
+  timestamp: BigInt!
+  creationTxHash: Bytes!
+  implementationAddress: Bytes!
+  contractURI: String
+  revenueStreamURIs: [String!]
+}
+
+type AgreementTransfer @entity {
+  id: ID!
+  agreement: Agreement!
+  network: String!
+  contract: Bytes!
+  from: Bytes!
+  to: Bytes!
+  value: BigInt!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  fee: BigInt!
+}
+
+type AgreementHolder @entity {
+  id: ID!
+  network: String!
+  agreement: Agreement!
+  ownedAgreementAddress: Bytes!
+  holderAddress: Bytes!
+  balance: BigInt!
+  isAdmin: Boolean!
+}
+
+type AgreementMetadata @entity {
+  id: ID!
+  rawContent: String!
+  type: String
+  title: String
+  isrc: String
+  ownerURI: String
+  assetURI: String
+}
+
+type ConnectedAgreement @entity {
+  id: ID!
+  connectionTimestamp: BigInt!
+  agreement: Agreement
+  agreementMetadata: AgreementMetadata
+  network: String!
+  transactionHash: Bytes!
+}

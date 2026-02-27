@@ -2,3 +2,30 @@ specVersion: 1.2.0
 schema:
   file: ./schema.graphql
 dataSources:
+  - kind: ethereum/contract
+    name: AgreementFactory
+    network: base-sepolia
+    source:
+      abi: AgreementFactory
+      address: "0x27333d40af2C5a01eaa5Fd0b890181B9D525255d"
+      startBlock: 40899762
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementCreated
+        - AgreementImplementationChanged
+      abis:
+        - name: AgreementFactory
+          file: ./abis/AgreementFactory.json
+      eventHandlers:
+        - event: AgreementCreated(address,address)
+          handler: handleAgreementCreated
+          receipt: true
+        - event: AgreementImplementationChanged(address,uint8)
+          handler: handleAgreementImplementationChanged
+        - event: InitialRevenueStreamURISet(address,string[],address)
+          handler: handleInitialRevenueStreamURISet
+      file: ./src/agreementFactory.ts

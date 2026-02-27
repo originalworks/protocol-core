@@ -1,4 +1,8 @@
 {
   "base-sepolia": {
+    "AgreementFactory": {
+      "address": "0x27333d40af2C5a01eaa5Fd0b890181B9D525255d",
+      "startBlock": 40899762
+    }
   }
 }
