@@ -32,7 +32,7 @@ export function _handleAgreementTransfer<T extends Transfer>(event: T) {
     agreementTransfer.value = event.params.value;
     agreementTransfer.fee = BigInt.zero();
     const receipt = event.receipt;
-    if (receipt) {
+    if (receipt != null) {
       agreementTransfer.fee = receipt.gasUsed.times(event.transaction.gasPrice);
     }
     agreementTransfer.save();
