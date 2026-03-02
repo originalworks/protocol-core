@@ -27,3 +27,44 @@ dataSources:
         - event: AgreementImplementationChanged(address,uint8)
           handler: handleAgreementImplementationChanged
       file: ./src/agreementFactory.ts
+templates:
+  - kind: ethereum/contract
+    name: AgreementERC20
+    network: base-sepolia
+    source:
+      abi: AgreementERC20
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementTransfer
+        - AgreementHolder
+        - AdminAdded
+        - AdminRemoved
+        - HolderFundsClaimed
+      abis:
+        - name: AgreementERC20
+          file: ./abis/AgreementERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleAgreementTransfer
+        - event: AdminAdded(address)
+          handler: handleAdminAdded
+          receipt: true
+        - event: AdminRemoved(address)
+          handler: handleAdminRemoved
+          receipt: true
+        - event: HolderFundsClaimed(address,uint256,address)
+          handler: handleHolderFundsClaimed
+          receipt: true
+        - event: NativeCoinReceived(address,uint256)
+          handler: handleNativeCoinReceived
+          receipt: true
+        - event: DataHashChanged(string)
+          handler: handleDataHashChanged
+        - event: RevenueStreamURIAdded(string,address)
+          handler: handleRevenueStreamURIAdded
+        - event: RevenueStreamURIRemoved(string,address)
+          handler: handleRevenueStreamURIRemoved
+      file: ./src/agreements/agreementErc20.ts

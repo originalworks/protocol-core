@@ -1,3 +1,9 @@
+type RegisteredUser @entity(immutable: true) {
+  id: ID!
+  registrationTimestamp: BigInt!
+  network: String!
+}
+
 type AgreementImplementation @entity(immutable: true) {
   id: ID!
   network: String!
@@ -31,6 +37,36 @@ type AgreementCreated @entity(immutable: false) {
   # agreementImplementation: Bytes!
   agreement: Agreement!
   holders: [AgreementHolder!]!
+  fee: BigInt!
+}
+
+type AdminAdded @entity(immutable: true) {
+  id: ID!
+  agreement: Agreement!
+  network: String!
+  contract: Bytes!
+  account: Bytes!
+  from: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  fee: BigInt!
+}
+
+type AdminRemoved @entity(immutable: true) {
+  id: ID!
+  agreement: Agreement!
+  network: String!
+  contract: Bytes!
+  account: Bytes!
+  from: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
   fee: BigInt!
 }
 
