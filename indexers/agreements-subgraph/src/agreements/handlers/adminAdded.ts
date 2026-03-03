@@ -14,26 +14,6 @@ export function _handleAdminAdded<T extends AdminAddedEvent>(event: T): void {
     if (agreementHolder != null) {
       agreementHolder.isAdmin = true;
     } else {
-      agreementHolder = new AgreementHolder(`${event.address.toHex()}-${event.params.account.toHex()}`);
-      agreementHolder.isAdmin = true;
-      agreementHolder.balance = new BigInt(0);
-      agreementHolder.network = dataSource.network();
-      agreementHolder.agreement = agreement.id;
-      agreementHolder.holderAddress = event.params.account;
-      agreementHolder.ownedAgreementAddress = event.address;
-      let agreementHolders = agreement.holders;
-      agreementHolders.push(agreementHolder.id);
-      agreement.holders = agreementHolders;
-    }
-  }
-  if (!agreement) {
-  } else {
-    let agreementHolder = AgreementHolder.load(
-      `${event.address.toHex()}-${event.params.account.toHex()}`,
-    );
-    if (agreementHolder) {
-      agreementHolder.isAdmin = true;
-    } else {
       agreementHolder = new AgreementHolder(
         `${event.address.toHex()}-${event.params.account.toHex()}`,
       );
@@ -64,7 +44,7 @@ export function _handleAdminAdded<T extends AdminAddedEvent>(event: T): void {
   adminAdded.from = event.transaction.from;
   adminAdded.fee = BigInt.zero();
   const receipt = event.receipt;
-  if (receipt) {
+  if (receipt != null) {
     adminAdded.fee = receipt.gasUsed.times(event.transaction.gasPrice);
   }
 

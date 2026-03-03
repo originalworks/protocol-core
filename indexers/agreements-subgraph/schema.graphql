@@ -1,7 +1,20 @@
-type RegisteredUser @entity(immutable: true) {
+type Counter @entity(immutable: false) {
   id: ID!
-  registrationTimestamp: BigInt!
+  value: Int!
+}
+
+type PushNotification @entity(immutable: true) {
+  id: ID!
   network: String!
+  signature: String!
+  contract: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  seqNumber: Int!
+  transactionData: Bytes
 }
 
 type AgreementImplementation @entity(immutable: true) {
@@ -12,16 +25,15 @@ type AgreementImplementation @entity(immutable: true) {
   implementationAddress: Bytes!
 }
 
-type AgreementImplementationChanged @entity(immutable: true) {
+type SplitCurrency @entity(immutable: false) {
   id: ID!
   network: String!
-  contract: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  agreementImplementation: Bytes!
+  currencyAddress: Bytes!
+  isLendingCurrency: Boolean!
+  isNativeCoin: Boolean!
+  symbol: String!
+  decimals: BigInt!
+  addedAt: BigInt!
 }
 
 type AgreementCreated @entity(immutable: false) {
@@ -37,6 +49,80 @@ type AgreementCreated @entity(immutable: false) {
   # agreementImplementation: Bytes!
   agreement: Agreement!
   holders: [AgreementHolder!]!
+  fee: BigInt!
+}
+
+type AgreementImplementationChanged @entity(immutable: true) {
+  id: ID!
+  network: String!
+  contract: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  agreementImplementation: Bytes!
+}
+
+type Agreement @entity(immutable: false) {
+  id: ID!
+  network: String!
+  factoryContract: Bytes!
+  address: Bytes!
+  tokenStandard: Int!
+  transfers: [AgreementTransfer!]!
+  totalSupply: BigInt!
+  holders: [AgreementHolder!]!
+  timestamp: BigInt!
+  creationTxHash: Bytes!
+  # implementationAddress: Bytes!
+  contractURI: String
+  # revenueStreamURIs: [String!]
+  rwaID: String!
+}
+
+type AgreementMetadata @entity(immutable: true) {
+  id: ID!
+  rawContent: String!
+  type: String
+  title: String
+  isrc: String
+  ownerURI: String
+  assetURI: String
+}
+
+type ConnectedAgreement @entity(immutable: true) {
+  id: ID!
+  connectionTimestamp: BigInt!
+  agreement: Agreement
+  agreementMetadata: AgreementMetadata
+  network: String!
+  transactionHash: Bytes!
+}
+
+type AgreementHolder @entity(immutable: false) {
+  id: ID!
+  network: String!
+  agreement: Agreement!
+  ownedAgreementAddress: Bytes!
+  holderAddress: Bytes!
+  balance: BigInt!
+  isAdmin: Boolean!
+}
+
+type AgreementTransfer @entity(immutable: true) {
+  id: ID!
+  agreement: Agreement!
+  network: String!
+  contract: Bytes!
+  from: Bytes!
+  to: Bytes!
+  value: BigInt!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
   fee: BigInt!
 }
 
@@ -90,6 +176,86 @@ type HolderFundsClaimed @entity(immutable: true) {
   fee: BigInt!
 }
 
+type ContractUriChanged @entity(immutable: false) {
+  id: ID!
+  network: String!
+  contract: Bytes!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  uri: String!
+}
+
+type PaymentFee @entity(immutable: false) {
+  id: ID!
+  value: BigInt!
+  lastChangeTimestamp: BigInt!
+}
+
+type CreationFee @entity(immutable: false) {
+  id: ID!
+  value: BigInt!
+  lastChangeTimestamp: BigInt!
+}
+
+type PaymentBatcher @entity(immutable: false) {
+  id: ID!
+  address: Bytes!
+  creationTimestamp: BigInt!
+  tenantName: String!
+}
+
+type PayeeVault @entity(immutable: false) {
+  id: ID!
+  address: Bytes!
+  creationTimestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+}
+
+type SmartWallet @entity(immutable: false) {
+  id: ID!
+  address: Bytes!
+  creationTimestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+}
+
+type SmartWalletTrackedTokenTransfer @entity(immutable: false) {
+  id: ID!
+  from: Bytes!
+  to: Bytes!
+  transferType: String!
+  smartWallet: SmartWallet!
+  contractAddress: Bytes!
+  value: BigInt!
+  timestamp: BigInt!
+  blockHash: Bytes!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+}
+
+type NamespaceOwner @entity(immutable: false) {
+  id: ID!
+  address: Bytes!
+  namespace: String!
+  addedAt: BigInt!
+  network: String!
+}
+
+type RegisteredUser @entity(immutable: true) {
+  id: ID!
+  registrationTimestamp: BigInt!
+  network: String!
+}
+
 type SplitTransferToAgreement @entity(immutable: true) {
   id: ID!
   currencyAddress: Bytes!
@@ -107,26 +273,8 @@ type SplitTransferToAgreement @entity(immutable: true) {
   fee: BigInt!
 }
 
-type Agreement @entity(immutable: false) {
+type TrackedTokenTransfer @entity(immutable: false) {
   id: ID!
-  network: String!
-  factoryContract: Bytes!
-  address: Bytes!
-  tokenStandard: Int!
-  transfers: [AgreementTransfer!]!
-  totalSupply: BigInt!
-  holders: [AgreementHolder!]!
-  timestamp: BigInt!
-  creationTxHash: Bytes!
-  # implementationAddress: Bytes!
-  contractURI: String
-  # revenueStreamURIs: [String!]
-  rwaID: String!
-}
-
-type AgreementTransfer @entity(immutable: true) {
-  id: ID!
-  agreement: Agreement!
   network: String!
   contract: Bytes!
   from: Bytes!
@@ -138,33 +286,4 @@ type AgreementTransfer @entity(immutable: true) {
   transactionHash: Bytes!
   logIndex: BigInt!
   fee: BigInt!
-}
-
-type AgreementHolder @entity(immutable: false) {
-  id: ID!
-  network: String!
-  agreement: Agreement!
-  ownedAgreementAddress: Bytes!
-  holderAddress: Bytes!
-  balance: BigInt!
-  isAdmin: Boolean!
-}
-
-type AgreementMetadata @entity(immutable: true) {
-  id: ID!
-  rawContent: String!
-  type: String
-  title: String
-  isrc: String
-  ownerURI: String
-  assetURI: String
-}
-
-type ConnectedAgreement @entity(immutable: true) {
-  id: ID!
-  connectionTimestamp: BigInt!
-  agreement: Agreement
-  agreementMetadata: AgreementMetadata
-  network: String!
-  transactionHash: Bytes!
 }

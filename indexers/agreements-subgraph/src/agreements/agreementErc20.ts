@@ -1,6 +1,20 @@
-import { Transfer as AgreementTransferEvent } from '../types/templates/AgreementERC20/AgreementERC20';
+import {
+  Transfer as TransferEvent,
+  AdminAdded as AdminAddedEvent,
+  AdminRemoved as AdminRemovedEvent,
+} from '../types/templates/AgreementERC20/AgreementERC20';
+import { _handleAdminAdded } from './handlers/adminAdded';
+import { _handleAdminRemoved } from './handlers/adminRemoved';
 import { _handleAgreementTransfer } from './handlers/agreementTransfer';
 
-export function handleAgreementTransfer(event: AgreementTransferEvent): void {
-  _handleAgreementTransfer(event)
+export function handleAgreementTransfer(event: TransferEvent): void {
+  _handleAgreementTransfer(event);
+}
+
+export function handleAdminAdded(event: AdminAddedEvent): void {
+  _handleAdminAdded(event);
+}
+
+export function handleAdminRemoved(event: AdminRemovedEvent): void {
+  _handleAdminRemoved(event);
 }
