@@ -3,6 +3,30 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: CurrencyManager
+    network: base-sepolia
+    source:
+      abi: CurrencyManager
+      address: "0xFDcE965a1d772Ac27416D2b2BC3Bef57417cEC1c"
+      startBlock: 38041245
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - SplitCurrency
+      abis:
+        - name: CurrencyManager
+          file: ./abis/CurrencyManager.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: CurrencyAdded(address,string,string,uint8)
+          handler: handleCurrencyAdded
+        - event: CurrencyRemoved(address)
+          handler: handleCurrencyRemoved
+      file: ./src/currencyManager.ts
+  - kind: ethereum/contract
     name: AgreementFactory
     network: base-sepolia
     source:

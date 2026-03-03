@@ -217,22 +217,12 @@ type PayeeVault @entity(immutable: false) {
   logIndex: BigInt!
 }
 
-type SmartWallet @entity(immutable: false) {
-  id: ID!
-  address: Bytes!
-  creationTimestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-}
-
 type SmartWalletTrackedTokenTransfer @entity(immutable: false) {
   id: ID!
   from: Bytes!
   to: Bytes!
   transferType: String!
-  smartWallet: SmartWallet!
+  smartWallet: Bytes!
   contractAddress: Bytes!
   value: BigInt!
   timestamp: BigInt!
