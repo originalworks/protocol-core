@@ -111,8 +111,4 @@ templates:
           receipt: true
         - event: DataHashChanged(string)
           handler: handleDataHashChanged
-        - event: RevenueStreamURIAdded(string,address)
-          handler: handleRevenueStreamURIAdded
-        - event: RevenueStreamURIRemoved(string,address)
-          handler: handleRevenueStreamURIRemoved
       file: ./src/agreements/agreementErc20.ts
