@@ -53,6 +53,30 @@ dataSources:
       file: ./src/agreementFactory.ts
 templates:
   - kind: ethereum/contract
+    name: ERC20Token
+    network: base-sepolia
+    source:
+      abi: ERC20TokenMock
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - TrackedTokenTransfer
+        - Agreement
+        - SplitTransferToAgreement
+        - AgreementHolder
+        - RegisteredUser
+        - SmartWalletTrackedTokenTransfer
+        - PaymentBatcher
+      abis:
+        - name: ERC20TokenMock
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleERC20TokenTransfer
+          receipt: true
+      file: ./src/erc20Token.ts
+  - kind: ethereum/contract
     name: AgreementERC20
     network: base-sepolia
     source:

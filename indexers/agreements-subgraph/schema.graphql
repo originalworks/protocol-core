@@ -36,6 +36,7 @@ type SplitCurrency @entity(immutable: false) {
   addedAt: BigInt!
 }
 
+# used in Registry
 type AgreementCreated @entity(immutable: false) {
   id: ID!
   network: String!
@@ -64,6 +65,7 @@ type AgreementImplementationChanged @entity(immutable: true) {
   agreementImplementation: Bytes!
 }
 
+# used in Registry
 type Agreement @entity(immutable: false) {
   id: ID!
   network: String!
@@ -81,6 +83,7 @@ type Agreement @entity(immutable: false) {
   rwaID: String!
 }
 
+# used in Registry
 type AgreementMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
@@ -91,6 +94,7 @@ type AgreementMetadata @entity(immutable: true) {
   assetURI: String
 }
 
+# used in Registry
 type ConnectedAgreement @entity(immutable: true) {
   id: ID!
   connectionTimestamp: BigInt!
@@ -100,6 +104,7 @@ type ConnectedAgreement @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+# used in Registry
 type AgreementHolder @entity(immutable: false) {
   id: ID!
   network: String!
@@ -110,6 +115,7 @@ type AgreementHolder @entity(immutable: false) {
   isAdmin: Boolean!
 }
 
+# used in Registry
 type AgreementTransfer @entity(immutable: true) {
   id: ID!
   agreement: Agreement!
@@ -156,6 +162,7 @@ type AdminRemoved @entity(immutable: true) {
   fee: BigInt!
 }
 
+# used in Registry
 type HolderFundsClaimed @entity(immutable: true) {
   id: ID!
   network: String!
@@ -246,6 +253,7 @@ type RegisteredUser @entity(immutable: true) {
   network: String!
 }
 
+# used in Registry
 type SplitTransferToAgreement @entity(immutable: true) {
   id: ID!
   currencyAddress: Bytes!
