@@ -112,3 +112,42 @@ templates:
         - event: DataHashChanged(string)
           handler: handleDataHashChanged
       file: ./src/agreements/agreementErc20.ts
+  - kind: ethereum/contract
+    name: AgreementERC1155
+    network: base-sepolia
+    source:
+      abi: AgreementERC1155
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementTransfer
+        - AgreementHolder
+        - AdminAdded
+        - AdminRemoved
+        - HolderFundsClaimed
+      abis:
+        - name: AgreementERC1155
+          file: ./abis/AgreementERC1155.json
+      eventHandlers:
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleAgreementTransfer
+          receipt: true
+        - event: AdminAdded(address)
+          handler: handleAdminAdded
+          receipt: true
+        - event: AdminRemoved(address)
+          handler: handleAdminRemoved
+          receipt: true
+        - event: HolderFundsClaimed(address,uint256,address)
+          handler: handleHolderFundsClaimed
+          receipt: true
+        - event: NativeCoinReceived(address,uint256)
+          handler: handleNativeCoinReceived
+          receipt: true
+        - event: DataHashChanged(string)
+          handler: handleDataHashChanged
+        - event: ContractUriChanged(string)
+          handler: handleContractUriChanged
+      file: ./src/agreements/agreementErc1155.ts
