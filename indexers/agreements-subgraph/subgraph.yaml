@@ -1,0 +1,158 @@
+specVersion: 1.2.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: CurrencyManager
+    network: base-sepolia
+    source:
+      abi: CurrencyManager
+      address: "0xFDcE965a1d772Ac27416D2b2BC3Bef57417cEC1c"
+      startBlock: 38041245
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - SplitCurrency
+      abis:
+        - name: CurrencyManager
+          file: ./abis/CurrencyManager.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: CurrencyAdded(address,string,string,uint8)
+          handler: handleCurrencyAdded
+        - event: CurrencyRemoved(address)
+          handler: handleCurrencyRemoved
+      file: ./src/currencyManager.ts
+  - kind: ethereum/contract
+    name: AgreementFactory
+    network: base-sepolia
+    source:
+      abi: AgreementFactory
+      address: "0x27333d40af2C5a01eaa5Fd0b890181B9D525255d"
+      startBlock: 38041250
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementCreated
+      abis:
+        - name: AgreementFactory
+          file: ./abis/AgreementFactory.json
+      eventHandlers:
+        - event: AgreementCreated(address,uint8,string)
+          handler: handleAgreementCreated
+          receipt: true
+      file: ./src/agreementFactory.ts
+templates:
+  - kind: ethereum/contract
+    name: ERC20Token
+    network: base-sepolia
+    source:
+      abi: ERC20TokenMock
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - SplitTransferToAgreement
+      abis:
+        - name: ERC20TokenMock
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleERC20TokenTransfer
+          receipt: true
+      file: ./src/erc20Token.ts
+  - kind: ethereum/contract
+    name: AgreementERC20
+    network: base-sepolia
+    source:
+      abi: AgreementERC20
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementHolder
+        - AgreementCreated
+        - AgreementTransfer
+        - ConnectedAgreement
+        - HolderFundsClaimed
+        - SplitTransferToAgreement
+      abis:
+        - name: AgreementERC20
+          file: ./abis/AgreementERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleAgreementTransfer
+        - event: AdminAdded(address)
+          handler: handleAdminAdded
+          receipt: true
+        - event: AdminRemoved(address)
+          handler: handleAdminRemoved
+          receipt: true
+        - event: HolderFundsClaimed(address,uint256,address)
+          handler: handleHolderFundsClaimed
+          receipt: true
+        - event: NativeCoinReceived(address,uint256)
+          handler: handleNativeCoinReceived
+          receipt: true
+        - event: DataHashChanged(string)
+          handler: handleDataHashChanged
+      file: ./src/agreements/agreementErc20.ts
+  - kind: ethereum/contract
+    name: AgreementERC1155
+    network: base-sepolia
+    source:
+      abi: AgreementERC1155
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Agreement
+        - AgreementHolder
+        - AgreementCreated
+        - AgreementTransfer
+        - ConnectedAgreement
+        - HolderFundsClaimed
+        - SplitTransferToAgreement
+      abis:
+        - name: AgreementERC1155
+          file: ./abis/AgreementERC1155.json
+      eventHandlers:
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleAgreementTransfer
+          receipt: true
+        - event: AdminAdded(address)
+          handler: handleAdminAdded
+        - event: AdminRemoved(address)
+          handler: handleAdminRemoved
+        - event: HolderFundsClaimed(address,uint256,address)
+          handler: handleHolderFundsClaimed
+          receipt: true
+        - event: NativeCoinReceived(address,uint256)
+          handler: handleNativeCoinReceived
+          receipt: true
+        - event: DataHashChanged(string)
+          handler: handleDataHashChanged
+        - event: ContractUriChanged(string)
+          handler: handleContractUriChanged
+      file: ./src/agreements/agreementErc1155.ts
+  - kind: file/ipfs
+    name: AgreementMetadataTemplate
+    network: base-sepolia
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - AgreementMetadata
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      handler: handleAgreementMetadata
+      file: ./src/agreements/agreementMetadata.ts

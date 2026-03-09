@@ -1,0 +1,12 @@
+{
+  "base-sepolia": {
+    "CurrencyManager": {
+      "address": "0xFDcE965a1d772Ac27416D2b2BC3Bef57417cEC1c",
+      "startBlock": 38041245
+    },
+    "AgreementFactory": {
+      "address": "0x27333d40af2C5a01eaa5Fd0b890181B9D525255d",
+      "startBlock": 38041250
+    }
+  }
+}

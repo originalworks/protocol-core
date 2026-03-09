@@ -1,5 +1,5 @@
 {
-  "name": "ow_subgraph",
+  "name": "data-provider-isrc-subgraph",
   "private": true,
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/ subgraph.yaml",
