@@ -1,41 +1,8 @@
-import { Address, BigInt, dataSource } from '@graphprotocol/graph-ts'
+import { BigInt, dataSource } from '@graphprotocol/graph-ts'
 
-import {
-  Agreement,
-  AgreementCreated,
-  AgreementImplementation,
-  AgreementImplementationChanged,
-} from './types/schema'
-import {
-  AgreementCreated as AgreementCreatedEvent,
-  AgreementImplementationChanged as AgreementImplementationChangedEvent,
-} from './types/AgreementFactory/AgreementFactory'
-
-export function handleAgreementImplementationChanged(event: AgreementImplementationChangedEvent): void {
-  let agreementImplementationChanged = new AgreementImplementationChanged(
-    `${event.transaction.hash.toHex()}-${event.logIndex.toString()}`,
-  )
-  agreementImplementationChanged.contract = event.address
-  agreementImplementationChanged.network = dataSource.network()
-  agreementImplementationChanged.timestamp = event.block.timestamp
-  agreementImplementationChanged.blockHash = event.block.hash
-  agreementImplementationChanged.blockNumber = event.block.number
-  agreementImplementationChanged.transactionHash = event.transaction.hash
-  agreementImplementationChanged.logIndex = event.logIndex
-  agreementImplementationChanged.agreementImplementation = event.params.agreementImplementation
-  agreementImplementationChanged.save()
-
-  let agreementImplementation = AgreementImplementation.load(event.params.agreementImplementation.toHex())
-
-  if (!agreementImplementation) {
-    agreementImplementation = new AgreementImplementation(event.params.agreementImplementation.toHex())
-    agreementImplementation.network = dataSource.network()
-    agreementImplementation.timestamp = event.block.timestamp
-    agreementImplementation.tokenStandard = event.params.tokenStandard
-    agreementImplementation.implementationAddress = event.params.agreementImplementation
-    agreementImplementation.save()
-  }
-}
+import { Agreement, AgreementCreated } from './types/schema'
+import { AgreementERC1155, AgreementERC20 } from './types/templates'
+import { AgreementCreated as AgreementCreatedEvent } from './types/AgreementFactory/AgreementFactory'
 
 export function handleAgreementCreated(event: AgreementCreatedEvent): void {
   const agreement = new Agreement(event.params.agreementAddress.toHex())
@@ -53,9 +20,6 @@ export function handleAgreementCreated(event: AgreementCreatedEvent): void {
 
   const receipt = event.receipt
   const agreementCreated = new AgreementCreated(event.params.agreementAddress.toHex())
-  if (receipt) {
-    agreementCreated.fee = receipt.gasUsed.times(event.transaction.gasPrice)
-  }
   agreementCreated.contract = event.address
   agreementCreated.timestamp = event.block.timestamp
   agreementCreated.blockHash = event.block.hash
@@ -66,8 +30,15 @@ export function handleAgreementCreated(event: AgreementCreatedEvent): void {
   agreementCreated.tokenStandard = event.params.tokenStandard
   agreementCreated.agreement = agreement.id
   agreementCreated.holders = []
+  if (receipt != null) {
+    agreementCreated.fee = receipt.gasUsed.times(event.transaction.gasPrice)
+  }
   agreementCreated.save()
 
   // TODO: add templates based on tokenStandard
-  // if (event.params.tokenStandard == 0) {}
+  if (event.params.tokenStandard == 0) {
+    AgreementERC20.create(event.params.agreementAddress)
+  } else {
+    AgreementERC1155.create(event.params.agreementAddress)
+  }
 }

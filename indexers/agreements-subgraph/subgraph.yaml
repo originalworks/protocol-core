@@ -48,8 +48,6 @@ dataSources:
         - event: AgreementCreated(address,uint8,string)
           handler: handleAgreementCreated
           receipt: true
-        - event: AgreementImplementationChanged(address,uint8)
-          handler: handleAgreementImplementationChanged
       file: ./src/agreementFactory.ts
 templates:
   - kind: ethereum/contract
@@ -151,3 +149,16 @@ templates:
         - event: ContractUriChanged(string)
           handler: handleContractUriChanged
       file: ./src/agreements/agreementErc1155.ts
+  - kind: file/ipfs
+    name: AgreementMetadataTemplate
+    network: base-sepolia
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - AgreementMetadata
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      handler: handleAgreementMetadata
+      file: ./src/agreements/agreementMetadata.ts

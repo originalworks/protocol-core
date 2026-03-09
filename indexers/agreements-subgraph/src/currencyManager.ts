@@ -1,6 +1,7 @@
 import { Address, BigInt, dataSource, store } from '@graphprotocol/graph-ts'
 
 import { SplitCurrency } from './types/schema'
+import { ERC20Token } from './types/templates'
 import { CurrencyAdded, CurrencyRemoved } from './types/CurrencyManager/CurrencyManager'
 
 export function handleCurrencyAdded(event: CurrencyAdded): void {
@@ -11,7 +12,6 @@ export function handleCurrencyAdded(event: CurrencyAdded): void {
     splitCurrency.addedAt = event.block.timestamp
     splitCurrency.currencyAddress = event.params.currencyAddress
     splitCurrency.network = dataSource.network()
-    splitCurrency.isLendingCurrency = false
     if (event.params.currencyAddress.toHex() == Address.zero().toHex()) {
       splitCurrency.isNativeCoin = true
       splitCurrency.symbol = dataSource.network() === 'polygon' ? 'MATIC' : 'ETH'
@@ -21,7 +21,7 @@ export function handleCurrencyAdded(event: CurrencyAdded): void {
       splitCurrency.decimals = BigInt.fromI32(event.params.decimals)
       splitCurrency.isNativeCoin = false
 
-      // ERC20Token.create(event.params.currencyAddress)
+      ERC20Token.create(event.params.currencyAddress)
     }
     splitCurrency.save()
   }

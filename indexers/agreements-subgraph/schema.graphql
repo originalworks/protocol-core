@@ -29,7 +29,6 @@ type SplitCurrency @entity(immutable: false) {
   id: ID!
   network: String!
   currencyAddress: Bytes!
-  isLendingCurrency: Boolean!
   isNativeCoin: Boolean!
   symbol: String!
   decimals: BigInt!
