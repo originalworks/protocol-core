@@ -24,7 +24,6 @@ export function _handleHolderFundsClaimed<T extends HolderFundsClaimedEvent>(
     holderFundsClaimed.logIndex = event.logIndex
     holderFundsClaimed.account = event.params.account
     holderFundsClaimed.value = event.params.value
-    holderFundsClaimed.inLendingCurrency = splitCurrency.isLendingCurrency
     holderFundsClaimed.inNativeCoin = splitCurrency.isNativeCoin
     holderFundsClaimed.currencyAddress = splitCurrency.currencyAddress
     holderFundsClaimed.isRoyaltyPayout = isRoyaltyPayout

@@ -1,5 +1,4 @@
-import { dataSource } from '@graphprotocol/graph-ts'
-
+import { Agreement } from '../types/schema'
 import {
   AdminAdded as AdminAddedEvent,
   TransferSingle as TransferEvent,
@@ -9,7 +8,6 @@ import {
   HolderFundsClaimed as HolderFundsClaimedEvent,
   NativeCoinReceived as NativeCoinReceivedEvent,
 } from '../types/templates/AgreementERC1155/AgreementERC1155'
-import { Agreement, ContractUriChanged } from '../types/schema'
 import { _handleAdminAdded } from './handlers/adminAdded'
 import { _handleAdminRemoved } from './handlers/adminRemoved'
 import { _handleDataHashChanged } from './handlers/dataHashChanged'
@@ -42,26 +40,9 @@ export function handleDataHashChanged(event: DataHashChangedEvent): void {
 }
 
 export function handleContractUriChanged(event: ContractUriChangedEvent): void {
-  const contractURI = event.params.contactUri
-  let agreement = Agreement.load(event.address.toHex())
-  if (!agreement) {
-    return
-  } else {
-    agreement.contractURI = contractURI
+  const agreement = Agreement.load(event.address.toHex())
+  if (agreement != null) {
+    agreement.contractURI = event.params.contactUri
     agreement.save()
   }
-
-  let contractUriChanged = new ContractUriChanged(
-    `${event.transaction.hash.toHex()}-${event.logIndex.toString()}`,
-  )
-  contractUriChanged.contract = event.address
-  contractUriChanged.timestamp = event.block.timestamp
-  contractUriChanged.network = dataSource.network()
-  contractUriChanged.blockHash = event.block.hash
-  contractUriChanged.blockNumber = event.block.number
-  contractUriChanged.transactionHash = event.transaction.hash
-  contractUriChanged.logIndex = event.logIndex
-  contractUriChanged.uri = contractURI
-
-  contractUriChanged.save()
 }

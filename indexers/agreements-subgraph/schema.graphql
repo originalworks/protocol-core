@@ -1,30 +1,3 @@
-type Counter @entity(immutable: false) {
-  id: ID!
-  value: Int!
-}
-
-type PushNotification @entity(immutable: true) {
-  id: ID!
-  network: String!
-  signature: String!
-  contract: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  seqNumber: Int!
-  transactionData: Bytes
-}
-
-type AgreementImplementation @entity(immutable: true) {
-  id: ID!
-  network: String!
-  timestamp: BigInt!
-  tokenStandard: Int!
-  implementationAddress: Bytes!
-}
-
 type SplitCurrency @entity(immutable: false) {
   id: ID!
   network: String!
@@ -35,7 +8,6 @@ type SplitCurrency @entity(immutable: false) {
   addedAt: BigInt!
 }
 
-# used in Registry
 type AgreementCreated @entity(immutable: false) {
   id: ID!
   network: String!
@@ -52,19 +24,6 @@ type AgreementCreated @entity(immutable: false) {
   fee: BigInt!
 }
 
-type AgreementImplementationChanged @entity(immutable: true) {
-  id: ID!
-  network: String!
-  contract: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  agreementImplementation: Bytes!
-}
-
-# used in Registry
 type Agreement @entity(immutable: false) {
   id: ID!
   network: String!
@@ -82,7 +41,6 @@ type Agreement @entity(immutable: false) {
   rwaID: String!
 }
 
-# used in Registry
 type AgreementMetadata @entity(immutable: true) {
   id: ID!
   rawContent: String!
@@ -93,7 +51,6 @@ type AgreementMetadata @entity(immutable: true) {
   assetURI: String
 }
 
-# used in Registry
 type ConnectedAgreement @entity(immutable: true) {
   id: ID!
   connectionTimestamp: BigInt!
@@ -103,7 +60,6 @@ type ConnectedAgreement @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-# used in Registry
 type AgreementHolder @entity(immutable: false) {
   id: ID!
   network: String!
@@ -114,7 +70,6 @@ type AgreementHolder @entity(immutable: false) {
   isAdmin: Boolean!
 }
 
-# used in Registry
 type AgreementTransfer @entity(immutable: true) {
   id: ID!
   agreement: Agreement!
@@ -131,37 +86,6 @@ type AgreementTransfer @entity(immutable: true) {
   fee: BigInt!
 }
 
-type AdminAdded @entity(immutable: true) {
-  id: ID!
-  agreement: Agreement!
-  network: String!
-  contract: Bytes!
-  account: Bytes!
-  from: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  fee: BigInt!
-}
-
-type AdminRemoved @entity(immutable: true) {
-  id: ID!
-  agreement: Agreement!
-  network: String!
-  contract: Bytes!
-  account: Bytes!
-  from: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  fee: BigInt!
-}
-
-# used in Registry
 type HolderFundsClaimed @entity(immutable: true) {
   id: ID!
   network: String!
@@ -175,84 +99,12 @@ type HolderFundsClaimed @entity(immutable: true) {
   account: Bytes!
   value: BigInt!
   currencyAddress: Bytes!
-  inLendingCurrency: Boolean!
   inNativeCoin: Boolean!
   isRoyaltyPayout: Boolean!
   originalPayoutTxHash: Bytes!
   fee: BigInt!
 }
 
-type ContractUriChanged @entity(immutable: false) {
-  id: ID!
-  network: String!
-  contract: Bytes!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-  uri: String!
-}
-
-type PaymentFee @entity(immutable: false) {
-  id: ID!
-  value: BigInt!
-  lastChangeTimestamp: BigInt!
-}
-
-type CreationFee @entity(immutable: false) {
-  id: ID!
-  value: BigInt!
-  lastChangeTimestamp: BigInt!
-}
-
-type PaymentBatcher @entity(immutable: false) {
-  id: ID!
-  address: Bytes!
-  creationTimestamp: BigInt!
-  tenantName: String!
-}
-
-type PayeeVault @entity(immutable: false) {
-  id: ID!
-  address: Bytes!
-  creationTimestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-}
-
-type SmartWalletTrackedTokenTransfer @entity(immutable: false) {
-  id: ID!
-  from: Bytes!
-  to: Bytes!
-  transferType: String!
-  smartWallet: Bytes!
-  contractAddress: Bytes!
-  value: BigInt!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
-}
-
-type NamespaceOwner @entity(immutable: false) {
-  id: ID!
-  address: Bytes!
-  namespace: String!
-  addedAt: BigInt!
-  network: String!
-}
-
-type RegisteredUser @entity(immutable: true) {
-  id: ID!
-  registrationTimestamp: BigInt!
-  network: String!
-}
-
-# used in Registry
 type SplitTransferToAgreement @entity(immutable: true) {
   id: ID!
   currencyAddress: Bytes!
@@ -267,20 +119,5 @@ type SplitTransferToAgreement @entity(immutable: true) {
   timestamp: BigInt!
   network: String!
   payoutRequester: String
-  fee: BigInt!
-}
-
-type TrackedTokenTransfer @entity(immutable: false) {
-  id: ID!
-  network: String!
-  contract: Bytes!
-  from: Bytes!
-  to: Bytes!
-  value: BigInt!
-  timestamp: BigInt!
-  blockHash: Bytes!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  logIndex: BigInt!
   fee: BigInt!
 }

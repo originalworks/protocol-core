@@ -40,7 +40,6 @@ dataSources:
       entities:
         - Agreement
         - AgreementCreated
-        - AgreementImplementationChanged
       abis:
         - name: AgreementFactory
           file: ./abis/AgreementFactory.json
@@ -59,13 +58,8 @@ templates:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - TrackedTokenTransfer
         - Agreement
         - SplitTransferToAgreement
-        - AgreementHolder
-        - RegisteredUser
-        - SmartWalletTrackedTokenTransfer
-        - PaymentBatcher
       abis:
         - name: ERC20TokenMock
           file: ./abis/ERC20.json
@@ -84,11 +78,12 @@ templates:
       language: wasm/assemblyscript
       entities:
         - Agreement
-        - AgreementTransfer
         - AgreementHolder
-        - AdminAdded
-        - AdminRemoved
+        - AgreementCreated
+        - AgreementTransfer
+        - ConnectedAgreement
         - HolderFundsClaimed
+        - SplitTransferToAgreement
       abis:
         - name: AgreementERC20
           file: ./abis/AgreementERC20.json
@@ -120,11 +115,12 @@ templates:
       language: wasm/assemblyscript
       entities:
         - Agreement
-        - AgreementTransfer
         - AgreementHolder
-        - AdminAdded
-        - AdminRemoved
+        - AgreementCreated
+        - AgreementTransfer
+        - ConnectedAgreement
         - HolderFundsClaimed
+        - SplitTransferToAgreement
       abis:
         - name: AgreementERC1155
           file: ./abis/AgreementERC1155.json
@@ -134,10 +130,8 @@ templates:
           receipt: true
         - event: AdminAdded(address)
           handler: handleAdminAdded
-          receipt: true
         - event: AdminRemoved(address)
           handler: handleAdminRemoved
-          receipt: true
         - event: HolderFundsClaimed(address,uint256,address)
           handler: handleHolderFundsClaimed
           receipt: true

@@ -2,14 +2,13 @@ import { BigInt, Address, dataSource, store } from '@graphprotocol/graph-ts'
 
 import {
   Agreement,
-  RegisteredUser,
   AgreementHolder,
   AgreementCreated,
   AgreementTransfer,
 } from '../../types/schema'
 import { Transfer } from '../../types/templates/AgreementERC20/AgreementERC20'
 
-export function _handleAgreementTransfer<T extends Transfer>(event: T) {
+export function _handleAgreementTransfer<T extends Transfer>(event: T): void {
   let agreement = Agreement.load(event.address.toHex())
   let agreementCreated = AgreementCreated.load(event.address.toHex())
 
@@ -49,14 +48,6 @@ export function _handleAgreementTransfer<T extends Transfer>(event: T) {
       agreementTransferReceiver.ownedAgreementAddress = event.address
       agreementTransferReceiver.agreement = agreement.id
       agreementTransferReceiver.save()
-
-      let registeredUser = RegisteredUser.load(event.params.to.toHex())
-      if (registeredUser == null) {
-        registeredUser = new RegisteredUser(event.params.to.toHex())
-        registeredUser.registrationTimestamp = event.block.timestamp
-        registeredUser.network = dataSource.network()
-        registeredUser.save()
-      }
 
       agreementHolders.push(agreementTransferReceiver.id)
       agreement.holders = agreementHolders
