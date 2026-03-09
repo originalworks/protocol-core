@@ -1,8 +1,7 @@
-import { BigInt, dataSource, store } from '@graphprotocol/graph-ts'
+import { BigInt, store } from '@graphprotocol/graph-ts'
 
 import {
   Agreement,
-  AdminRemoved,
   AgreementHolder,
 } from '../../types/schema'
 import { AdminRemoved as AdminRemovedEvent } from '../../types/templates/AgreementERC20/AgreementERC20'
