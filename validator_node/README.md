@@ -58,6 +58,7 @@ rzup install
 
 5. Optional but recommended. To run with GPU you need the latest [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads).
 6. If running with NVIDIA GPU you will also need [Risc Zero Local Proving](https://dev.risczero.com/api/generating-proofs/local-proving)
+ - when using rzup rememebr to install version that is same as risc0-zkvm found in Cargo.toml
 
 7. Clone the repo with its submodules and enter its folder
 
@@ -69,7 +70,7 @@ git clone --recursive https://github.com/originalworks/protocol-core && cd proto
 
 ```
 cd contracts
-npm install hardhat
+forge build
 npx hardhat compile
 ```
 
