@@ -50,7 +50,7 @@ impl DdexMessage {
                 });
             } else {
                 excluded = true;
-                reason = Some("DDDEX .xml file not found".to_string());
+                reason = Some("DDEX .xml file not found".to_string());
             }
         }
 
@@ -97,11 +97,11 @@ impl DdexMessage {
         self.new_release_message = match DdexParser::from_xml_file(&input_xml_file) {
             Ok(result) => Some(result),
             Err(err) => {
-                log_warn!("XML parsing error");
+                log_warn!("XML parsing error = {}. Message skipped", err.to_string());
                 report_validation_error(&err, &input_xml_file, true);
                 self.reason = Some(err.to_string());
                 self.excluded = true;
-                return Err(format_error!(err));
+                return Ok(self);
             }
         };
 
@@ -109,28 +109,34 @@ impl DdexMessage {
         let json_output = match self.new_release_message.to_json_string_pretty() {
             Ok(result) => result,
             Err(err) => {
-                log_warn!("JSON parsing error");
+                log_warn!(
+                    "JSON parsing error = {}. Message skipped",
+                    err.to_string()()
+                );
                 report_validation_error(&err, &input_xml_file, true);
                 self.reason = Some(err.to_string());
                 self.excluded = true;
-                return Err(format_error!(err));
+                return Ok(self);
             }
         };
 
         self.new_release_message = match DdexParser::from_json_string(&json_output) {
             Ok(result) => Some(result),
             Err(err) => {
+                log_warn!("Vaidation error. Message skipped");
                 report_validation_error(&err, &input_xml_file, false);
                 self.reason = Some(err.to_string());
                 self.excluded = true;
-                return Err(format_error!(err));
+                return Ok(self);
             }
         };
+
         self.validated = true;
+
         Ok(self)
     }
     pub fn save_output_json(mut self, destination_dir: &String) -> anyhow::Result<Self> {
-        if self.validated == false && self.excluded == true {
+        if self.excluded || !self.validated {
             return Ok(self);
         }
         let message_dir_path = Path::new(&self.message_dir_path);
@@ -222,13 +228,8 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
     }
 
     async fn pin_images(&self, mut ddex_message: DdexMessage) -> anyhow::Result<DdexMessage> {
-        if ddex_message.excluded == true {
+        if ddex_message.excluded || !ddex_message.validated {
             return Ok(ddex_message);
-        }
-        if ddex_message.validated == false {
-            return Err(format_error!(
-                "Can't pin images for not validated DdexMessage"
-            ));
         }
 
         if let Some(new_release_message) = ddex_message.new_release_message.as_mut() {
@@ -241,9 +242,13 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
                         let resized_image_path = match optimize_image(&input_image_file) {
                             Ok(res) => res,
                             Err(err) => {
+                                log_warn!(
+                                    "Error in optimizing image = {}. Message skipped",
+                                    err.to_string()
+                                );
                                 ddex_message.excluded = true;
                                 ddex_message.reason = Some(err.to_string());
-                                "err".to_string()
+                                return Ok(ddex_message);
                             }
                         };
                         ddex_message.input_image_path = Some(resized_image_path.clone());
@@ -252,9 +257,13 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
                         {
                             Ok(res) => res,
                             Err(err) => {
+                                log_warn!(
+                                    "Error in uploading image to IPFS = {}. Message skipped",
+                                    err.to_string()
+                                );
                                 ddex_message.excluded = true;
                                 ddex_message.reason = Some(err.to_string());
-                                "err".to_string()
+                                return Ok(ddex_message);
                             }
                         };
                         ddex_message.image_cid = Some(image_cid.clone());
