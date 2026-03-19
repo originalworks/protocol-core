@@ -39,6 +39,7 @@ pub struct Config {
     pub ddex_sequencer_address: Address,
     pub disable_telemetry: bool,
     pub storacha_bridge_url: String,
+    pub alt_ipfs_api_base_url: Option<String>,
 }
 
 impl Config {
@@ -83,6 +84,10 @@ impl Config {
             storacha_bridge_url = format!("{}/", storacha_bridge_url)
         }
 
+        let alt_ipfs_api_base_url = env::var("ALT_IPFS_API_BASE_URL")
+            .ok()
+            .map(|val| val.strip_suffix('/').unwrap_or(&val).to_string());
+
         Config {
             rpc_url,
             beacon_rpc_url,
@@ -94,6 +99,7 @@ impl Config {
             ddex_sequencer_address,
             disable_telemetry,
             storacha_bridge_url,
+            alt_ipfs_api_base_url,
         }
     }
 }
@@ -112,6 +118,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let ipfs_manager = IpfsManager::build(
         Arc::clone(&contracts_manager),
         config.storacha_bridge_url.clone(),
+        config.alt_ipfs_api_base_url.clone(),
     )?;
 
     let blob_assignment_files_ptr_1 = Arc::new(Mutex::new(BlobAssignmentFiles::build()?));

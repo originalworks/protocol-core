@@ -14,8 +14,7 @@ use cid::Cid;
 use ddex_parser::DdexParser;
 use log_macros::{format_error, log_info, log_warn};
 use multihash_codetable::{Code, MultihashDigest};
-
-use reqwest::multipart;
+use reqwest::{multipart, Response};
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
 use std::sync::Arc;
@@ -47,12 +46,14 @@ pub struct IpfsManager {
     contracts_manager: Arc<ContractsManager>,
     blob_folder_path: String,
     storacha_bridge_url: String,
+    alt_ipfs_api_base_url: Option<String>,
 }
 
 impl IpfsManager {
     pub fn build(
         contracts_manager: Arc<ContractsManager>,
         storacha_bridge_url: String,
+        alt_ipfs_api_base_url: Option<String>,
     ) -> anyhow::Result<Self> {
         let blob_folder_path = Path::new(constants::TEMP_FOLDER)
             .join(IPFS_TEMP_FILES_FOLDER_NAME)
@@ -63,6 +64,7 @@ impl IpfsManager {
             contracts_manager,
             blob_folder_path,
             storacha_bridge_url,
+            alt_ipfs_api_base_url,
         })
     }
 
@@ -75,6 +77,51 @@ impl IpfsManager {
         fs::create_dir_all(blob_folder_path.join("blob"))?;
         fs::create_dir_all(blob_folder_path.join("images"))?;
         Ok(())
+    }
+
+    async fn get_image_by_cid(
+        &self,
+        cid: &str,
+        base_url: &str,
+    ) -> anyhow::Result<Option<Response>> {
+        let url = format!("{}{}{}", base_url, IPFS_API_CAT_FILE, cid);
+        log_info!("Trying to download image from {}", url);
+
+        let response = REQWEST_CLIENT
+            .get(&url)
+            .send()
+            .await
+            .with_context(|| format!("Failed to download image using {}", base_url))?;
+
+        if response.status() != 200 {
+            log_warn!(
+                "Could not download image using {} => status={}",
+                base_url,
+                response.status()
+            );
+            return Ok(None);
+        }
+
+        Ok(Some(response))
+    }
+
+    async fn get_image_by_cid_with_fallback(&self, cid: &str) -> anyhow::Result<Option<Response>> {
+        let mut base_urls = vec![IPFS_API_BASE_URL];
+
+        if let Some(alt_url) = &self.alt_ipfs_api_base_url {
+            base_urls.push(alt_url.as_str())
+        }
+
+        for base in base_urls {
+            if let Some(response) = self.get_image_by_cid(cid, base).await? {
+                log_info!("Success!");
+                return Ok(Some(response));
+            }
+        }
+
+        log_warn!("All gateways failed for CID={}", cid);
+
+        Ok(None)
     }
 
     pub async fn build_blob_folder(
@@ -132,23 +179,10 @@ impl IpfsManager {
                         let cid = &file.uri;
                         log_info!("Found image CID: {}", cid);
 
-                        let url = format!("{}{}{}", IPFS_API_BASE_URL, IPFS_API_CAT_FILE, cid);
-                        log_info!("Downloading image CID: {} from {}", cid, url);
-
-                        let response = REQWEST_CLIENT
-                            .get(&url)
-                            .send()
-                            .await
-                            .with_context(|| format!("Failed to download CID={}", cid))?;
-
-                        if response.status() != 200 {
-                            log_warn!(
-                                "Could not download image CID={} => status={}",
-                                cid,
-                                response.status()
-                            );
-                            continue;
-                        }
+                        let response = match self.get_image_by_cid_with_fallback(cid).await? {
+                            Some(r) => r,
+                            None => continue,
+                        };
 
                         let bytes = response.bytes().await.with_context(|| {
                             format!("Failed to read bytes from IPFS for CID={}", cid)
