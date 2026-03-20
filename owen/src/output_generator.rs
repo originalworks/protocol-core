@@ -409,13 +409,15 @@ mod tests {
 
         assert_eq!(included.len(), 4, "Wrong included ddex messages count");
 
-        let entries = fs::read_dir(&config.output_files_dir)?; // get directory iterator
+        let entries = fs::read_dir(&config.output_files_dir)?;
         let output_count = entries
-            .filter_map(Result::ok) // skip entries that failed
+            .filter_map(Result::ok)
             .filter(|e| {
-                e.file_type().map(|ft| ft.is_file()).unwrap_or(false) // only files
-                && e.path().extension().map(|ext| ext == "json").unwrap_or(false)
-                // only .json
+                e.file_type().map(|ft| ft.is_file()).unwrap_or(false)
+                    && e.path()
+                        .extension()
+                        .map(|ext| ext == "json")
+                        .unwrap_or(false)
             })
             .count();
 
