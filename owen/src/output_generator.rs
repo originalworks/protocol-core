@@ -15,8 +15,8 @@ use std::path::{Path, PathBuf};
 pub struct DdexMessage {
     pub message_dir_path: String,
     input_xml_path: Option<String>,
-    input_image_path: Option<String>,
-    image_cid: Option<String>,
+    input_image_paths: Vec<String>,
+    image_cids: Vec<String>,
     output_json_path: Option<String>,
     validated: bool,
     pub excluded: bool,
@@ -56,9 +56,9 @@ impl DdexMessage {
 
         Ok(Self {
             input_xml_path,
-            input_image_path: None,
+            input_image_paths: vec![],
+            image_cids: vec![],
             output_json_path: None,
-            image_cid: None,
             message_dir_path: message_dir_path.to_string_lossy().to_string(),
             excluded,
             validated: false,
@@ -72,20 +72,10 @@ impl DdexMessage {
             .as_ref()
             .ok_or_else(|| format_error!("Missing input_xml_path"))
     }
-    fn try_input_image_path(&self) -> anyhow::Result<&String> {
-        self.input_image_path
-            .as_ref()
-            .ok_or_else(|| format_error!("Missing input_image_path"))
-    }
     fn try_output_json_path(&self) -> anyhow::Result<&String> {
         self.output_json_path
             .as_ref()
             .ok_or_else(|| format_error!("Missing output_json_path"))
-    }
-    fn try_image_cid(&self) -> anyhow::Result<&String> {
-        self.image_cid
-            .as_ref()
-            .ok_or_else(|| format_error!("Missing image_cid"))
     }
 
     pub fn validate(mut self) -> anyhow::Result<Self> {
@@ -109,10 +99,7 @@ impl DdexMessage {
         let json_output = match self.new_release_message.to_json_string_pretty() {
             Ok(result) => result,
             Err(err) => {
-                log_warn!(
-                    "JSON parsing error = {}. Message skipped",
-                    err.to_string()()
-                );
+                log_warn!("JSON parsing error = {}. Message skipped", err.to_string());
                 report_validation_error(&err, &input_xml_file, true);
                 self.reason = Some(err.to_string());
                 self.excluded = true;
@@ -251,7 +238,6 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
                                 return Ok(ddex_message);
                             }
                         };
-                        ddex_message.input_image_path = Some(resized_image_path.clone());
 
                         let image_cid = match self.ipfs_manager.pin_file(&resized_image_path).await
                         {
@@ -266,7 +252,11 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
                                 return Ok(ddex_message);
                             }
                         };
-                        ddex_message.image_cid = Some(image_cid.clone());
+                        ddex_message.image_cids.push(image_cid.clone());
+                        ddex_message
+                            .input_image_paths
+                            .push(resized_image_path.clone());
+
                         file.uri = image_cid;
                     }
                 }
@@ -280,21 +270,31 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
         for entry in output {
             if !entry.excluded {
                 log_info!("-- PROCESSED DDEX MESSAGE");
-                log_info!(
-                    "-- Source files: image: {}; XML: {}",
-                    entry.try_input_image_path()?,
-                    entry.try_input_xml_path()?
-                );
-                log_info!(
-                    "-- Image file {} was pinned to IPFS under CID: {}",
-                    entry.try_input_image_path()?,
-                    entry.try_image_cid()?
-                );
-                log_info!(
-                    "-- CID: {} was included in the output file: {}",
-                    entry.try_image_cid()?,
-                    entry.try_output_json_path()?
-                );
+                log_info!("-- Output file: {}", entry.try_output_json_path()?);
+                log_info!("-- Input files:");
+                log_info!("---- XML: {}", entry.try_input_xml_path()?);
+
+                let len = entry.image_cids.len().max(entry.input_image_paths.len());
+
+                if len > 0 {
+                    for i in 0..len {
+                        let cid = entry
+                            .image_cids
+                            .get(i)
+                            .map(|s| s.as_str())
+                            .unwrap_or("Missing!");
+                        let img = entry
+                            .input_image_paths
+                            .get(i)
+                            .map(|s| s.as_str())
+                            .unwrap_or("Missing!");
+
+                        log_info!("---- IMG {}: {}", i + 1, img);
+                        log_info!("---- CID {}: {}", i + 1, cid);
+                    }
+                } else {
+                    log_info!("---- No more inputs");
+                }
             } else {
                 log_warn!("!!! REJECTED DDEX MESSAGE");
                 log_warn!(
@@ -317,20 +317,65 @@ mod tests {
     use super::*;
     use alloy::primitives::Address;
     use ow_wallet::{OwWallet, OwWalletConfig};
+    use pretty_env_logger;
     use std::str::FromStr;
 
-    fn find_cid_in_file(ddex_message: &DdexMessage) -> anyhow::Result<bool> {
-        let file = fs::read_to_string(ddex_message.try_output_json_path()?)?;
-        let found = file.contains(ddex_message.try_image_cid()?);
+    // !! THEY WILL WORK BETTER WITH IPFS NODE RUNNING
+    // closest docker compose is in local_setup/docker
 
-        Ok(found)
+    fn ddex_contains_all_cids(ddex_message: &DdexMessage) -> anyhow::Result<bool> {
+        let file_content = fs::read_to_string(ddex_message.try_output_json_path()?)?;
+
+        let all_found = ddex_message
+            .image_cids
+            .iter()
+            .all(|cid| file_content.contains(cid));
+
+        Ok(all_found)
     }
 
+    #[test]
+    #[ignore]
+    fn print_output_test() {
+        let _ = pretty_env_logger::formatted_builder()
+            .is_test(true)
+            .filter_level(log::LevelFilter::Info)
+            .try_init();
+
+        let msg1 = DdexMessage {
+            excluded: false,
+            image_cids: vec!["ABC".to_string(), "ABC".to_string(), "ABC".to_string()],
+            input_image_paths: vec!["IMAGE_PATH".to_string(), "IMAGE_PATH".to_string()],
+            input_xml_path: Some("XML_PATH".to_string()),
+            message_dir_path: "DIR_PATH".to_string(),
+            new_release_message: None,
+            output_json_path: Some("JSON_PATH".to_string()),
+            validated: true,
+            reason: None,
+        };
+
+        let msg2 = DdexMessage {
+            excluded: false,
+            image_cids: vec![],
+            input_image_paths: vec![],
+            input_xml_path: Some("XML_PATH".to_string()),
+            message_dir_path: "DIR_PATH".to_string(),
+            new_release_message: None,
+            output_json_path: Some("JSON_PATH".to_string()),
+            validated: true,
+            reason: None,
+        };
+
+        let _ = OutputFilesGenerator::print_output(&vec![msg1, msg2]);
+        ()
+    }
     #[tokio::test]
     async fn create_output_files_with_cids() -> anyhow::Result<()> {
         let config = Config {
             rpc_url: String::new(),
-            private_key: None,
+            private_key: Some(
+                "0x4f8a43547b061fd473aad90fee77a86fb8abf9e30d2107a1b1d844fcb12a009c".to_string(),
+            ),
             input_files_dir: String::from_str("./tests").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
@@ -339,7 +384,7 @@ mod tests {
             ddex_sequencer_address: Address::ZERO,
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
-            ipfs_api_base_url: "ABC".to_string(),
+            ipfs_api_base_url: "http://127.0.0.1:5001".to_string(),
             use_kms: false,
             signer_kms_id: None,
             use_batch_sender: false,
@@ -350,15 +395,34 @@ mod tests {
         let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
         let ddex_messages = output_files_generator.generate_files().await?;
 
-        let processed_count = ddex_messages.len();
-
         assert_eq!(
-            processed_count, 4,
-            "Wrong output size. Expected 2, got: {processed_count}"
+            ddex_messages.len(),
+            8,
+            "Wrong processed ddex messages count"
         );
 
-        for ddex_message in ddex_messages {
-            assert!(find_cid_in_file(&ddex_message)?);
+        let excluded = ddex_messages.iter().filter(|msg| msg.excluded).count();
+        assert_eq!(excluded, 4, "Wrong excluded ddex messages count");
+
+        let included: Vec<&DdexMessage> =
+            ddex_messages.iter().filter(|msg| !msg.excluded).collect();
+
+        assert_eq!(included.len(), 4, "Wrong included ddex messages count");
+
+        let entries = fs::read_dir(&config.output_files_dir)?; // get directory iterator
+        let output_count = entries
+            .filter_map(Result::ok) // skip entries that failed
+            .filter(|e| {
+                e.file_type().map(|ft| ft.is_file()).unwrap_or(false) // only files
+                && e.path().extension().map(|ext| ext == "json").unwrap_or(false)
+                // only .json
+            })
+            .count();
+
+        assert_eq!(output_count, 4, "Wrong output files count");
+
+        for ddex_message in included {
+            assert!(ddex_contains_all_cids(ddex_message)?);
         }
 
         Ok(())
@@ -369,7 +433,9 @@ mod tests {
     async fn error_when_empty_directory() {
         let config = Config {
             rpc_url: String::new(),
-            private_key: None,
+            private_key: Some(
+                "0x4f8a43547b061fd473aad90fee77a86fb8abf9e30d2107a1b1d844fcb12a009c".to_string(),
+            ),
             input_files_dir: String::from_str("./tests/empty_dir").unwrap(),
             local_ipfs: true,
             output_files_dir: "./output_files".to_string(),
@@ -378,7 +444,7 @@ mod tests {
             ddex_sequencer_address: Address::ZERO,
             disable_telemetry: true,
             storacha_bridge_url: "ABC".to_string(),
-            ipfs_api_base_url: "ABC".to_string(),
+            ipfs_api_base_url: "http://127.0.0.1:5001".to_string(),
             use_kms: false,
             signer_kms_id: None,
             use_batch_sender: false,
