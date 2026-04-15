@@ -109,7 +109,7 @@ impl ContractsManager {
                 Bytes::from(transaction_data.kzg_commitment.to_vec()),
                 FixedBytes::<32>::from(transaction_data.blob_sha2),
             )
-            .sidecar(transaction_data.blob_sidecar)
+            .sidecar_7594(transaction_data.blob_sidecar)
             .max_fee_per_blob_gas(1000000001);
 
         tx_builder = tx_builder

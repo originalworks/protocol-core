@@ -1,13 +1,13 @@
-use alloy::consensus::BlobTransactionSidecar;
+use alloy::{consensus::Blob, eips::eip7594::BlobTransactionSidecarEip7594};
+use anyhow::Context;
 use blob_codec::BlobCodec;
-use c_kzg::{ethereum_kzg_settings, Blob};
-use log_macros::{format_error, log_info};
+use log_macros::log_info;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct BlobTransactionData {
     pub kzg_commitment: Vec<u8>,
-    pub blob_sidecar: BlobTransactionSidecar,
+    pub blob_sidecar: BlobTransactionSidecarEip7594,
     pub blob_sha2: [u8; 32],
 }
 
@@ -17,34 +17,19 @@ impl BlobTransactionData {
         let blob_codec = BlobCodec::from_dir(output_files_dir, None)?;
         let blob_sha2: [u8; 32] = blob_codec.digest();
         let blob: [u8; 131072] = blob_codec.to_bytes();
+        let blob: Blob = blob.into();
 
-        let kzg_blob = Blob::new(blob);
+        let sidecar = BlobTransactionSidecarEip7594::try_from_blobs(vec![blob])?;
+        let kzg_commitment = sidecar
+            .commitments
+            .first()
+            .context("No commitment in sidecar")?
+            .to_owned();
 
-        let kzg_settings = ethereum_kzg_settings(0u64);
-
-        let kzg_commitment = kzg_settings.blob_to_kzg_commitment(&kzg_blob)?;
-        let kzg_proof =
-            kzg_settings.compute_blob_kzg_proof(&kzg_blob, &kzg_commitment.to_bytes())?;
-
-        let is_valid = kzg_settings.verify_blob_kzg_proof(
-            &kzg_blob,
-            &kzg_commitment.to_bytes(),
-            &kzg_proof.to_bytes(),
-        )?;
-        if is_valid {
-            let blob_sidecar: BlobTransactionSidecar = BlobTransactionSidecar::from_kzg(
-                vec![kzg_blob],
-                vec![kzg_commitment.to_bytes()],
-                vec![kzg_proof.to_bytes()],
-            );
-
-            Ok(BlobTransactionData {
-                kzg_commitment: kzg_commitment.to_vec(),
-                blob_sidecar,
-                blob_sha2,
-            })
-        } else {
-            return Err(format_error!("c_kzg error during proof validation"));
-        }
+        Ok(BlobTransactionData {
+            kzg_commitment: kzg_commitment.to_vec(),
+            blob_sidecar: sidecar,
+            blob_sha2,
+        })
     }
 }
