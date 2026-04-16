@@ -144,11 +144,11 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource: !Sub "arn:aws:s3:::${BlobsTempStorageBucketPrefix}-${Environment}/*"
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                Resource:
-                  - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueArn
+              # - Effect: Allow
+              #   Action:
+              #     - sqs:SendMessage
+              #   Resource:
+              #     - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueArn
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret
@@ -232,7 +232,7 @@ Resources:
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
-        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
   OwenTwo:
@@ -253,7 +253,7 @@ Resources:
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
-        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
   OwenThree:
