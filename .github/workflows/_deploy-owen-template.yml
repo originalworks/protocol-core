@@ -54,17 +54,17 @@ jobs:
           npm i
           npx hardhat compile
 
-      - name: "Compile Account Abstraction conracts"
-        working-directory: submodules/account-abstraction/contracts
-        run: |
-          npm i
-          npx hardhat compile
+      # - name: "Compile Account Abstraction conracts"
+      #   working-directory: submodules/account-abstraction/contracts
+      #   run: |
+      #     npm i
+      #     npx hardhat compile
 
-      - name: "Build blobs_batch_sender"
-        working-directory: aws/blobs_batch_sender
-        run: |
-          source $HOME/.cargo/env
-          cargo lambda build --release --compiler cargo
+      # - name: "Build blobs_batch_sender"
+      #   working-directory: aws/blobs_batch_sender
+      #   run: |
+      #     source $HOME/.cargo/env
+      #     cargo lambda build --release --compiler cargo
 
       - name: "Build aws_queue_consumer"
         working-directory: aws/aws_queue_consumer
@@ -85,7 +85,7 @@ jobs:
           path: |
             target/lambda/owen_lambda
             target/lambda/aws_queue_consumer
-            target/lambda/blobs_batch_sender
+            # target/lambda/blobs_batch_sender
 
   deploy-changes:
     runs-on: ubuntu-latest
@@ -109,7 +109,6 @@ jobs:
           mkdir -p target/lambda/blobs_batch_sender
           cp owen-lambda-binaries/owen_lambda/bootstrap target/lambda/owen_lambda/bootstrap
           cp owen-lambda-binaries/aws_queue_consumer/bootstrap target/lambda/aws_queue_consumer/bootstrap
-          cp owen-lambda-binaries/blobs_batch_sender/bootstrap target/lambda/blobs_batch_sender/bootstrap
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2

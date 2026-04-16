@@ -274,15 +274,15 @@ Resources:
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
         StorachaBridgeUrl: !Ref StorachaBridgeUrl
-        OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
+        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
-  OwenBlobsQueue:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: ./resources/owen-blobs-queue.yml
-      Parameters:
-        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
-        OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
-        DdexSequencerAddress: !Ref DdexSequencerAddress
-        SeoaAddress: !Ref SeoaAddress
+  # OwenBlobsQueue:
+  #   Type: AWS::Serverless::Application
+  #   Properties:
+  #     Location: ./resources/owen-blobs-queue.yml
+  #     Parameters:
+  #       BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+  #       OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
+  #       DdexSequencerAddress: !Ref DdexSequencerAddress
+  #       SeoaAddress: !Ref SeoaAddress
