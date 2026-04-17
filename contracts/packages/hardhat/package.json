@@ -1,0 +1,50 @@
+{
+    "name": "@originalworks/agreements-hardhat",
+    "version": "0.0.2",
+    "exports": {
+        ".": {
+            "import": "./dist/helpers/index.js",
+            "types": "./dist/helpers/index.d.ts",
+            "require": "./dist/helpers/index.js"
+        },
+        "./typechain": {
+            "import": "./dist/typechain/index.js",
+            "types": "./dist/typechain/index.d.ts",
+            "require": "./dist/typechain/index.js"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/originalworks/agreements.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "scripts": {
+        "build": "bash build.sh",
+        "release": "ts-node ../release.ts"
+    },
+    "peerDependencies": {
+        "ethers": "^6.14.3",
+        "hardhat": "^2.20.0",
+        "@nomicfoundation/hardhat-ethers": "^3.0.9",
+        "@openzeppelin/hardhat-upgrades": "^3.9.0"
+    },
+    "peerDependenciesMeta": {
+        "ethers": {
+            "optional": true
+        },
+        "hardhat": {
+            "optional": true
+        },
+        "@nomicfoundation/hardhat-ethers": {
+            "optional": true
+        },
+        "@openzeppelin/hardhat-upgrades": {
+            "optional": true
+        }
+    }
+}

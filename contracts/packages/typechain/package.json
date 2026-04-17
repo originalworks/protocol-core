@@ -1,0 +1,23 @@
+{
+    "name": "@originalworks/agreements-typechain",
+    "version": "0.0.2",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/originalworks/agreements.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "scripts": {
+        "build": "bash build.sh",
+        "release": "ts-node ../release.ts"
+    },
+    "dependencies": {
+        "ethers": "^6.14.3"
+    }
+}
