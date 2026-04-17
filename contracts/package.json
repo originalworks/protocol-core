@@ -10,6 +10,10 @@
     "@rumblefishdev/hardhat-kms-signer": "2.0.0",
     "dotenv": "16.4.5",
     "hardhat": "^2.22.18",
-    "kzg-wasm": "^0.4.0"
+    "inquirer": "^13.4.1",
+    "kzg-wasm": "^0.4.0",
+    "semver": "^7.7.4",
+    "@types/inquirer": "^9.0.9",
+    "@types/semver": "^7.7.1"
   }
 }
