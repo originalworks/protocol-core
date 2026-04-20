@@ -20,6 +20,7 @@ rm -rf "$SRC_ARTIFACTS_DIR" "$SRC_CACHE_DIR"
 # Clear package folder
 find "$PACKAGE_DIR" -mindepth 1 ! -name 'package.json' ! -name 'build.sh' ! -name 'tsconfig.build.json' -exec rm -rf {} +
 
+forge build
 npx hardhat compile
 
 mkdir -p "$DEST_SRC_DIR"
