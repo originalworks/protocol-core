@@ -1,5 +1,5 @@
 {
-    "name": "@originalworks/agreements-typechain",
+    "name": "@originalworks/protocol-core-typechain",
     "version": "0.0.2",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -8,7 +8,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/originalworks/agreements.git"
+        "url": "https://github.com/originalworks/protocol-core.git"
     },
     "publishConfig": {
         "registry": "https://npm.pkg.github.com"

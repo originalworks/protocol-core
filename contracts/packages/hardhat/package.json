@@ -1,5 +1,5 @@
 {
-    "name": "@originalworks/agreements-hardhat",
+    "name": "@originalworks/protocol-core-hardhat",
     "version": "0.0.2",
     "exports": {
         ".": {
@@ -18,7 +18,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/originalworks/agreements.git"
+        "url": "https://github.com/originalworks/protocol-core.git"
     },
     "publishConfig": {
         "registry": "https://npm.pkg.github.com"

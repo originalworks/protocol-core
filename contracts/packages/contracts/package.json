@@ -1,16 +1,16 @@
 {
-    "name": "@originalworks/agreements-contracts",
+    "name": "@originalworks/protocol-core-contracts",
     "version": "0.0.2",
     "files": [
         "*.sol",
-        "agreements/",
+        "protocol-core/",
         "interfaces/",
         "shared/",
         "abis/"
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/originalworks/agreements.git"
+        "url": "https://github.com/originalworks/protocol-core.git"
     },
     "publishConfig": {
         "registry": "https://npm.pkg.github.com"

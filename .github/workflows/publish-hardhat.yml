@@ -1,7 +1,7 @@
 name: Publish hardhat package
-on: 
+on:
   release:
-    types: 
+    types:
       - created
 jobs:
   Publish:
@@ -10,7 +10,7 @@ jobs:
       contents: read
       packages: write
     if: |
-      startsWith(github.ref, 'refs/tags/@originalworks/agreements-hardhat') &&
+      startsWith(github.ref, 'refs/tags/@originalworks/protocol-core-hardhat') &&
       !contains(github.ref, '-alpha.')
 
     steps:
@@ -20,10 +20,10 @@ jobs:
       - name: "Setup node"
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@originalworks'
-      
+          node-version: "22.x"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@originalworks"
+
       - name: "Setup environment"
         working-directory: contracts
         run: npm ci
