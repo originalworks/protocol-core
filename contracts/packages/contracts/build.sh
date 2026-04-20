@@ -14,6 +14,7 @@ rm -rf "$SRC_ARTIFACTS_DIR" "$SRC_CACHE_DIR"
 
 find "$PACKAGE_DIR" -mindepth 1 ! -name 'package.json' ! -name 'build.sh' -exec rm -rf {} +
 
+forge build
 npx hardhat compile
 
 mkdir -p "$DEST_ABI_DIR"
