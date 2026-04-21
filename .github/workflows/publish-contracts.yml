@@ -1,8 +1,13 @@
-name: Publish contracts package
+name: Publish contracts package to NPM
 on:
   release:
     types:
       - created
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   Publish:
     runs-on: ubuntu-latest
@@ -21,20 +26,20 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: "Setup node"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
-          registry-url: "https://npm.pkg.github.com"
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
           scope: "@originalworks"
 
       - name: "Setup environment"
         working-directory: contracts
         run: npm ci
 
+      - name: "Build"
+        working-directory: contracts/packages/contracts
+        run: npm run build
+
       - name: "Publish"
         working-directory: contracts/packages/contracts
-        run: |
-          npm run build
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --access public

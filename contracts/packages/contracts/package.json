@@ -12,9 +12,6 @@
         "type": "git",
         "url": "https://github.com/originalworks/protocol-core.git"
     },
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com"
-    },
     "scripts": {
         "build": "bash build.sh",
         "release": "ts-node ../release.ts"
