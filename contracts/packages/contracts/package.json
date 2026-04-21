@@ -1,6 +1,6 @@
 {
     "name": "@originalworks/protocol-core-contracts",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "files": [
         "*.sol",
         "protocol-core/",
