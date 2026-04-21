@@ -31,6 +31,7 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
           scope: "@originalworks"
+          provenance: true
 
       - name: "Setup environment"
         working-directory: contracts
@@ -42,4 +43,4 @@ jobs:
 
       - name: "Publish"
         working-directory: contracts/packages/contracts
-        run: npm publish --access public
+        run: npm publish --access public --provenance
