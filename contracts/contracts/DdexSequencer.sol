@@ -113,7 +113,7 @@ contract DdexSequencer is
         _submitNewBlob(_imageId, _commitment, _blobSha2, 0);
     }
 
-    function submitNewBlob(
+    function submitNewBlobWithIndex(
         bytes32 _imageId,
         bytes memory _commitment,
         bytes32 _blobSha2,

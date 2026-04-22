@@ -8,7 +8,7 @@ interface IDdexSequencer {
         bytes32 _blobSha2
     ) external;
 
-    function submitNewBlob(
+    function submitNewBlobWithIndex(
         bytes32 _imageId,
         bytes memory _commitment,
         bytes32 _blobSha2,
