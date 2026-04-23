@@ -37,7 +37,7 @@ struct BlobMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct StorachaBridgeResponse {
+struct IpfsBridgeResponse {
     cid: String,
     url: String,
 }
@@ -45,14 +45,14 @@ struct StorachaBridgeResponse {
 pub struct IpfsManager {
     contracts_manager: Arc<ContractsManager>,
     blob_folder_path: String,
-    storacha_bridge_url: String,
+    ipfs_bridge_url: String,
     alt_ipfs_api_base_url: Option<String>,
 }
 
 impl IpfsManager {
     pub fn build(
         contracts_manager: Arc<ContractsManager>,
-        storacha_bridge_url: String,
+        ipfs_bridge_url: String,
         alt_ipfs_api_base_url: Option<String>,
     ) -> anyhow::Result<Self> {
         let blob_folder_path = Path::new(constants::TEMP_FOLDER)
@@ -63,7 +63,7 @@ impl IpfsManager {
         Ok(Self {
             contracts_manager,
             blob_folder_path,
-            storacha_bridge_url,
+            ipfs_bridge_url,
             alt_ipfs_api_base_url,
         })
     }
@@ -268,11 +268,11 @@ impl IpfsManager {
             .mime_str("application/zip")?;
         let form = multipart::Form::new().part("file", file_part);
 
-        let res: StorachaBridgeResponse;
+        let res: IpfsBridgeResponse;
 
         if is_local() {
-            log::info!("Skipping upload to Storacha Bridge in local mode");
-            res = StorachaBridgeResponse {
+            log::info!("Skipping upload to IPFS Bridge in local mode");
+            res = IpfsBridgeResponse {
                 cid: "test_cid".to_string(),
                 url: "test_url".to_string(),
             };
@@ -283,8 +283,8 @@ impl IpfsManager {
 
             let response = REQWEST_CLIENT
                 .post(format!(
-                    "{}w3up/dir/{}",
-                    self.storacha_bridge_url,
+                    "{}pin/dir/{}",
+                    self.ipfs_bridge_url,
                     proposer_address.to_string()
                 ))
                 .header("authorization", authorization)
@@ -296,7 +296,7 @@ impl IpfsManager {
                 res = response.json().await?;
             } else {
                 let reason = response.text().await?;
-                return Err(format_error!("Storacha Bridge returned error: {}", reason));
+                return Err(format_error!("Ipfs Bridge returned error: {}", reason));
             }
 
             log_info!("Successfully uploaded folder to IPFS. CID: {}", res.cid);

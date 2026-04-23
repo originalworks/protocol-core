@@ -15,8 +15,8 @@ pub const IPFS_API_BASE_URL: &str = "https://w3s.link";
 #[allow(dead_code)]
 pub const IPFS_API_CAT_FILE: &str = "/ipfs/";
 pub const CLIENT: &[u8] = b"VALIDATOR";
-pub const DEFAULT_STORACHA_BRIDGE_URL: &str =
-    "https://qb9qzwgenl.execute-api.us-east-1.amazonaws.com/prod/";
+pub const DEFAULT_IPFS_BRIDGE_URL: &str =
+    "https://865rz5b07c.execute-api.us-east-1.amazonaws.com/prod/";
 
 pub const fn network_name(chain_id: &u64) -> &'static str {
     match chain_id {

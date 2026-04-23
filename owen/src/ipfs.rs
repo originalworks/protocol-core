@@ -17,7 +17,7 @@ struct IpfsKuboResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct IPFSBridgeResponse {
+struct IpfsBridgeResponse {
     cid: String,
     url: String,
 }
@@ -87,7 +87,7 @@ impl<'a> IpfsManager<'a> {
     }
 
     async fn pin_file_ipfs_bridge(&self, file_path: &String) -> anyhow::Result<String> {
-        log_info!("Pinning {} to IPFS using IPFS Bridge...", file_path);
+        log_info!("Pinning {} to IPFS using Ipfs Bridge...", file_path);
 
         let form = Self::file_to_multipart_form(&file_path, Some("image/avif")).await?;
 
@@ -99,15 +99,15 @@ impl<'a> IpfsManager<'a> {
             .multipart(form)
             .send()
             .await
-            .with_context(|| format_error!("Pinning to IPFS Bridge failed"))?;
+            .with_context(|| format_error!("Pinning to Ipfs Bridge failed"))?;
 
-        let res: IPFSBridgeResponse;
+        let res: IpfsBridgeResponse;
 
         if response.status().is_success() {
             res = response.json().await?;
         } else {
             let reason = response.text().await?;
-            return Err(format_error!("IPFS Bridge returned error: {}", reason));
+            return Err(format_error!("Ipfs Bridge returned error: {}", reason));
         }
 
         log_info!("Pinned! CID: {}", res.cid);
