@@ -25,7 +25,7 @@ Parameters:
     Type: String
   UnprocessedStatusValue:
     Type: String
-  StorachaBridgeUrl:
+  IPFSBridgeUrl:
     Type: String
   # OwenBlobsQueueUrl:
   #   Type: String
@@ -123,7 +123,7 @@ Resources:
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
             - !Ref "AWS::NoValue"
-          STORACHA_BRIDGE_URL: !If
+          IPFS_BRIDGE_URL: !If
             - OverwriteStorachaBridgeUrl
             - !Ref StorachaBridgeUrl
             - !Ref "AWS::NoValue"
