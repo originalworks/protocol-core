@@ -25,7 +25,7 @@ Parameters:
     Type: String
   UnprocessedStatusValue:
     Type: String
-  StorachaBridgeUrl:
+  IPFSBridgeUrl:
     Type: String
   # OwenBlobsQueueUrl:
   #   Type: String
@@ -59,7 +59,7 @@ Parameters:
 
 Conditions:
   OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
-  OverwriteStorachaBridgeUrl: !Not [!Equals [!Ref StorachaBridgeUrl, ""]]
+  OverwriteIPFSBridgeUrl: !Not [!Equals [!Ref IPFSBridgeUrl, ""]]
 
 Resources:
   LambdaScheduledRule:
@@ -123,9 +123,9 @@ Resources:
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
             - !Ref "AWS::NoValue"
-          STORACHA_BRIDGE_URL: !If
-            - OverwriteStorachaBridgeUrl
-            - !Ref StorachaBridgeUrl
+          IPFS_BRIDGE_URL: !If
+            - OverwriteIPFSBridgeUrl
+            - !Ref IPFSBridgeUrl
             - !Ref "AWS::NoValue"
 
   OwenSignerKmsKey:

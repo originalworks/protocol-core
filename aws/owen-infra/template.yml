@@ -33,7 +33,7 @@ Parameters:
   DdexSequencerAddress:
     Type: String
     Default: ""
-  StorachaBridgeUrl:
+  IPFSBridgeUrl:
     Type: String
     Default: ""
   BlobsTempStorageBucketPrefix:
@@ -231,7 +231,7 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        IPFSBridgeUrl: !Ref IPFSBridgeUrl
         # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
@@ -252,7 +252,7 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        IPFSBridgeUrl: !Ref IPFSBridgeUrl
         # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 
@@ -273,7 +273,7 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        StorachaBridgeUrl: !Ref StorachaBridgeUrl
+        IPFSBridgeUrl: !Ref IPFSBridgeUrl
         # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
         BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
 

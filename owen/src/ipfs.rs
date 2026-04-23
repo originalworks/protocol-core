@@ -17,7 +17,7 @@ struct IpfsKuboResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct StorachaBridgeResponse {
+struct IpfsBridgeResponse {
     cid: String,
     url: String,
 }
@@ -25,7 +25,7 @@ struct StorachaBridgeResponse {
 pub struct IpfsManager<'a> {
     local_ipfs: bool,
     ipfs_api_base_url: String,
-    storacha_bridge_url: String,
+    ipfs_bridge_url: String,
     ow_wallet: &'a OwWallet,
 }
 
@@ -34,7 +34,7 @@ impl<'a> IpfsManager<'a> {
         Ok(Self {
             local_ipfs: config.local_ipfs.clone(),
             ipfs_api_base_url: config.ipfs_api_base_url.clone(),
-            storacha_bridge_url: config.storacha_bridge_url.clone(),
+            ipfs_bridge_url: config.ipfs_bridge_url.clone(),
             ow_wallet,
         })
     }
@@ -43,7 +43,7 @@ impl<'a> IpfsManager<'a> {
         if self.local_ipfs {
             Ok(self.pin_file_ipfs_kubo(path).await?)
         } else {
-            Ok(self.pin_file_storacha(path).await?)
+            Ok(self.pin_file_ipfs_bridge(path).await?)
         }
     }
 
@@ -86,28 +86,28 @@ impl<'a> IpfsManager<'a> {
         Ok(authorization)
     }
 
-    async fn pin_file_storacha(&self, file_path: &String) -> anyhow::Result<String> {
-        log_info!("Pinning {} to IPFS using STORACHA...", file_path);
+    async fn pin_file_ipfs_bridge(&self, file_path: &String) -> anyhow::Result<String> {
+        log_info!("Pinning {} to IPFS using Ipfs Bridge...", file_path);
 
         let form = Self::file_to_multipart_form(&file_path, Some("image/avif")).await?;
 
         let authorization = self.sign_authorization_header().await?;
 
         let response = REQWEST_CLIENT
-            .post(format!("{}w3up/file", self.storacha_bridge_url))
+            .post(format!("{}pin/file", self.ipfs_bridge_url))
             .header("authorization", authorization)
             .multipart(form)
             .send()
             .await
-            .with_context(|| format_error!("Pinning to Storacha failed"))?;
+            .with_context(|| format_error!("Pinning to Ipfs Bridge failed"))?;
 
-        let res: StorachaBridgeResponse;
+        let res: IpfsBridgeResponse;
 
         if response.status().is_success() {
             res = response.json().await?;
         } else {
             let reason = response.text().await?;
-            return Err(format_error!("Storacha Bridge returned error: {}", reason));
+            return Err(format_error!("Ipfs Bridge returned error: {}", reason));
         }
 
         log_info!("Pinned! CID: {}", res.cid);

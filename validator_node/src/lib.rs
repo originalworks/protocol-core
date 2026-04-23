@@ -38,7 +38,7 @@ pub struct Config {
     pub segment_limit_po2: u32,
     pub ddex_sequencer_address: Address,
     pub disable_telemetry: bool,
-    pub storacha_bridge_url: String,
+    pub ipfs_bridge_url: String,
     pub alt_ipfs_api_base_url: Option<String>,
 }
 
@@ -77,11 +77,11 @@ impl Config {
                 .as_str(),
             "1" | "true"
         );
-        let mut storacha_bridge_url = env::var("STORACHA_BRIDGE_URL")
-            .unwrap_or_else(|_| constants::DEFAULT_STORACHA_BRIDGE_URL.to_string());
+        let mut ipfs_bridge_url = env::var("IPFS_BRIDGE_URL")
+            .unwrap_or_else(|_| constants::DEFAULT_IPFS_BRIDGE_URL.to_string());
 
-        if !storacha_bridge_url.ends_with("/") {
-            storacha_bridge_url = format!("{}/", storacha_bridge_url)
+        if !ipfs_bridge_url.ends_with("/") {
+            ipfs_bridge_url = format!("{}/", ipfs_bridge_url)
         }
 
         let alt_ipfs_api_base_url = env::var("ALT_IPFS_API_BASE_URL")
@@ -98,7 +98,7 @@ impl Config {
             segment_limit_po2,
             ddex_sequencer_address,
             disable_telemetry,
-            storacha_bridge_url,
+            ipfs_bridge_url,
             alt_ipfs_api_base_url,
         }
     }
@@ -117,7 +117,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
 
     let ipfs_manager = IpfsManager::build(
         Arc::clone(&contracts_manager),
-        config.storacha_bridge_url.clone(),
+        config.ipfs_bridge_url.clone(),
         config.alt_ipfs_api_base_url.clone(),
     )?;
 
