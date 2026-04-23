@@ -277,7 +277,7 @@ impl IpfsManager {
                 url: "test_url".to_string(),
             };
         } else {
-            log::info!("Uploading zip to Storacha Bridge...");
+            log::info!("Uploading zip to IPFS Bridge...");
 
             let proposer_address = self.contracts_manager.get_blob_proposer(&blobhash).await?;
 

@@ -59,7 +59,7 @@ Parameters:
 
 Conditions:
   OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
-  OverwriteStorachaBridgeUrl: !Not [!Equals [!Ref StorachaBridgeUrl, ""]]
+  OverwriteIPFSBridgeUrl: !Not [!Equals [!Ref IPFSBridgeUrl, ""]]
 
 Resources:
   LambdaScheduledRule:
@@ -124,8 +124,8 @@ Resources:
             - !Ref DdexSequencerAddress
             - !Ref "AWS::NoValue"
           IPFS_BRIDGE_URL: !If
-            - OverwriteStorachaBridgeUrl
-            - !Ref StorachaBridgeUrl
+            - OverwriteIPFSBridgeUrl
+            - !Ref IPFSBridgeUrl
             - !Ref "AWS::NoValue"
 
   OwenSignerKmsKey:
