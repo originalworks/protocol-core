@@ -18,6 +18,7 @@ use reqwest::{multipart, Response};
 use serde::{Deserialize, Serialize};
 use serde_valid::json::ToJsonString;
 use std::sync::Arc;
+use std::time::Duration;
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
@@ -46,6 +47,7 @@ pub struct IpfsManager {
     contracts_manager: Arc<ContractsManager>,
     blob_folder_path: String,
     ipfs_bridge_url: String,
+    ipfs_timeout: Duration,
     alt_ipfs_api_base_url: Option<String>,
 }
 
@@ -53,6 +55,7 @@ impl IpfsManager {
     pub fn build(
         contracts_manager: Arc<ContractsManager>,
         ipfs_bridge_url: String,
+        ipfs_timeout: Duration,
         alt_ipfs_api_base_url: Option<String>,
     ) -> anyhow::Result<Self> {
         let blob_folder_path = Path::new(constants::TEMP_FOLDER)
@@ -64,6 +67,7 @@ impl IpfsManager {
             contracts_manager,
             blob_folder_path,
             ipfs_bridge_url,
+            ipfs_timeout,
             alt_ipfs_api_base_url,
         })
     }
@@ -89,9 +93,18 @@ impl IpfsManager {
 
         let response = REQWEST_CLIENT
             .get(&url)
+            .timeout(self.ipfs_timeout)
             .send()
             .await
-            .with_context(|| format!("Failed to download image using {}", base_url))?;
+            .map_err(|err| {
+                let msg = if err.is_timeout() {
+                    format!("Timeout while downloading from {}", base_url)
+                } else {
+                    format!("Failed to download image using {}", base_url)
+                };
+
+                anyhow::Error::new(err).context(msg)
+            })?;
 
         if response.status() != 200 {
             log_warn!(

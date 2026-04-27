@@ -16,6 +16,7 @@ use log_macros::{log_error, log_info};
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::Mutex;
 
 pub fn is_local() -> bool {
@@ -39,6 +40,7 @@ pub struct Config {
     pub ddex_sequencer_address: Address,
     pub disable_telemetry: bool,
     pub ipfs_bridge_url: String,
+    pub ipfs_timeout: Duration,
     pub alt_ipfs_api_base_url: Option<String>,
 }
 
@@ -84,6 +86,13 @@ impl Config {
             ipfs_bridge_url = format!("{}/", ipfs_bridge_url)
         }
 
+        let ipfs_timeout = Duration::from_millis(
+            env::var("IPFS_TIMEOUT")
+                .ok()
+                .and_then(|v| v.parse::<u64>().ok())
+                .unwrap_or(constants::DEFAULT_IPFS_TIMEOUT),
+        );
+
         let alt_ipfs_api_base_url = env::var("ALT_IPFS_API_BASE_URL")
             .ok()
             .map(|val| val.strip_suffix('/').unwrap_or(&val).to_string());
@@ -99,6 +108,7 @@ impl Config {
             ddex_sequencer_address,
             disable_telemetry,
             ipfs_bridge_url,
+            ipfs_timeout,
             alt_ipfs_api_base_url,
         }
     }
