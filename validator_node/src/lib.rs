@@ -128,6 +128,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let ipfs_manager = IpfsManager::build(
         Arc::clone(&contracts_manager),
         config.ipfs_bridge_url.clone(),
+        config.ipfs_timeout,
         config.alt_ipfs_api_base_url.clone(),
     )?;
 
