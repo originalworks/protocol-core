@@ -91,20 +91,23 @@ impl IpfsManager {
         let url = format!("{}{}{}", base_url, IPFS_API_CAT_FILE, cid);
         log_info!("Trying to download image from {}", url);
 
-        let response = REQWEST_CLIENT
+        let response = match REQWEST_CLIENT
             .get(&url)
             .timeout(self.ipfs_timeout)
             .send()
             .await
-            .map_err(|err| {
-                let msg = if err.is_timeout() {
-                    format!("Timeout while downloading from {}", base_url)
+        {
+            Ok(res) => res,
+            Err(err) => {
+                if err.is_timeout() {
+                    log_warn!("Timeout while downloading from {}", base_url);
                 } else {
-                    format!("Failed to download image using {}", base_url)
-                };
+                    log_warn!("Failed to download image using {}", base_url);
+                }
 
-                anyhow::Error::new(err).context(msg)
-            })?;
+                return Ok(None);
+            }
+        };
 
         if response.status() != 200 {
             log_warn!(
