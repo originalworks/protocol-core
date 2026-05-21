@@ -4,6 +4,10 @@ use sentry::User;
 use serde_json::json;
 use validator_node::Config;
 
+use crate::heartbeat::heartbeat_task;
+
+mod heartbeat;
+
 fn init_sentry(config: &Config) -> Option<sentry::ClientInitGuard> {
     if !config.disable_telemetry {
         let guard: sentry::ClientInitGuard = sentry::init((
@@ -47,6 +51,10 @@ async fn init(config: Config) -> anyhow::Result<()> {
         cloned_config.private_key = "***".to_string();
         scope.set_extra("config", json!(cloned_config));
     });
+
+    if config.enable_heartbeat {
+        tokio::spawn(heartbeat_task(config.heartbeat_path.clone()));
+    }
 
     validator_node::run(&config).await.map_err(|e| {
         sentry::configure_scope(|scope| {

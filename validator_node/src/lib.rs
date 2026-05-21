@@ -14,6 +14,7 @@ use contracts::ContractsManager;
 use ipfs::IpfsManager;
 use log_macros::{log_error, log_info};
 use std::env;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -42,6 +43,8 @@ pub struct Config {
     pub ipfs_bridge_url: String,
     pub ipfs_timeout: Duration,
     pub alt_ipfs_api_base_url: Option<String>,
+    pub enable_heartbeat: bool,
+    pub heartbeat_path: PathBuf,
 }
 
 impl Config {
@@ -97,6 +100,17 @@ impl Config {
             .ok()
             .map(|val| val.strip_suffix('/').unwrap_or(&val).to_string());
 
+        let enable_heartbeat: bool = matches!(
+            std::env::var("ENABLE_HEARTBEAT")
+                .unwrap_or_else(|_| "false".to_string())
+                .as_str(),
+            "1" | "true"
+        );
+
+        let heartbeat_path = PathBuf::from(
+            env::var("HEARTBEAT_PATH").unwrap_or_else(|_| "/tmp/validator_heartbeat".to_string()),
+        );
+
         Config {
             rpc_url,
             beacon_rpc_url,
@@ -110,6 +124,8 @@ impl Config {
             ipfs_bridge_url,
             ipfs_timeout,
             alt_ipfs_api_base_url,
+            enable_heartbeat,
+            heartbeat_path,
         }
     }
 }
