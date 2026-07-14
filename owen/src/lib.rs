@@ -1,13 +1,16 @@
 #[cfg(feature = "aws-integration")]
+pub mod aws;
+#[cfg(feature = "aws-integration")]
 pub mod blobs_queue;
 
 pub mod blob;
 pub mod constants;
-mod contracts;
+pub mod contracts;
 mod image_processor;
-mod ipfs;
+pub mod ipfs;
 pub mod logger;
 pub mod output_generator;
+
 use alloy::primitives::Address;
 use blob::BlobTransactionData;
 use contracts::ContractsManager;

@@ -155,8 +155,8 @@ Resources:
     Properties:
       Name: !Ref OwenLambdaSecretsName
       Description: "Environmental variables with sensitive data for OwenLambda"
-      # !!! Set those manually in your AWS Console after the deployment!!!
-      # !!! Do not edit this line here directly !!!
+      # Set these values manually in the AWS Console after deployment.
+      # Do not modify this line directly.
       SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key" }'
 
   QueueConsumerLambda:

@@ -1,0 +1,63 @@
+name: "Build Owen for AA (WIP)"
+
+on:
+  push:
+    branches: [owen-aa-integration]
+
+jobs:
+  build-owen-aa-binary:
+    runs-on: ubuntu-latest
+    container: amazonlinux:latest
+    timeout-minutes: 30
+
+    steps:
+      - name: "Install rust and cargo"
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo 'source $HOME/.cargo/env' >> ~/.bashrc
+          source $HOME/.cargo/env
+
+      - name: "Install dependencies with dnf"
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nasm
+
+      - name: Install Node.js 22
+        run: |
+          curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+          dnf install -y nodejs
+
+      - name: "Install cargo-lambda"
+        run: pip3 install cargo-lambda
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: "Compile Protocol's conracts"
+        working-directory: contracts
+        run: |
+          npm i
+          npx hardhat compile
+
+      # - name: "Build aws_queue_consumer"
+      #   working-directory: aws/aws_queue_consumer
+      #   run: |
+      #     source $HOME/.cargo/env
+      #     cargo lambda build --release
+
+      - name: "Build owen_lambda"
+        working-directory: owen
+        run: |
+          source $HOME/.cargo/env
+          cargo lambda build --release --bin aws_aa_lambda --features aws-integration --compiler cargo
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: owen-lambda-binaries
+          path: |
+            target/lambda/owen_lambda
+            # target/lambda/aws_queue_consumer

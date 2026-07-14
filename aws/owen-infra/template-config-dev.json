@@ -1,6 +1,6 @@
 {
     "Parameters": {
-        "MessagesBucketName": "ddex-messages-dev",
+        "MessagesBucketName": "ddex-messages-ingress-dev",
         "MessageStatusTableName": "DdexMessageStatusDev",
         "TriggerFilePattern": "BatchComplete_",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
