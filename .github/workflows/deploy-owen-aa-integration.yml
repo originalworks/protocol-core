@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-owen-aa-binary:
     runs-on: ubuntu:22.04
-    # container: amazonlinux:2023.11.20260406.2
+    container: amazonlinux:latest
     timeout-minutes: 30
 
     steps:
@@ -27,11 +27,13 @@ jobs:
           echo 'source $HOME/.cargo/env' >> ~/.bashrc
           source $HOME/.cargo/env
 
-      # - name: "Install dependencies with dnf"
-      #   run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nasm
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "22.x"
+      - name: "Install dependencies with dnf"
+        run: dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nasm
+
+      - name: Install Node.js 22
+        run: |
+          curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+          dnf install -y nodejs
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
