@@ -69,4 +69,4 @@ jobs:
         with:
           name: owen-lambda-binaries
           path: |
-            target/lambda/owen_lambda
+            target/lambda/aws_aa_lambda
