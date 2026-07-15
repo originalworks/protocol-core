@@ -32,10 +32,9 @@ jobs:
       #   run: pip3 install cargo-lambda
 
       - name: Install Foundry
-        run: |
-          curl -L https://getfoundry.sh/install | bash
-          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
-          ~/.foundry/bin/foundryup
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: 1.5.1
 
       - name: "Checkout"
         uses: actions/checkout@v4
