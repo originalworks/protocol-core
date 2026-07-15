@@ -18,9 +18,6 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: "Install nasm"
-        run: sudo apt-get install -y nasm
-
       - name: "Install rust and cargo"
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
