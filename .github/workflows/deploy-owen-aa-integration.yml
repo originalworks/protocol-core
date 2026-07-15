@@ -35,8 +35,8 @@ jobs:
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+      # - name: Install Foundry
+      #   uses: foundry-rs/foundry-toolchain@v1
 
       - name: "Checkout"
         uses: actions/checkout@v4
