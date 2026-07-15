@@ -34,7 +34,8 @@ jobs:
       - name: Install Foundry
         run: |
           curl -L https://getfoundry.sh/install | bash
-          foundryup
+          echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+          ~/.foundry/bin/foundryup
 
       - name: "Checkout"
         uses: actions/checkout@v4
