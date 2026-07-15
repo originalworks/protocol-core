@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build-owen-aa-binary:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu:22.04
     # container: amazonlinux:2023.11.20260406.2
     timeout-minutes: 30
 
@@ -38,8 +38,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        # with:
-        #   version: 1.5.1
 
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -51,12 +49,6 @@ jobs:
         run: |
           npm i
           npx hardhat compile
-
-      # - name: "Build aws_queue_consumer"
-      #   working-directory: aws/aws_queue_consumer
-      #   run: |
-      #     source $HOME/.cargo/env
-      #     cargo lambda build --release
 
       - name: "Build owen_lambda"
         working-directory: owen
