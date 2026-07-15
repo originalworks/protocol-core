@@ -7,9 +7,13 @@ on:
 env:
   FOUNDRY_PROFILE: ci
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-owen-aa-binary:
-    runs-on: ubuntu:22.04
+    runs-on: ubuntu-latest
     container: amazonlinux:2023.11.20260406.2
     timeout-minutes: 30
 
@@ -27,12 +31,14 @@ jobs:
       #   run: |
       #     curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
       #     dnf install -y nodejs
+
       # - name: "Install cargo-lambda"
       #   run: pip3 install cargo-lambda
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        # with:
-        #   version: 1.5.1
+        with:
+          version: 1.5.1
 
       - name: "Checkout"
         uses: actions/checkout@v4
