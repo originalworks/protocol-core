@@ -85,7 +85,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Role: !Ref LambdaExecutionRoleArn
-      CodeUri: ../../../target/lambda/owen_lambda
+      CodeUri: ../../../target/lambda/aws_aa_lambda
       Runtime: "provided.al2023"
       Architectures:
         - x86_64

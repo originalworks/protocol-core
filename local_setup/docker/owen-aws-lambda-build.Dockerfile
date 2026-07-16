@@ -1,16 +1,13 @@
-FROM ubuntu:22.04
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 
-RUN apt-get update && apt install curl wget npm pkg-config nasm -y
-
-# rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:$PATH"
 
-# foundry
-RUN curl -L https://getfoundry.sh/install | bash
-ENV PATH="/root/.foundry/bin:$PATH"
-RUN foundryup
+
+RUN dnf install -y gcc gcc-c++ glibc-devel make python3-pip openssl openssl-devel tar gzip git nasm
 
 
-# cargo-lambda
 RUN pip3 install cargo-lambda
+
+
+
