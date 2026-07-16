@@ -70,7 +70,7 @@ jobs:
       - name: "Copy contracts artifacts"
         run: |
           mkdir -p contracts/artifacts
-          cp -a contracts-artifacts. contracts/artifacts
+          cp -a contracts-artifacts/. contracts/artifacts/
 
       - name: "Install cargo-lambda"
         run: pip3 install cargo-lambda
