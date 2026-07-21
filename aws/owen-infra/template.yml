@@ -8,6 +8,10 @@ Parameters:
     Default: "false"
     Type: String
     AllowedValues: ["true", "false"]
+  CreateNewSecretsManager:
+    Default: "false"
+    Type: String
+    AllowedValues: ["true", "false"]
   MessageStatusTableName:
     Type: String
   TriggerFilePattern:
@@ -33,17 +37,22 @@ Parameters:
   DdexSequencerAddress:
     Type: String
     Default: ""
-  IPFSBridgeUrl:
-    Type: String
-    Default: ""
-  BlobsTempStorageBucketPrefix:
-    Default: owen-blobs-temp-storage
+  ProcessedBlobBucketName:
     Type: String
   SeoaAddress:
+    Type: String
+  ProcessedBlobQueueUrl:
+    Type: AWS::SSM::Parameter::Value<String>
+  ProcessedBlobQueueArn:
+    Type: AWS::SSM::Parameter::Value<String>
+  ProcessedBlobBucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+  ChainId:
     Type: String
 
 Conditions:
   ShouldCreateNewBucket: !Equals [!Ref CreateNewBucket, "true"]
+  ShouldCreateNewSecretsManager: !Equals [!Ref CreateNewSecretsManager, "true"]
 
 Resources:
   NewUploadsQueue:
@@ -124,6 +133,11 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - kms:Sign
+                  - kms:GetPublicKey
+                Resource: "*"
+              - Effect: Allow
+                Action:
                   - dynamodb:PutItem
                   - dynamodb:Query
                   - dynamodb:UpdateItem
@@ -139,25 +153,29 @@ Resources:
                   - !Sub "arn:aws:s3:::${MessagesBucketName}/*"
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
-                Resource: !Ref OwenLambdaSecrets
+                Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${OwenLambdaSecretsName}*
               - Effect: Allow
                 Action:
                   - s3:PutObject
-                Resource: !Sub "arn:aws:s3:::${BlobsTempStorageBucketPrefix}-${Environment}/*"
-              # - Effect: Allow
-              #   Action:
-              #     - sqs:SendMessage
-              #   Resource:
-              #     - !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueArn
+                Resource: !Sub "arn:aws:s3:::${ProcessedBlobBucketName}/*"
+              - Effect: Allow
+                Action:
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                  - sqs:SendMessage
+                Resource:
+                  - !Ref ProcessedBlobQueueArn
 
   OwenLambdaSecrets:
     Type: AWS::SecretsManager::Secret
+    Condition: ShouldCreateNewSecretsManager
     Properties:
       Name: !Ref OwenLambdaSecretsName
       Description: "Environmental variables with sensitive data for OwenLambda"
-      # Set these values manually in the AWS Console after deployment.
+      # Set values manually in the AWS Console after deployment!
       # Do not modify this line directly.
-      SecretString: '{"RPC_URL": "your-rpc-url", "PRIVATE_KEY": "your-private-key" }'
+      # Read more in README.md
+      SecretString: '{"OWEN_RPC_URL": "", "PRIVATE_KEY": "", "AA_MASTER_KMS_ID": "" }'
 
   QueueConsumerLambda:
     Type: AWS::Serverless::Function
@@ -231,9 +249,9 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        IPFSBridgeUrl: !Ref IPFSBridgeUrl
-        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
-        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+        ProcessedBlobBucketName: !Ref ProcessedBlobBucketName
+        ProcessedBlobQueueUrl: !Ref ProcessedBlobQueueUrl
+        ChainId: !Ref ChainId
 
   OwenTwo:
     Type: AWS::Serverless::Application
@@ -252,9 +270,9 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        IPFSBridgeUrl: !Ref IPFSBridgeUrl
-        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
-        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
+        ProcessedBlobBucketName: !Ref ProcessedBlobBucketName
+        ProcessedBlobQueueUrl: !Ref ProcessedBlobQueueUrl
+        ChainId: !Ref ChainId
 
   OwenThree:
     Type: AWS::Serverless::Application
@@ -273,16 +291,6 @@ Resources:
         ProcessingStatusAttributeName: !Ref ProcessingStatusAttributeName
         MessageFolderAttributeName: !Ref MessageFolderAttributeName
         UnprocessedStatusValue: !Ref UnprocessedStatusValue
-        IPFSBridgeUrl: !Ref IPFSBridgeUrl
-        # OwenBlobsQueueUrl: !GetAtt OwenBlobsQueue.Outputs.OwenBlobsQueueUrl
-        BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
-
-  # OwenBlobsQueue:
-  #   Type: AWS::Serverless::Application
-  #   Properties:
-  #     Location: ./resources/owen-blobs-queue.yml
-  #     Parameters:
-  #       BlobsTempStorageBucketName: !Sub "${BlobsTempStorageBucketPrefix}-${Environment}"
-  #       OwenLambdaSecretsName: !Ref OwenLambdaSecretsName
-  #       DdexSequencerAddress: !Ref DdexSequencerAddress
-  #       SeoaAddress: !Ref SeoaAddress
+        ProcessedBlobBucketName: !Ref ProcessedBlobBucketName
+        ProcessedBlobQueueUrl: !Ref ProcessedBlobQueueUrl
+        ChainId: !Ref ChainId

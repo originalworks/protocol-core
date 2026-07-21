@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "aws/aws_queue_consumer",
-    "aws/blobs_batch_sender",
     "blob_codec",
     "ddex_parser",
     "log_macros",
@@ -27,7 +26,7 @@ serde_json = "1.0.141"
 reqwest = "0.12.22"
 dotenvy = "0.15.7"
 tokio = "1.46.1"
-anyhow = "1.0.98"
+anyhow = "1.0.102"
 sentry = "0.41.0"
 sentry-log = "0.41.0"
 pretty_env_logger = "0.5.0"

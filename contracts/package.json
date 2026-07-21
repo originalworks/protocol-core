@@ -17,12 +17,16 @@
         "@openzeppelin/contracts-upgradeable": "^5.1.0",
         "@openzeppelin/hardhat-upgrades": "^3.5.0",
         "@rumblefishdev/hardhat-kms-signer": "2.0.0",
+        "@types/inquirer": "^9.0.9",
+        "@types/semver": "^7.7.1",
         "dotenv": "16.4.5",
         "hardhat": "^2.22.18",
         "inquirer": "^13.4.1",
         "kzg-wasm": "^0.4.0",
-        "semver": "^7.7.4",
-        "@types/inquirer": "^9.0.9",
-        "@types/semver": "^7.7.1"
+        "semver": "^7.7.4"
+    },
+    "dependencies": {
+        "@aws-sdk/client-kms": "^3.1088.0",
+        "@rumblefishdev/eth-signer-kms": "^4.3.1"
     }
 }

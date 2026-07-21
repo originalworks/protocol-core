@@ -60,6 +60,7 @@ pub struct Config {
     pub use_kms: bool,
     pub signer_kms_id: Option<String>,
     pub use_batch_sender: bool,
+    pub chain_id: i64,
 }
 
 impl Config {
@@ -136,6 +137,7 @@ impl Config {
                 .as_str(),
             "1" | "true"
         );
+        let chain_id = Self::get_env_var("CHAIN_ID").parse::<i64>()?;
 
         let config = Config {
             rpc_url,
@@ -152,6 +154,7 @@ impl Config {
             use_kms,
             signer_kms_id,
             use_batch_sender,
+            chain_id,
         };
 
         Ok(config)

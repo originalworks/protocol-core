@@ -7,7 +7,6 @@ use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 use aws_sdk_s3::primitives::ByteStream;
 use log_macros::log_info;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::env;
 
 #[derive(Deserialize, Serialize)]
@@ -32,8 +31,8 @@ pub struct BlobsQueueProducer {
 
 impl BlobsQueueProducer {
     pub async fn build() -> anyhow::Result<Self> {
-        let queue_url = Self::get_env_var("OWEN_BLOBS_QUEUE_URL");
-        let blobs_temp_storage_bucket_name = Self::get_env_var("BLOBS_TEMP_STORAGE_BUCKET_NAME");
+        let queue_url = Self::get_env_var("PROCESSED_BLOB_QUEUE_URL");
+        let blobs_temp_storage_bucket_name = Self::get_env_var("PROCESSED_BLOB_BUCKET_NAME");
         let owen_instance = Self::get_env_var("USERNAME");
         let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
 

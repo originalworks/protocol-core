@@ -7,7 +7,6 @@ use ddex_parser::ParserError;
 use lambda_runtime::{service_fn, tracing, LambdaEvent};
 use log_macros::log_error;
 use ow_wallet::{OwWallet, OwWalletConfig};
-#[cfg(feature = "aws-integration")]
 use owen::aws::queue::egress::ProcessedBlobQueue;
 use owen::aws::storage::egress::ProcessedBlobStorage;
 use owen::blob::{commitment_to_blobhash, BlobTransactionData};
@@ -161,17 +160,18 @@ async fn run(config: &Config) -> anyhow::Result<Vec<DdexMessage>> {
     let ow_wallet_config = OwWalletConfig::from(config)?;
     let ow_wallet = OwWallet::build(&ow_wallet_config).await?;
     let contracts_manager = ContractsManager::build(&config, &ow_wallet).await?;
-    contracts_manager.check_image_compatibility().await?;
-
     let ipfs_manager = IpfsManager::build(&config, &ow_wallet).await?;
     let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
+    let processed_blob_queue = ProcessedBlobQueue::build().await?;
+    let processed_blob_storage = ProcessedBlobStorage::build().await?;
+
+    contracts_manager.check_image_compatibility().await?;
     let ddex_messages = output_files_generator.generate_files().await?;
 
     let blob_transaction_data = BlobTransactionData::build(&config.output_files_dir)?;
 
     let image_id = contracts_manager.image_id;
-    let processed_blob_queue = ProcessedBlobQueue::build().await?;
-    let processed_blob_storage = ProcessedBlobStorage::build().await?;
+
     let blobhash =
         commitment_to_blobhash(&Bytes::from(blob_transaction_data.kzg_commitment.to_vec()));
     processed_blob_queue.send(&blobhash).await?;

@@ -1,11 +1,19 @@
-use crate::constants::BLOBS_QUEUE_MESSAGE_GROUP_ID;
+use crate::{
+    aws::storage::egress::ProcessedBlobStorage,
+    constants::{AA_BLOB_SENDER_MAX_TX_AGE_SEC, BLOBS_QUEUE_MESSAGE_GROUP_ID},
+};
+use aa_db_types::BlobStorageType;
+use aa_tx_request::blob_tx::BlobTxRequestBody;
 use alloy::primitives::FixedBytes;
 use aws_config::{meta::region::RegionProviderChain, BehaviorVersion};
 
 use log_macros::log_info;
 use serde::{Deserialize, Serialize};
 
-use std::env;
+use std::{
+    env,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 #[derive(Deserialize, Serialize)]
 pub struct BlobsQueueMessageBody {
@@ -17,12 +25,14 @@ pub struct ProcessedBlobQueue {
     queue_url: String,
     owen_instance: String,
     sqs_client: aws_sdk_sqs::Client,
+    chain_id: i64,
 }
 
 impl ProcessedBlobQueue {
     pub async fn build() -> anyhow::Result<Self> {
-        let queue_url = Self::get_env_var("OWEN_BLOBS_QUEUE_URL");
+        let queue_url = Self::get_env_var("PROCESSED_BLOB_QUEUE_URL");
         let owen_instance = Self::get_env_var("USERNAME");
+        let chain_id = Self::get_env_var("CHAIN_ID").parse::<i64>()?;
         let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
 
         let aws_main_config = aws_config::defaults(BehaviorVersion::latest())
@@ -36,62 +46,36 @@ impl ProcessedBlobQueue {
             queue_url,
             owen_instance,
             sqs_client,
+            chain_id,
         })
     }
     fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    // pub async fn enqueue_blob(
-    //     &self,
-    //     transaction_data: BlobTransactionData,
-    //     image_id: FixedBytes<32>,
-    // ) -> anyhow::Result<()> {
-    //     let kzg_commitment = Bytes::from(transaction_data.kzg_commitment.to_vec());
-    //     let blobhash: FixedBytes<32> = commitment_to_blobhash(&kzg_commitment);
-
-    //     self.send_to_s3(&transaction_data, image_id, &blobhash)
-    //         .await?;
-    //     self.send_to_sqs(&blobhash).await?;
-    //     Ok(())
-    // }
-
-    // async fn send_to_s3(
-    //     &self,
-    //     transaction_data: &BlobTransactionData,
-    //     image_id: FixedBytes<32>,
-    //     blobhash: &FixedBytes<32>,
-    // ) -> anyhow::Result<()> {
-    //     log_info!(
-    //         "Sending transaction data to S3 for: {}",
-    //         blobhash.to_string()
-    //     );
-    //     let blobs_queue_s3_json_file = BlobsQueueS3JsonFile {
-    //         tx_data: transaction_data.clone(),
-    //         image_id,
-    //     };
-    //     let json_string = serde_json::to_string_pretty(&blobs_queue_s3_json_file)?;
-
-    //     let put_object_output = self
-    //         .s3_client
-    //         .put_object()
-    //         .bucket(&self.blobs_temp_storage_bucket_name)
-    //         .key(format!("blobs/{}.json", blobhash.to_string()))
-    //         .body(ByteStream::from(json_string.into_bytes()))
-    //         .content_type("application/json")
-    //         .send()
-    //         .await?;
-
-    //     println!("put_object_output: {put_object_output:?}");
-    //     Ok(())
-    // }
 
     pub async fn send(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<()> {
         log_info!("Enqueue: {}", blobhash.to_string());
-        let blobs_queue_message_body = BlobsQueueMessageBody {
-            blobhash: blobhash.to_string(),
-            owen_instance: self.owen_instance.clone(),
+
+        let deadline_timestamp = i64::try_from(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+                + AA_BLOB_SENDER_MAX_TX_AGE_SEC,
+        )?;
+
+        let blobs_queue_message_body = BlobTxRequestBody {
+            tx_id: format!("blobhash:{}", blobhash.to_string()),
+            requester_id: self.owen_instance.clone(),
+            chain_id: self.chain_id,
+            deadline_timestamp,
+            storage_type: BlobStorageType::S3,
+            source_file_path: ProcessedBlobStorage::build_processed_blob_path(blobhash.to_string()),
+            use_operator_wallet_id: None,
         };
+
         let json_string = serde_json::to_string_pretty(&blobs_queue_message_body)?;
+
         let send_message_output = self
             .sqs_client
             .send_message()
@@ -100,7 +84,8 @@ impl ProcessedBlobQueue {
             .message_group_id(BLOBS_QUEUE_MESSAGE_GROUP_ID)
             .send()
             .await?;
-        println!("send_message_output: {send_message_output:?}");
+
+        log_info!("send_message_output: {:?}", send_message_output);
         Ok(())
     }
 }

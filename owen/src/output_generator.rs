@@ -388,6 +388,7 @@ mod tests {
             use_kms: false,
             signer_kms_id: None,
             use_batch_sender: false,
+            chain_id: 31337,
         };
         let ow_wallet_config = OwWalletConfig::from(&config)?;
         let ow_wallet = OwWallet::build(&ow_wallet_config).await?;
@@ -450,6 +451,7 @@ mod tests {
             use_kms: false,
             signer_kms_id: None,
             use_batch_sender: false,
+            chain_id: 31337,
         };
         fs::create_dir_all(&config.input_files_dir).unwrap();
         let ow_wallet_config = OwWalletConfig::from(&config).unwrap();
