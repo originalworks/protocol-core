@@ -39,8 +39,8 @@ Parameters:
     Default: ""
   ProcessedBlobBucketName:
     Type: String
-  SeoaAddress:
-    Type: String
+  # SeoaAddress:
+  #   Type: String
   ProcessedBlobQueueUrl:
     Type: AWS::SSM::Parameter::Value<String>
   ProcessedBlobQueueArn:

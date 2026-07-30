@@ -7,7 +7,7 @@ DEV_ARTIFACTS_BUCKET=ow-protocol-artifacts
 DEV_PARAMETERS_FILE=template-config-dev.json
 
 PROD_STACK_NAME=owen-infra-prod
-PROD_ARTIFACTS_BUCKET=owen-artifacts-prod
+PROD_ARTIFACTS_BUCKET=ow-protocol-artifacts-prod
 PROD_PARAMETERS_FILE=template-config-prod.json
 
 TEMPLATE_FILE=template.yml
@@ -26,4 +26,4 @@ deploy-infra-dev:
 
 deploy-infra-prod: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(PROD_PARAMETERS_FILE))
 deploy-infra-prod: 
-	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(PROD_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(PROD_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
+	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(PROD_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(PROD_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset --profile revelator-prod
