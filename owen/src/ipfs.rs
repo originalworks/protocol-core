@@ -26,7 +26,6 @@ pub struct IpfsManager {
     local_ipfs: bool,
     ipfs_api_base_url: String,
     ipfs_bridge_url: String,
-    // ow_wallet: &'a OwWallet,
 }
 
 impl IpfsManager {
