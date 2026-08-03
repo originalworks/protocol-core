@@ -34,7 +34,6 @@ impl IpfsManager {
             local_ipfs: config.local_ipfs.clone(),
             ipfs_api_base_url: config.ipfs_api_base_url.clone(),
             ipfs_bridge_url: config.ipfs_bridge_url.clone(),
-            // ow_wallet,
         })
     }
 

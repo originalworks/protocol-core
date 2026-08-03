@@ -7,7 +7,6 @@ use blob_codec::BlobEstimator;
 use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
 use ow_wallet_adapter::wallet::OwWallet;
-// use ow_wallet::OwWallet;
 use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
