@@ -1,7 +1,8 @@
 use anyhow::Result;
 use owen::{
-    logger::{init_logging, init_sentry},
-    run_with_sentry, Config,
+    config::core::Config,
+    logger::{init_logging, init_sentry, use_sentry},
+    orchestrator,
 };
 
 fn main() -> Result<()> {
@@ -13,6 +14,6 @@ fn main() -> Result<()> {
         .enable_all()
         .build()
         .unwrap()
-        .block_on(run_with_sentry(&config))
+        .block_on(use_sentry(&config, orchestrator::cli::run(&config)))
         .map(|_| ())
 }

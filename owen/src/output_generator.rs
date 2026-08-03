@@ -1,11 +1,13 @@
+use crate::config::core::Config;
 use crate::image_processor::optimize_image;
 use crate::ipfs::IpfsManager;
 use crate::logger::report_validation_error;
-use crate::Config;
 use anyhow::Context;
 use blob_codec::BlobEstimator;
 use ddex_parser::{DdexParser, NewReleaseMessage};
 use log_macros::{format_error, log_info, log_warn};
+use ow_wallet_adapter::wallet::OwWallet;
+// use ow_wallet::OwWallet;
 use serde_json::json;
 use serde_valid::json::ToJsonString;
 use std::fs;
@@ -149,14 +151,14 @@ impl DdexMessage {
     }
 }
 
-pub struct OutputFilesGenerator<'a, 'b> {
+pub struct OutputFilesGenerator {
     output_files_dir: String,
     input_files_dir: String,
-    ipfs_manager: &'a IpfsManager<'b>,
+    ipfs_manager: IpfsManager,
 }
 
-impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
-    pub fn build(config: &Config, ipfs_manager: &'a IpfsManager<'b>) -> anyhow::Result<Self> {
+impl OutputFilesGenerator {
+    pub fn build(config: &Config, ipfs_manager: IpfsManager) -> anyhow::Result<Self> {
         Ok(Self {
             ipfs_manager,
             output_files_dir: config.output_files_dir.clone(),
@@ -196,7 +198,7 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
         Ok(())
     }
 
-    pub async fn generate_files(&self) -> anyhow::Result<Vec<DdexMessage>> {
+    pub async fn generate_files(&self, ow_wallet: &OwWallet) -> anyhow::Result<Vec<DdexMessage>> {
         log_info!("Creating output files");
         self.prepare_folders()?;
         let mut result: Vec<DdexMessage> = Vec::new();
@@ -206,7 +208,7 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
         for message_dir in input_files_dir_read {
             let mut ddex_message = DdexMessage::build(message_dir?.path())?;
             ddex_message = ddex_message.validate()?;
-            ddex_message = self.pin_images(ddex_message).await?;
+            ddex_message = self.pin_images(ddex_message, &ow_wallet).await?;
             ddex_message = ddex_message.save_output_json(&self.output_files_dir)?;
             result.push(ddex_message);
         }
@@ -214,7 +216,11 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
         Ok(result)
     }
 
-    async fn pin_images(&self, mut ddex_message: DdexMessage) -> anyhow::Result<DdexMessage> {
+    async fn pin_images(
+        &self,
+        mut ddex_message: DdexMessage,
+        ow_wallet: &OwWallet,
+    ) -> anyhow::Result<DdexMessage> {
         if ddex_message.excluded || !ddex_message.validated {
             return Ok(ddex_message);
         }
@@ -239,7 +245,10 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
                             }
                         };
 
-                        let image_cid = match self.ipfs_manager.pin_file(&resized_image_path).await
+                        let image_cid = match self
+                            .ipfs_manager
+                            .pin_file(&resized_image_path, &ow_wallet)
+                            .await
                         {
                             Ok(res) => res,
                             Err(err) => {
@@ -316,7 +325,7 @@ impl<'a, 'b> OutputFilesGenerator<'a, 'b> {
 mod tests {
     use super::*;
     use alloy::primitives::Address;
-    use ow_wallet::{OwWallet, OwWalletConfig};
+    use ow_wallet_adapter::OwWalletConfig;
     use pretty_env_logger;
     use std::str::FromStr;
 
@@ -387,14 +396,13 @@ mod tests {
             ipfs_api_base_url: "http://127.0.0.1:5001".to_string(),
             use_kms: false,
             signer_kms_id: None,
-            use_batch_sender: false,
             chain_id: 31337,
         };
         let ow_wallet_config = OwWalletConfig::from(&config)?;
         let ow_wallet = OwWallet::build(&ow_wallet_config).await?;
-        let ipfs_manager = IpfsManager::build(&config, &ow_wallet).await?;
-        let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager)?;
-        let ddex_messages = output_files_generator.generate_files().await?;
+        let ipfs_manager = IpfsManager::build(&config).await?;
+        let output_files_generator = OutputFilesGenerator::build(&config, ipfs_manager)?;
+        let ddex_messages = output_files_generator.generate_files(&ow_wallet).await?;
 
         assert_eq!(
             ddex_messages.len(),
@@ -450,15 +458,17 @@ mod tests {
             ipfs_api_base_url: "http://127.0.0.1:5001".to_string(),
             use_kms: false,
             signer_kms_id: None,
-            use_batch_sender: false,
             chain_id: 31337,
         };
         fs::create_dir_all(&config.input_files_dir).unwrap();
         let ow_wallet_config = OwWalletConfig::from(&config).unwrap();
         let ow_wallet = OwWallet::build(&ow_wallet_config).await.unwrap();
-        let ipfs_manager = IpfsManager::build(&config, &ow_wallet).await.unwrap();
-        let output_files_generator = OutputFilesGenerator::build(&config, &ipfs_manager).unwrap();
-        let _ = output_files_generator.generate_files().await.unwrap();
+        let ipfs_manager = IpfsManager::build(&config).await.unwrap();
+        let output_files_generator = OutputFilesGenerator::build(&config, ipfs_manager).unwrap();
+        let _ = output_files_generator
+            .generate_files(&ow_wallet)
+            .await
+            .unwrap();
 
         fs::remove_dir_all(&config.input_files_dir).unwrap();
         ()
