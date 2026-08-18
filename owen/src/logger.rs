@@ -1,9 +1,11 @@
-use crate::Config;
 use anyhow::Context;
-use log_macros::{log_info, log_warn};
-use sentry::protocol::Attachment;
+use ddex_parser::ParserError;
+use log_macros::{log_error, log_info, log_warn};
+use sentry::{protocol::Attachment, User};
 use serde_json::json;
-use std::io::Read;
+use std::{future::Future, io::Read};
+
+use crate::config::core::Config;
 
 pub fn init_sentry() -> Option<sentry::ClientInitGuard> {
     let disable_telemetry: bool = matches!(
@@ -86,4 +88,33 @@ pub fn report_validation_error<E: std::error::Error>(
             sentry::capture_message("Validation error", sentry::Level::Warning);
         },
     );
+}
+
+pub async fn use_sentry<T, Fut>(config: &Config, operation: Fut) -> anyhow::Result<T>
+where
+    Fut: Future<Output = anyhow::Result<T>>,
+{
+    sentry::configure_scope(|scope| {
+        scope.set_user(Some(User {
+            username: Some(config.username.to_owned()),
+            ..Default::default()
+        }));
+    });
+
+    operation.await.map_err(|e| {
+        sentry::configure_scope(|scope| {
+            scope.set_tag(
+                "error_type",
+                if e.is::<ParserError>() {
+                    "parser"
+                } else {
+                    "other"
+                },
+            );
+
+            scope.set_extra("error_object", json!(format!("{e:#?}")));
+        });
+
+        log_error!("{e}")
+    })
 }

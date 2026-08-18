@@ -1,3 +1,4 @@
+use crate::{config::aws_aa_lambda::AwsAaLambdaConfig, output_generator::DdexMessage};
 use anyhow::Result;
 use aws_sdk_s3::types::{Delete, ObjectIdentifier};
 use blob_codec::BlobEstimator;
@@ -5,31 +6,34 @@ use log_macros::log_warn;
 use std::{collections::HashMap, env, fs, path::Path};
 use tokio::fs::File;
 
-use crate::output_generator::DdexMessage;
-
-pub struct MessageStorage {
-    client: aws_sdk_s3::Client,
-    bucket_name: String,
+#[derive(Debug, serde::Serialize, Clone)]
+pub struct DdexIngestionStorageConfig {
+    pub bucket_name: String,
     pub input_files_dir: String,
-    message_bucket_prefix: String,
-    fallback_bucket_name: String,
-    pub local_to_s3_folder_mapping: HashMap<String, String>,
-    pub s3_message_folders: Vec<String>,
+    pub message_bucket_prefix: String,
+    pub fallback_bucket_name: String,
 }
 
-impl MessageStorage {
+pub struct DdexIngestionStorage {
+    client: aws_sdk_s3::Client,
+    pub local_to_s3_folder_mapping: HashMap<String, String>,
+    pub s3_message_folders: Vec<String>,
+    pub storage_config: DdexIngestionStorageConfig,
+}
+
+impl DdexIngestionStorage {
     pub fn get_env_var(key: &str) -> String {
         env::var(key).expect(format!("Missing env variable: {key}").as_str())
     }
-    pub fn build(aws_main_config: &aws_config::SdkConfig) -> Result<Self> {
+    pub fn build(
+        aws_main_config: &aws_config::SdkConfig,
+        aa_lambda_config: &AwsAaLambdaConfig,
+    ) -> Result<Self> {
         Ok(Self {
             client: aws_sdk_s3::Client::new(aws_main_config),
-            bucket_name: MessageStorage::get_env_var("MESSAGES_BUCKET_NAME"),
-            input_files_dir: MessageStorage::get_env_var("INPUT_FILES_DIR"),
-            message_bucket_prefix: MessageStorage::get_env_var("MESSAGE_BUCKET_PREFIX"),
-            fallback_bucket_name: MessageStorage::get_env_var("FALLBACK_BUCKET_NAME"),
             local_to_s3_folder_mapping: HashMap::new(),
             s3_message_folders: vec![],
+            storage_config: aa_lambda_config.ddex_ingestion_storage_config.clone(),
         })
     }
 
@@ -50,7 +54,7 @@ impl MessageStorage {
         let resp = self
             .client
             .get_object()
-            .bucket(&self.bucket_name)
+            .bucket(&self.storage_config.bucket_name)
             .key(key)
             .send()
             .await?;
@@ -75,7 +79,8 @@ impl MessageStorage {
 
         for s3_message_folder in max_s3_message_folders {
             let local_message_folder = self.sync_message_folder(&s3_message_folder).await?;
-            match blob_estimator.estimate_and_check(Path::new(&self.input_files_dir)) {
+            match blob_estimator.estimate_and_check(Path::new(&self.storage_config.input_files_dir))
+            {
                 Ok(_) => {
                     self.local_to_s3_folder_mapping
                         .insert(local_message_folder.clone(), s3_message_folder.clone());
@@ -101,7 +106,7 @@ impl MessageStorage {
     }
 
     pub async fn sync_message_folder(&self, _s3_message_folder: &String) -> Result<String> {
-        let s3_message_folder = &MessageStorage::ensure_trailing_slash(_s3_message_folder);
+        let s3_message_folder = &Self::ensure_trailing_slash(_s3_message_folder);
 
         let s3_message_folder_parent_dir = Path::new(&s3_message_folder) // unique
             .file_name()
@@ -109,13 +114,15 @@ impl MessageStorage {
             .to_str()
             .expect("Parsing to str failed");
 
-        let local_message_folder =
-            format!("{}/{}", self.input_files_dir, s3_message_folder_parent_dir);
+        let local_message_folder = format!(
+            "{}/{}",
+            self.storage_config.input_files_dir, s3_message_folder_parent_dir
+        );
 
         let s3_message_folder_objects = self
             .client
             .list_objects_v2()
-            .bucket(&self.bucket_name)
+            .bucket(&self.storage_config.bucket_name)
             .prefix(s3_message_folder)
             .send()
             .await?;
@@ -139,8 +146,8 @@ impl MessageStorage {
         Ok(local_message_folder)
     }
 
-    pub fn clear_input_folder(&self) -> Result<()> {
-        let input_files_path = Path::new(&self.input_files_dir);
+    pub fn clear_input_folder(&mut self) -> Result<()> {
+        let input_files_path = Path::new(&self.storage_config.input_files_dir);
         if input_files_path.is_dir() {
             // Debugging issue with leftovers between lambda runs:
             let mut empty = false;
@@ -153,6 +160,8 @@ impl MessageStorage {
                 }
             }
         }
+        self.local_to_s3_folder_mapping = HashMap::new();
+        self.s3_message_folders = Vec::new();
         Ok(())
     }
 
@@ -160,8 +169,8 @@ impl MessageStorage {
         let s3_objects = self
             .client
             .list_objects_v2()
-            .bucket(&self.bucket_name)
-            .prefix(&self.message_bucket_prefix)
+            .bucket(&self.storage_config.bucket_name)
+            .prefix(&self.storage_config.message_bucket_prefix)
             .delimiter("/")
             .max_keys(limit)
             .send()
@@ -189,7 +198,7 @@ impl MessageStorage {
             let folder_objects = self
                 .client
                 .list_objects_v2()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .prefix(s3_message_folder)
                 .send()
                 .await?;
@@ -206,7 +215,7 @@ impl MessageStorage {
         if !objects_to_delete.is_empty() {
             self.client
                 .delete_objects()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .delete(
                     Delete::builder()
                         .set_objects(Some(objects_to_delete))
@@ -224,7 +233,7 @@ impl MessageStorage {
             let folder_objects = self
                 .client
                 .list_objects_v2()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .prefix(s3_message_folder)
                 .send()
                 .await?;
@@ -240,11 +249,11 @@ impl MessageStorage {
 
         if !objects_to_delete.is_empty() {
             for object_key in &objects_to_delete {
-                let source = format!("{}/{}", self.bucket_name, &object_key.key);
+                let source = format!("{}/{}", self.storage_config.bucket_name, &object_key.key);
                 self.client
                     .copy_object()
                     .copy_source(source)
-                    .bucket(&self.fallback_bucket_name)
+                    .bucket(&self.storage_config.fallback_bucket_name)
                     .key(&object_key.key)
                     .send()
                     .await?;
@@ -253,7 +262,7 @@ impl MessageStorage {
 
             self.client
                 .delete_objects()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .delete(
                     Delete::builder()
                         .set_objects(Some(objects_to_delete))
@@ -276,7 +285,7 @@ impl MessageStorage {
             let folder_objects = self
                 .client
                 .list_objects_v2()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .prefix(s3_message_folder)
                 .send()
                 .await?;
@@ -298,11 +307,11 @@ impl MessageStorage {
 
         if !objects_to_copy_to_fallback_bucket.is_empty() {
             for object_key in objects_to_copy_to_fallback_bucket {
-                let source = format!("{}/{}", self.bucket_name, &object_key);
+                let source = format!("{}/{}", self.storage_config.bucket_name, &object_key);
                 self.client
                     .copy_object()
                     .copy_source(source)
-                    .bucket(&self.fallback_bucket_name)
+                    .bucket(&self.storage_config.fallback_bucket_name)
                     .key(&object_key)
                     .send()
                     .await?;
@@ -313,7 +322,7 @@ impl MessageStorage {
         if !objects_to_delete.is_empty() {
             self.client
                 .delete_objects()
-                .bucket(&self.bucket_name)
+                .bucket(&self.storage_config.bucket_name)
                 .delete(
                     Delete::builder()
                         .set_objects(Some(objects_to_delete))

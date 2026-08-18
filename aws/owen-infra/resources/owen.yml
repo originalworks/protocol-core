@@ -25,13 +25,10 @@ Parameters:
     Type: String
   UnprocessedStatusValue:
     Type: String
-  IPFSBridgeUrl:
+  ProcessedBlobBucketName:
     Type: String
-  # OwenBlobsQueueUrl:
-  #   Type: String
-  BlobsTempStorageBucketName:
+  ProcessedBlobQueueUrl:
     Type: String
-
   MessageBucketPrefix:
     Type: String
     Default: "revelator"
@@ -56,10 +53,11 @@ Parameters:
   OutputFilesDir:
     Type: String
     Default: "/tmp/output_files"
+  ChainId:
+    Type: String
 
 Conditions:
   OverwriteDdexSequencerAddress: !Not [!Equals [!Ref DdexSequencerAddress, ""]]
-  OverwriteIPFSBridgeUrl: !Not [!Equals [!Ref IPFSBridgeUrl, ""]]
 
 Resources:
   LambdaScheduledRule:
@@ -85,7 +83,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Role: !Ref LambdaExecutionRoleArn
-      CodeUri: ../../../target/lambda/owen_lambda
+      CodeUri: ../../../target/lambda/aws_aa_lambda
       Runtime: "provided.al2023"
       Architectures:
         - x86_64
@@ -97,6 +95,7 @@ Resources:
       ReservedConcurrentExecutions: 1
       Environment:
         Variables:
+          CHAIN_ID: !Ref ChainId
           MESSAGE_BUCKET_PREFIX: !Ref MessageBucketPrefix
           FALLBACK_BUCKET_NAME: "empty"
           MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
@@ -115,40 +114,20 @@ Resources:
           ENVIRONMENT: !Ref Environment
           USERNAME: !Ref OwenUsername
           OWEN_LAMBDA_SECRETS_NAME: !Ref OwenLambdaSecretsName
-          SIGNER_KMS_ID: !Ref OwenSignerKmsKey
           USE_KMS: true
-          # OWEN_BLOBS_QUEUE_URL: !Ref OwenBlobsQueueUrl
-          BLOBS_TEMP_STORAGE_BUCKET_NAME: !Ref BlobsTempStorageBucketName
+          PROCESSED_BLOB_BUCKET_NAME: !Ref ProcessedBlobBucketName
+          PROCESSED_BLOB_QUEUE_URL: !Ref ProcessedBlobQueueUrl
           DDEX_SEQUENCER_ADDRESS: !If
             - OverwriteDdexSequencerAddress
             - !Ref DdexSequencerAddress
             - !Ref "AWS::NoValue"
-          IPFS_BRIDGE_URL: !If
-            - OverwriteIPFSBridgeUrl
-            - !Ref IPFSBridgeUrl
-            - !Ref "AWS::NoValue"
-
-  OwenSignerKmsKey:
-    Type: AWS::KMS::Key
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      Description: !Sub "This key is used by OWEN instance: ${OwenUsername}"
-      KeySpec: ECC_SECG_P256K1
-      KeyUsage: SIGN_VERIFY
-      Enabled: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: AllowRootAccount
-            Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
-            Resource: "*"
-          - Sid: AllowLambdaUseKey
-            Effect: Allow
-            Principal:
-              AWS: !Ref LambdaExecutionRoleArn
-            Action: "kms:*"
-            Resource: "*"
+          RPC_URL: !Join
+            - ""
+            - - "{{resolve:secretsmanager:"
+              - !Ref OwenLambdaSecretsName
+              - ":SecretString:OWEN_RPC_URL}}"
+          SIGNER_KMS_ID: !Join
+            - ""
+            - - "{{resolve:secretsmanager:"
+              - !Ref OwenLambdaSecretsName
+              - ":SecretString:AA_MASTER_KMS_ID}}"

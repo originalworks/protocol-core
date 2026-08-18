@@ -1,6 +1,6 @@
 {
     "Parameters": {
-        "MessagesBucketName": "ddex-messages-prod",
+        "MessagesBucketName": "ddex-messages-ingress-prod",
         "MessageStatusTableName": "DdexMessageStatusProd",
         "TriggerFilePattern": "BatchComplete_",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
@@ -11,7 +11,11 @@
         "UnprocessedStatusValue": "unprocessed",
         "MessagePerBlob": "5",
         "Environment": "prod",
-        "OwenLambdaSecretsName": "OwenLambdaSecretsProd",
-        "SeoaAddress": "your-seoa-address"
+        "OwenLambdaSecretsName": "'/rev/prod/secrets'",
+        "DdexSequencerAddress": "88c430c91Cbb608b41cDB2fCe27604E12233233f",
+        "ProcessedBlobQueueUrl": "'/account-abstraction/prod/sqs/blob-tx-signer/url'",
+        "ProcessedBlobQueueArn": "'/account-abstraction/prod/sqs/blob-tx-signer/arn'",
+        "ProcessedBlobBucketName": "'/account-abstraction/prod/s3/blob-bucket/name'",
+        "ChainId": "100"
     }
 }
