@@ -48,7 +48,7 @@ async fn init(config: Config) -> anyhow::Result<()> {
                 .private_key
                 .parse::<PrivateKeySigner>()
                 .ok()
-                .map(|signer| signer.address().to_string()),
+                .map(|signer| signer.address().to_string().to_lowercase()),
             username: Some(config.username.to_owned()),
             ..Default::default()
         }));
