@@ -1,3 +1,4 @@
+use alloy::signers::local::PrivateKeySigner;
 use anyhow::Context;
 use log_macros::{log_error, log_info};
 use sentry::User;
@@ -43,10 +44,14 @@ fn init_logging() -> anyhow::Result<()> {
 async fn init(config: Config) -> anyhow::Result<()> {
     sentry::configure_scope(|scope| {
         scope.set_user(Some(User {
+            id: config
+                .private_key
+                .parse::<PrivateKeySigner>()
+                .ok()
+                .map(|signer| signer.address().to_string().to_lowercase()),
             username: Some(config.username.to_owned()),
             ..Default::default()
         }));
-
         let mut cloned_config = config.clone();
         cloned_config.private_key = "***".to_string();
         scope.set_extra("config", json!(cloned_config));
