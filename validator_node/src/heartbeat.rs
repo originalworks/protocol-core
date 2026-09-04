@@ -13,7 +13,7 @@ pub async fn heartbeat_task(path: PathBuf) {
             .unwrap()
             .as_secs();
 
-        log_info!(format!("heartbeat: {now}"));
+        log_info!(format!("heartbeat: {}", now));
         let _ = fs::write(&path, now.to_string());
 
         sleep(interval).await;
