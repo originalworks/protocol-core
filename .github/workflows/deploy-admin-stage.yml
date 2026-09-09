@@ -1,0 +1,16 @@
+name: "Deploy OWEN admin to AWS stage"
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "admin@*"
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-admin-template.yml
+    with:
+      env: "stage"
+      run_id: ${{ github.run_id }}
+      publish_spa: true
+    secrets: inherit

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "aws/admin_api",
     "aws/aws_queue_consumer",
     "aws/blobs_batch_sender",
     "blob_codec",
