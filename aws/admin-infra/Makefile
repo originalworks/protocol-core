@@ -26,8 +26,6 @@ deploy-infra-prod: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.
 deploy-infra-prod:
 	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(PROD_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(PROD_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
 
-# Usage: make publish-spa-dev
-# Requires built admin/dist and AWS credentials. Reads stack outputs for bucket + distribution.
 publish-spa-dev:
 	$(MAKE) publish-spa ENV=dev STACK=$(DEV_STACK_NAME)
 
@@ -40,16 +38,22 @@ publish-spa-prod:
 publish-spa:
 	@BUCKET=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='SpaBucketName'].OutputValue" --output text); \
 	DIST=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text); \
-	API=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" --output text); \
 	POOL=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text); \
 	CLIENT=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text); \
+	ID_POOL=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='IdentityPoolId'].OutputValue" --output text); \
 	DOMAIN=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='CognitoDomain'].OutputValue" --output text); \
+	AWS_REGION_OUT=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='AwsRegion'].OutputValue" --output text); \
+	TABLE=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='MessageStatusTableName'].OutputValue" --output text); \
+	INDEX=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='ProcessingStatusIndexName'].OutputValue" --output text); \
 	CF_URL=$$(aws cloudformation describe-stacks --stack-name $(STACK) --region $(REGION) --query "Stacks[0].Outputs[?OutputKey=='CloudFrontUrl'].OutputValue" --output text); \
 	cd ../../admin && \
-	VITE_API_BASE_URL="$$API" \
+	VITE_AWS_REGION="$$AWS_REGION_OUT" \
 	VITE_COGNITO_DOMAIN="$$DOMAIN" \
 	VITE_COGNITO_CLIENT_ID="$$CLIENT" \
 	VITE_COGNITO_USER_POOL_ID="$$POOL" \
+	VITE_COGNITO_IDENTITY_POOL_ID="$$ID_POOL" \
+	VITE_MESSAGE_STATUS_TABLE_NAME="$$TABLE" \
+	VITE_PROCESSING_STATUS_INDEX_NAME="$$INDEX" \
 	VITE_REDIRECT_URI="$$CF_URL/auth-callback" \
 	VITE_LOGOUT_URI="$$CF_URL/" \
 	npm ci && npm run build && \

@@ -1,3 +1,8 @@
+import {
+  GetCommand,
+  QueryCommand,
+  type NativeAttributeValue,
+} from "@aws-sdk/lib-dynamodb";
 import type {
   DataProvider,
   GetListParams,
@@ -6,7 +11,7 @@ import type {
   GetOneResult,
   RaRecord,
 } from "react-admin";
-import { getIdToken } from "./auth/cognito";
+import { getDynamoClient } from "./auth/aws";
 import { loadConfig } from "./config";
 
 type MessageRecord = RaRecord & {
@@ -20,25 +25,6 @@ type MessageRecord = RaRecord & {
 
 const STATUSES = ["unprocessed", "reserved", "processed", "rejected"] as const;
 
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  const config = loadConfig();
-  const token = await getIdToken();
-  const response = await fetch(`${config.apiBaseUrl}${path}`, {
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      authorization: `Bearer ${token}`,
-      accept: "application/json",
-    },
-  });
-  if (!response.ok) {
-    const error = new Error(`API error ${response.status}`);
-    (error as Error & { status: number }).status = response.status;
-    throw error;
-  }
-  return response;
-}
-
 function statusFromFilter(filter: GetListParams["filter"]): string {
   const status = filter?.processingStatus;
   if (
@@ -50,6 +36,51 @@ function statusFromFilter(filter: GetListParams["filter"]): string {
   return "unprocessed";
 }
 
+function itemToRecord(
+  item: Record<string, NativeAttributeValue>,
+): MessageRecord | null {
+  const messageFolder = item.messageFolder;
+  if (typeof messageFolder !== "string") {
+    return null;
+  }
+  return {
+    id: messageFolder,
+    messageFolder,
+    processingStatus:
+      typeof item.processingStatus === "string"
+        ? item.processingStatus
+        : undefined,
+    createdTimestamp:
+      typeof item.createdTimestamp === "number"
+        ? item.createdTimestamp
+        : typeof item.createdTimestamp === "string"
+          ? Number(item.createdTimestamp)
+          : undefined,
+    updatedTimestamp:
+      typeof item.updatedTimestamp === "number"
+        ? item.updatedTimestamp
+        : typeof item.updatedTimestamp === "string"
+          ? Number(item.updatedTimestamp)
+          : undefined,
+    owenInstance:
+      typeof item.owenInstance === "string" ? item.owenInstance : undefined,
+  };
+}
+
+function toHttpError(error: unknown): Error {
+  const err = new Error(
+    error instanceof Error ? error.message : "DynamoDB request failed",
+  );
+  const name =
+    error && typeof error === "object" && "name" in error
+      ? String((error as { name: string }).name)
+      : "";
+  if (name === "NotAuthorizedException" || name === "ExpiredTokenException") {
+    (err as Error & { status: number }).status = 401;
+  }
+  return err;
+}
+
 export const dataProvider: DataProvider = {
   getList: async <RecordType extends RaRecord = MessageRecord>(
     resource: string,
@@ -59,31 +90,43 @@ export const dataProvider: DataProvider = {
       throw new Error(`Unknown resource: ${resource}`);
     }
 
+    const config = loadConfig();
     const status = statusFromFilter(params.filter);
     const perPage = params.pagination?.perPage ?? 25;
     const page = params.pagination?.page ?? 1;
-    const query = new URLSearchParams({
-      status,
-      limit: String(perPage),
-    });
 
-    const response = await apiFetch(`/messages?${query.toString()}`);
-    const json = (await response.json()) as {
-      data: MessageRecord[];
-      nextCursor?: string | null;
-    };
+    try {
+      const client = await getDynamoClient();
+      const result = await client.send(
+        new QueryCommand({
+          TableName: config.messageStatusTableName,
+          IndexName: config.processingStatusIndexName,
+          KeyConditionExpression: "processingStatus = :status",
+          ExpressionAttributeValues: {
+            ":status": status,
+          },
+          Limit: perPage,
+          ScanIndexForward: false,
+        }),
+      );
 
-    return {
-      data: json.data as unknown as RecordType[],
-      // DynamoDB does not return total counts cheaply; approximate for React Admin.
-      total: json.nextCursor
-        ? page * perPage + 1
-        : (page - 1) * perPage + json.data.length,
-      pageInfo: {
-        hasNextPage: Boolean(json.nextCursor),
-        hasPreviousPage: page > 1,
-      },
-    };
+      const data = (result.Items ?? [])
+        .map((item) => itemToRecord(item))
+        .filter((item): item is MessageRecord => item !== null);
+
+      return {
+        data: data as unknown as RecordType[],
+        total: result.LastEvaluatedKey
+          ? page * perPage + 1
+          : (page - 1) * perPage + data.length,
+        pageInfo: {
+          hasNextPage: Boolean(result.LastEvaluatedKey),
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw toHttpError(error);
+    }
   },
 
   getOne: async <RecordType extends RaRecord = MessageRecord>(
@@ -93,10 +136,32 @@ export const dataProvider: DataProvider = {
     if (resource !== "messages") {
       throw new Error(`Unknown resource: ${resource}`);
     }
-    const id = encodeURIComponent(String(params.id));
-    const response = await apiFetch(`/messages/${id}`);
-    const data = (await response.json()) as MessageRecord;
-    return { data: data as unknown as RecordType };
+
+    const config = loadConfig();
+    try {
+      const client = await getDynamoClient();
+      const result = await client.send(
+        new GetCommand({
+          TableName: config.messageStatusTableName,
+          Key: { messageFolder: String(params.id) },
+        }),
+      );
+
+      if (!result.Item) {
+        const error = new Error(`Message not found: ${params.id}`);
+        (error as Error & { status: number }).status = 404;
+        throw error;
+      }
+
+      const record = itemToRecord(result.Item);
+      if (!record) {
+        throw new Error("Failed to parse DynamoDB item");
+      }
+
+      return { data: record as unknown as RecordType };
+    } catch (error) {
+      throw toHttpError(error);
+    }
   },
 
   getMany: async () => {

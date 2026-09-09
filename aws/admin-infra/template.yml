@@ -1,4 +1,6 @@
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
+Description: OWEN admin SPA (CloudFront + Cognito User Pool/Identity Pool). No API backend.
 
 Parameters:
   Environment:
@@ -9,21 +11,6 @@ Parameters:
   ProcessingStatusIndexName:
     Type: String
     Default: ProcessingStatusIndex
-  MessageFolderAttributeName:
-    Type: String
-    Default: messageFolder
-  ProcessingStatusAttributeName:
-    Type: String
-    Default: processingStatus
-  CreatedTimestampAttributeName:
-    Type: String
-    Default: createdTimestamp
-  UpdatedTimestampAttributeName:
-    Type: String
-    Default: updatedTimestamp
-  OwenInstanceAttributeName:
-    Type: String
-    Default: owenInstance
   IdentityCenterSamlMetadataUrl:
     Type: String
     Default: ""
@@ -35,14 +22,6 @@ Parameters:
 Conditions:
   HasSamlMetadata: !Not [!Equals [!Ref IdentityCenterSamlMetadataUrl, ""]]
   NoSamlMetadata: !Equals [!Ref IdentityCenterSamlMetadataUrl, ""]
-
-Globals:
-  Function:
-    Timeout: 30
-    MemorySize: 256
-    Runtime: provided.al2023
-    Architectures:
-      - x86_64
 
 Resources:
   AdminSpaBucket:
@@ -216,79 +195,58 @@ Resources:
         - ALLOW_REFRESH_TOKEN_AUTH
       PreventUserExistenceErrors: ENABLED
 
-  AdminHttpApi:
-    Type: AWS::Serverless::HttpApi
+  AdminIdentityPool:
+    Type: AWS::Cognito::IdentityPool
     Properties:
-      StageName: !Ref Environment
-      CorsConfiguration:
-        AllowOrigins:
-          - !Sub "https://${AdminSpaDistribution.DomainName}"
-          - http://localhost:5173
-        AllowHeaders:
-          - authorization
-          - content-type
-        AllowMethods:
-          - GET
-          - OPTIONS
-        MaxAge: 600
-      Auth:
-        DefaultAuthorizer: CognitoJwtAuthorizer
-        Authorizers:
-          CognitoJwtAuthorizer:
-            IdentitySource: $request.header.Authorization
-            JwtConfiguration:
-              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AdminUserPool}"
-              audience:
-                - !If
-                  - HasSamlMetadata
-                  - !Ref AdminUserPoolClientFederated
-                  - !Ref AdminUserPoolClientBootstrap
+      IdentityPoolName: !Sub "owen_admin_${Environment}"
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !If
+            - HasSamlMetadata
+            - !Ref AdminUserPoolClientFederated
+            - !Ref AdminUserPoolClientBootstrap
+          ProviderName: !GetAtt AdminUserPool.ProviderName
 
-  AdminApiFunction:
-    Type: AWS::Serverless::Function
+  AdminAuthenticatedRole:
+    Type: AWS::IAM::Role
     Properties:
-      FunctionName: !Sub "owen-admin-api-${Environment}"
-      CodeUri: ../../target/lambda/admin_api
-      Handler: bootstrap
-      Environment:
-        Variables:
-          MESSAGE_STATUS_TABLE_NAME: !Ref MessageStatusTableName
-          PROCESSING_STATUS_INDEX_NAME: !Ref ProcessingStatusIndexName
-          MESSAGE_FOLDER_ATTRIBUTE_NAME: !Ref MessageFolderAttributeName
-          PROCESSING_STATUS_ATTRIBUTE_NAME: !Ref ProcessingStatusAttributeName
-          CREATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref CreatedTimestampAttributeName
-          UPDATED_TIMESTAMP_ATTRIBUTE_NAME: !Ref UpdatedTimestampAttributeName
-          OWEN_INSTANCE_ATTRIBUTE_NAME: !Ref OwenInstanceAttributeName
+      RoleName: !Sub "owen-admin-authenticated-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref AdminIdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: authenticated
       Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:Query
-                - dynamodb:GetItem
-              Resource:
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
-                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}/index/*"
-      Events:
-        ListMessages:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref AdminHttpApi
-            Path: /messages
-            Method: GET
-        GetMessage:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref AdminHttpApi
-            Path: /messages/{messageFolder+}
-            Method: GET
+        - PolicyName: ReadMessageStatusTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}/index/*"
+
+  AdminIdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref AdminIdentityPool
+      Roles:
+        authenticated: !GetAtt AdminAuthenticatedRole.Arn
 
 Outputs:
   CloudFrontUrl:
     Description: Admin SPA URL
     Value: !Sub "https://${AdminSpaDistribution.DomainName}"
-  ApiEndpoint:
-    Description: Admin API base URL
-    Value: !Sub "https://${AdminHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
   UserPoolId:
     Value: !Ref AdminUserPool
   UserPoolClientId:
@@ -296,8 +254,16 @@ Outputs:
       - HasSamlMetadata
       - !Ref AdminUserPoolClientFederated
       - !Ref AdminUserPoolClientBootstrap
+  IdentityPoolId:
+    Value: !Ref AdminIdentityPool
   CognitoDomain:
     Value: !Sub "https://${CognitoDomainPrefix}.auth.${AWS::Region}.amazoncognito.com"
+  AwsRegion:
+    Value: !Ref AWS::Region
+  MessageStatusTableName:
+    Value: !Ref MessageStatusTableName
+  ProcessingStatusIndexName:
+    Value: !Ref ProcessingStatusIndexName
   SpaBucketName:
     Value: !Ref AdminSpaBucket
   CloudFrontDistributionId:
@@ -308,6 +274,3 @@ Outputs:
   CognitoSamlEntityId:
     Description: Use as Application SAML audience / Entity ID in Identity Center
     Value: !Sub "urn:amazon:cognito:sp:${AdminUserPool}"
-  CognitoSpMetadataUrl:
-    Description: Cognito SP metadata URL for Identity Center application setup
-    Value: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AdminUserPool}"

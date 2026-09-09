@@ -6,7 +6,6 @@ on:
     paths:
       - "admin/**"
       - "aws/admin-infra/**"
-      - "aws/admin_api/**"
       - ".github/workflows/_deploy-admin-template.yml"
       - ".github/workflows/deploy-admin-dev.yml"
 

@@ -1,5 +1,6 @@
 import type { AuthProvider } from "react-admin";
 import { loadConfig } from "../config";
+import { clearDynamoClientCache } from "./aws";
 import {
   beginLogin,
   clearTokens,
@@ -17,6 +18,7 @@ export const authProvider: AuthProvider = {
     return Promise.reject();
   },
   logout: async () => {
+    clearDynamoClientCache();
     logoutRedirect(config);
   },
   checkAuth: async () => {
@@ -30,6 +32,7 @@ export const authProvider: AuthProvider = {
   },
   checkError: async (error: { status?: number }) => {
     if (error?.status === 401 || error?.status === 403) {
+      clearDynamoClientCache();
       clearTokens();
       return Promise.reject();
     }
@@ -58,5 +61,6 @@ export const authProvider: AuthProvider = {
       throw new Error("Missing OAuth callback parameters");
     }
     await completeLogin(config, code, state);
+    clearDynamoClientCache();
   },
 };

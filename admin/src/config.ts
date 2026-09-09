@@ -1,8 +1,11 @@
 export type AdminConfig = {
-  apiBaseUrl: string;
+  awsRegion: string;
   cognitoDomain: string;
   cognitoClientId: string;
   cognitoUserPoolId: string;
+  cognitoIdentityPoolId: string;
+  messageStatusTableName: string;
+  processingStatusIndexName: string;
   redirectUri: string;
   logoutUri: string;
   identityProvider: string;
@@ -10,10 +13,14 @@ export type AdminConfig = {
 
 export function loadConfig(): AdminConfig {
   return {
-    apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "",
+    awsRegion: import.meta.env.VITE_AWS_REGION ?? "us-east-1",
     cognitoDomain: (import.meta.env.VITE_COGNITO_DOMAIN ?? "").replace(/\/$/, ""),
     cognitoClientId: import.meta.env.VITE_COGNITO_CLIENT_ID ?? "",
     cognitoUserPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID ?? "",
+    cognitoIdentityPoolId: import.meta.env.VITE_COGNITO_IDENTITY_POOL_ID ?? "",
+    messageStatusTableName: import.meta.env.VITE_MESSAGE_STATUS_TABLE_NAME ?? "",
+    processingStatusIndexName:
+      import.meta.env.VITE_PROCESSING_STATUS_INDEX_NAME ?? "ProcessingStatusIndex",
     redirectUri:
       import.meta.env.VITE_REDIRECT_URI ?? `${window.location.origin}/auth-callback`,
     logoutUri: import.meta.env.VITE_LOGOUT_URI ?? `${window.location.origin}/`,

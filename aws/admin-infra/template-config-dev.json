@@ -3,11 +3,6 @@
         "Environment": "dev",
         "MessageStatusTableName": "DdexMessageStatusDev",
         "ProcessingStatusIndexName": "ProcessingStatusIndex",
-        "MessageFolderAttributeName": "messageFolder",
-        "ProcessingStatusAttributeName": "processingStatus",
-        "CreatedTimestampAttributeName": "createdTimestamp",
-        "UpdatedTimestampAttributeName": "updatedTimestamp",
-        "OwenInstanceAttributeName": "owenInstance",
         "CognitoDomainPrefix": "owen-admin-dev",
         "IdentityCenterSamlMetadataUrl": ""
     }
