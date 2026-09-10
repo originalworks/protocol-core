@@ -4,6 +4,7 @@ pub mod blob_proofs;
 mod constants;
 mod contracts;
 pub mod ipfs;
+mod rpc;
 mod zip;
 use alloy::primitives::Address;
 use beacon_chain::BlobFinder;
@@ -191,7 +192,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
             }
 
             if let Err(e) = res {
-                log_error!("{e}");
+                log_error!("{e:#}");
                 blob_assignments_consecutive_error_ct += 1;
             } else {
                 blob_assignments_consecutive_error_ct = 0;
@@ -210,7 +211,7 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
 
         let res = blob_proof_manager.run().await;
         if let Err(e) = res {
-            log_error!("{e}");
+            log_error!("{e:#}");
             proof_calculation_consecutive_error_ct += 1;
         } else {
             proof_calculation_consecutive_error_ct = 0;

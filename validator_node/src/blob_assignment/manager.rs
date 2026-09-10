@@ -9,6 +9,7 @@ use crate::{
     beacon_chain::BlobFinder,
     constants::EMPTY_BYTES32,
     contracts::{ContractsManager, LocalImageVersion},
+    rpc::retry_rpc_call,
 };
 
 use super::files::BlobAssignmentFiles;
@@ -73,12 +74,14 @@ impl BlobAssignmentManager {
             blob_assignment_files.inner_queue.clone()
         };
         for assignment in inner_queue {
-            let blob_data = self
-                .contracts_manager
-                .sequencer
-                .blobs(assignment)
-                .call()
-                .await?;
+            let blob_data = retry_rpc_call("blobs (startup cleanup)", || async {
+                self.contracts_manager
+                    .sequencer
+                    .blobs(assignment)
+                    .call()
+                    .await
+            })
+            .await?;
             if blob_data.submitted == false {
                 log_info!(
                     "Blob {} doesn't exist anymore on the cotract. Removing...",
