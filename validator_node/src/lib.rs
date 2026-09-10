@@ -5,6 +5,7 @@ mod constants;
 mod contracts;
 pub mod ipfs;
 mod rpc;
+mod workers;
 mod zip;
 use alloy::primitives::Address;
 use beacon_chain::BlobFinder;
@@ -166,13 +167,13 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
 
     blob_assignment_manager.init_clear_inner_queue().await?;
 
-    tokio::spawn(async move {
+    let assignment_worker = async move {
         loop {
             if blob_assignments_consecutive_error_ct == threshold {
-                panic!(
-                    "{} consecutive errors occured. Proccess has been terminated",
+                return Err(anyhow::anyhow!(
+                    "Assignment worker stopped after {} consecutive errors",
                     threshold
-                );
+                ));
             }
             let res: Result<BlobAssignmentStartingPoint, anyhow::Error>;
             match next_starting_point {
@@ -199,22 +200,26 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
                 next_starting_point = res.expect("Blob assignment manager failed");
             }
         }
-    });
+    };
 
-    loop {
-        if proof_calculation_consecutive_error_ct == threshold {
-            return Err(log_error!(
-                "{} consecutive errors occured. Proccess has been terminated",
-                threshold
-            ));
-        }
+    let proving_worker = async move {
+        loop {
+            if proof_calculation_consecutive_error_ct == threshold {
+                return Err(anyhow::anyhow!(
+                    "Proving worker stopped after {} consecutive errors",
+                    threshold
+                ));
+            }
 
-        let res = blob_proof_manager.run().await;
-        if let Err(e) = res {
-            log_error!("{e:#}");
-            proof_calculation_consecutive_error_ct += 1;
-        } else {
-            proof_calculation_consecutive_error_ct = 0;
+            let res = blob_proof_manager.run().await;
+            if let Err(e) = res {
+                log_error!("{e:#}");
+                proof_calculation_consecutive_error_ct += 1;
+            } else {
+                proof_calculation_consecutive_error_ct = 0;
+            }
         }
-    }
+    };
+
+    workers::supervise(assignment_worker, proving_worker).await
 }
