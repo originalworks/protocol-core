@@ -2,7 +2,9 @@ use std::time::Duration;
 
 use crate::{
     blob_assignment::manager::{BlobAssignment, BlobAssignmentStartingPoint, BlobAssignmentStatus},
-    is_local, Config,
+    is_local,
+    rpc::retry_rpc_call,
+    Config,
 };
 use alloy::{
     eips::BlockNumberOrTag,
@@ -132,10 +134,14 @@ impl ContractsManager {
         let ws_url = WsConnect::new(&config.ws_url);
         let ws_provider = ProviderBuilder::new().connect_ws(ws_url).await?;
 
-        let chain_id = provider.get_chain_id().await?;
+        let chain_id =
+            retry_rpc_call("eth_chainId", || async { provider.get_chain_id().await }).await?;
         let sequencer = DdexSequencer::new(config.ddex_sequencer_address, provider.clone());
 
-        let emitter_address = sequencer.ddexEmitter().call().await?;
+        let emitter_address = retry_rpc_call("ddexEmitter", || async {
+            sequencer.ddexEmitter().call().await
+        })
+        .await?;
         let emitter = DdexEmitter::new(emitter_address, provider.clone());
 
         let current_image_id_parsed = prover::parse_guest_id(&prover::CURRENT_DDEX_GUEST_ID);
@@ -154,14 +160,20 @@ impl ContractsManager {
     }
 
     pub async fn is_queue_head_expired(&self) -> anyhow::Result<bool> {
-        Ok(self.sequencer.isQueueHeadExpired().call().await?)
+        retry_rpc_call("isQueueHeadExpired", || async {
+            self.sequencer.isQueueHeadExpired().call().await
+        })
+        .await
     }
 
     pub async fn get_queue_head(&self) -> anyhow::Result<BlobOnchainData> {
         let getQueueHeadDetailsReturn {
             _0: queue_head_blob,
             _1: queue_head_blobhash,
-        } = self.sequencer.getQueueHeadDetails().call().await?;
+        } = retry_rpc_call("getQueueHeadDetails", || async {
+            self.sequencer.getQueueHeadDetails().call().await
+        })
+        .await?;
 
         Ok(BlobOnchainData {
             blob_data: queue_head_blob,
@@ -174,16 +186,18 @@ impl ContractsManager {
         blobhash: FixedBytes<32>,
         block_number: u64,
     ) -> anyhow::Result<BlobSubmissionDetails> {
-        let logs = self
-            .provider
-            .get_logs(
-                &Filter::new()
-                    .address(self.sequencer.address().clone())
-                    .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
-                    .from_block(block_number)
-                    .to_block(block_number),
-            )
-            .await?;
+        let logs = retry_rpc_call("eth_getLogs (blob submission)", || async {
+            self.provider
+                .get_logs(
+                    &Filter::new()
+                        .address(self.sequencer.address().clone())
+                        .event(DdexSequencer::NewBlobSubmitted::SIGNATURE)
+                        .from_block(block_number)
+                        .to_block(block_number),
+                )
+                .await
+        })
+        .await?;
 
         for log in logs {
             let DdexSequencer::NewBlobSubmitted {
@@ -194,13 +208,15 @@ impl ContractsManager {
             let blobhash_from_commitment = Self::commitment_to_blobhash(&commitment);
 
             if blobhash_from_commitment == blobhash {
-                let timestamp = self
-                    .provider
-                    .get_block_by_number(BlockNumberOrTag::Number(block_number))
-                    .await?
-                    .ok_or_else(|| format_error!("Cannot get block info"))?
-                    .header
-                    .timestamp;
+                let timestamp = retry_rpc_call("eth_getBlockByNumber (submission)", || async {
+                    self.provider
+                        .get_block_by_number(BlockNumberOrTag::Number(block_number))
+                        .await
+                })
+                .await?
+                .ok_or_else(|| format_error!("Cannot get block info"))?
+                .header
+                .timestamp;
                 let submission_tx_hash = log
                     .transaction_hash
                     .expect("Transaction hash not found in log");
@@ -221,24 +237,28 @@ impl ContractsManager {
     }
 
     pub async fn get_blob_proposer(&self, blobhash: &FixedBytes<32>) -> anyhow::Result<Address> {
-        let blob_data: DdexSequencer::Blob = self.sequencer.blobs(*blobhash).call().await?.into();
+        let blob_data: DdexSequencer::Blob = retry_rpc_call("blobs (proposer)", || async {
+            self.sequencer.blobs(*blobhash).call().await
+        })
+        .await?
+        .into();
         Ok(blob_data.proposer)
     }
 
     pub async fn fetch_current_block(&self) -> anyhow::Result<u64> {
-        let current_block = self
-            .provider
-            .get_block_number()
-            .await
-            .expect("Error while fetching current block number");
-        Ok(current_block)
+        retry_rpc_call("eth_blockNumber", || async {
+            self.provider.get_block_number().await
+        })
+        .await
     }
 
     pub async fn assign_blob(&self) -> anyhow::Result<BlobAssignment> {
-        let nonce = self
-            .provider
-            .get_transaction_count(self.signer.address())
-            .await?;
+        let nonce = retry_rpc_call("eth_getTransactionCount", || async {
+            self.provider
+                .get_transaction_count(self.signer.address())
+                .await
+        })
+        .await?;
 
         let mut tx_builder = self.sequencer.assignBlob();
 
@@ -297,7 +317,11 @@ impl ContractsManager {
         blobhash: FixedBytes<32>,
         blob_assignment_tx_hash: FixedBytes<32>,
     ) -> anyhow::Result<BlobAssignment> {
-        let blob_data: DdexSequencer::Blob = self.sequencer.blobs(blobhash).call().await?.into();
+        let blob_data: DdexSequencer::Blob = retry_rpc_call("blobs (assignment)", || async {
+            self.sequencer.blobs(blobhash).call().await
+        })
+        .await?
+        .into();
         let local_image_version = self.select_local_image_version(&blob_data.imageId).await?;
 
         let blob_submission_details = self
@@ -359,7 +383,10 @@ impl ContractsManager {
     }
 
     pub async fn get_next_blob_assignment(&self) -> anyhow::Result<FixedBytes<32>> {
-        Ok(self.sequencer.nextBlobAssignment().call().await?)
+        retry_rpc_call("nextBlobAssignment", || async {
+            self.sequencer.nextBlobAssignment().call().await
+        })
+        .await
     }
 
     pub async fn select_local_image_version(
@@ -380,11 +407,11 @@ impl ContractsManager {
             log_warn!("Previous image id: {}", self.previous_image_id.to_string());
             log_warn!("Blob image id: {}", blob_image_id.to_string());
 
-            self
-                .emitter
-                .getSupportedBlobImageIds()
-                .call()
-                .await
+            let supported_blob_image_ids = retry_rpc_call("getSupportedBlobImageIds", || async {
+                self.emitter.getSupportedBlobImageIds().call().await
+            })
+            .await;
+            supported_blob_image_ids
                 .ok()
                 .and_then(|res| -> Option<()> {
                     log_warn!("Current sequencer blob image id: {}", &res._0.to_string());
@@ -403,7 +430,10 @@ impl ContractsManager {
         let getSupportedVerifierImageIdsReturn {
             _0: current_verifier_image_id,
             _1: previous_verifier_image_id,
-        } = self.emitter.getSupportedVerifierImageIds().call().await?;
+        } = retry_rpc_call("getSupportedVerifierImageIds", || async {
+            self.emitter.getSupportedVerifierImageIds().call().await
+        })
+        .await?;
 
         if previous_verifier_image_id.is_zero() {
             if current_verifier_image_id == self.current_image_id && blob_is_local_current {
@@ -451,10 +481,12 @@ impl ContractsManager {
         &self,
         input: SubmitProofInput,
     ) -> anyhow::Result<TransactionReceipt> {
-        let nonce = self
-            .provider
-            .get_transaction_count(self.signer.address())
-            .await?;
+        let nonce = retry_rpc_call("eth_getTransactionCount", || async {
+            self.provider
+                .get_transaction_count(self.signer.address())
+                .await
+        })
+        .await?;
 
         let mut tx_builder = self.sequencer.submitProof(
             input.image_id,
@@ -499,10 +531,12 @@ impl ContractsManager {
     }
 
     pub async fn remove_expired_blob(&self) -> anyhow::Result<()> {
-        let nonce = self
-            .provider
-            .get_transaction_count(self.signer.address())
-            .await?;
+        let nonce = retry_rpc_call("eth_getTransactionCount", || async {
+            self.provider
+                .get_transaction_count(self.signer.address())
+                .await
+        })
+        .await?;
         let mut tx_builder = self.sequencer.removeExpiredBlob();
 
         if is_local() {
@@ -541,9 +575,12 @@ impl ContractsManager {
         &self,
         block_number: u64,
     ) -> anyhow::Result<FixedBytes<32>> {
-        let parent_beacon_block_root = self
-            .provider
-            .get_block_by_number(BlockNumberOrTag::Number(block_number))
+        let parent_beacon_block_root =
+            retry_rpc_call("eth_getBlockByNumber (beacon root)", || async {
+                self.provider
+                    .get_block_by_number(BlockNumberOrTag::Number(block_number))
+                    .await
+            })
             .await?
             .ok_or_else(|| format_error!("Block {} not found", block_number))?
             .header
