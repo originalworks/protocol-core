@@ -30,7 +30,10 @@ fn init_sentry(config: &Config) -> Option<sentry::ClientInitGuard> {
 
 fn init_logging() -> anyhow::Result<()> {
     let mut log_builder = pretty_env_logger::formatted_timed_builder();
-    log_builder.parse_filters("info");
+    // Alloy reports normal WebSocket close frames at error level. The
+    // subscription code handles these as recoverable reconnects, so suppress
+    // that noisy dependency target while retaining application logs.
+    log_builder.parse_filters("info,alloy_transport_ws=off");
 
     let logger = sentry::integrations::log::SentryLogger::with_dest(log_builder.build());
     log::set_boxed_logger(Box::new(logger)).with_context(|| "Failed to set boxed logger")?;

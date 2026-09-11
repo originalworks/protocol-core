@@ -368,17 +368,21 @@ impl ContractsManager {
         while let Some(log) = stream.next().await {
             match log.topic0().expect("Event log signature not found") {
                 &DdexSequencer::NewBlobSubmitted::SIGNATURE_HASH => {
-                    self.ws_provider.unsubscribe(subscription_id).await?;
+                    let _ = self.ws_provider.unsubscribe(subscription_id).await;
                     return Ok(BlobAssignmentStartingPoint::NewBlobSubmitted);
                 }
                 &DdexSequencer::QueueMoved::SIGNATURE_HASH => {
-                    self.ws_provider.unsubscribe(subscription_id).await?;
+                    let _ = self.ws_provider.unsubscribe(subscription_id).await;
                     return Ok(BlobAssignmentStartingPoint::BlobProcessedOrRejected);
                 }
                 _ => (),
             }
         }
-        self.ws_provider.unsubscribe(subscription_id).await?;
+        log_warn!("WebSocket subscription ended; reconnecting and checking the queue state");
+        // The server has already closed the stream, so an unsubscribe request
+        // can produce a second, misleading transport error. The next loop
+        // iteration recreates the subscription and reads the queue state first.
+        tokio::time::sleep(Duration::from_secs(1)).await;
         Ok(BlobAssignmentStartingPoint::CleanStart)
     }
 
