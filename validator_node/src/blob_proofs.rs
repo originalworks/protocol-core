@@ -13,7 +13,7 @@ use crate::{
     contracts::LocalImageVersion,
     ipfs::IpfsManager,
 };
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub struct ProverRunResults {
     pub seal: Vec<u8>,
@@ -113,11 +113,26 @@ impl BlobProofManager {
             }
 
             let segment_limit_po2 = self.segment_limit_po2;
-            let prover_run_results = tokio::task::spawn_blocking(move || {
+            let mut proof_task = tokio::task::spawn_blocking(move || {
                 Self::run_prover(&blob, local_image_elf, segment_limit_po2)
-            })
-            .await
-            .map_err(|error| format_error!("Proof worker panicked: {}", error))??;
+            });
+            let proof_started_at = Instant::now();
+            let mut progress_interval = tokio::time::interval(Duration::from_secs(30));
+            progress_interval.tick().await;
+            let prover_run_results = loop {
+                tokio::select! {
+                    result = &mut proof_task => {
+                        break result
+                            .map_err(|error| format_error!("Proof worker panicked: {}", error))??;
+                    }
+                    _ = progress_interval.tick() => {
+                        log_info!(
+                            "Groth16 proof generation still running for {}s",
+                            proof_started_at.elapsed().as_secs()
+                        );
+                    }
+                }
+            };
 
             let proof_submission_input = SubmitProofInput {
                 image_id: blob_assignment.image_id,
