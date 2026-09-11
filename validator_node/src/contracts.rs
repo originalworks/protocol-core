@@ -77,18 +77,6 @@ pub struct BlobOnchainData {
     pub blobhash: FixedBytes<32>,
 }
 
-#[derive(Debug, serde::Serialize)]
-pub struct QueueHeadData {
-    pub commitment: Bytes,
-    pub parent_beacon_block_root: FixedBytes<32>,
-    pub versioned_blobhash: FixedBytes<32>,
-    pub transaction_hash: FixedBytes<32>,
-    pub block_number: u64,
-    pub timestamp: u64,
-    pub image_id: FixedBytes<32>,
-    pub chain_id: u64,
-}
-
 type HardlyTypedProvider = FillProvider<
     JoinFill<
         JoinFill<
