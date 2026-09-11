@@ -126,9 +126,13 @@ impl BlobProofManager {
                             .map_err(|error| format_error!("Proof worker panicked: {}", error))??;
                     }
                     _ = progress_interval.tick() => {
+                        let elapsed_seconds = proof_started_at.elapsed().as_secs();
+                        let elapsed_minutes = elapsed_seconds / 60;
+                        let remaining_seconds = elapsed_seconds % 60;
                         log_info!(
-                            "Groth16 proof generation still running for {}s",
-                            proof_started_at.elapsed().as_secs()
+                            "Groth16 proof generation is running for {}m {}s",
+                            elapsed_minutes,
+                            remaining_seconds
                         );
                     }
                 }
