@@ -15,4 +15,4 @@ RUN foundryup
 # risc0
 RUN curl -L https://risczero.com/install | bash 
 ENV PATH="/root/.risc0/bin:$PATH"
-RUN rzup install r0vm 2.3.1
+RUN rzup install r0vm 3.0.6
