@@ -30,7 +30,10 @@ fn init_sentry(config: &Config) -> Option<sentry::ClientInitGuard> {
 
 fn init_logging() -> anyhow::Result<()> {
     let mut log_builder = pretty_env_logger::formatted_timed_builder();
-    log_builder.parse_filters("info");
+    // Alloy reports normal WebSocket close frames at error level. The
+    // subscription code handles these as recoverable reconnects, so suppress
+    // that noisy dependency target while retaining application logs.
+    log_builder.parse_filters("info,alloy_transport_ws=off");
 
     let logger = sentry::integrations::log::SentryLogger::with_dest(log_builder.build());
     log::set_boxed_logger(Box::new(logger)).with_context(|| "Failed to set boxed logger")?;
@@ -55,15 +58,23 @@ async fn init(config: Config) -> anyhow::Result<()> {
         scope.set_extra("config", json!(cloned_config));
     });
 
-    if config.enable_heartbeat {
-        tokio::spawn(heartbeat_task(config.heartbeat_path.clone()));
+    let heartbeat = if config.enable_heartbeat {
+        Some(tokio::spawn(heartbeat_task(config.heartbeat_path.clone())))
+    } else {
+        None
+    };
+
+    let result = validator_node::run(&config).await;
+    if let Some(heartbeat) = heartbeat {
+        heartbeat.abort();
+        let _ = heartbeat.await;
     }
 
-    validator_node::run(&config).await.map_err(|e| {
+    result.map_err(|e| {
         sentry::configure_scope(|scope| {
             scope.set_extra("error_object", json!(format!("{e:#?}")));
         });
-        log_error!("{e}")
+        log_error!("{e:#}")
     })?;
 
     Ok(())
@@ -77,8 +88,12 @@ fn main() -> anyhow::Result<()> {
 
     init_logging()?;
 
-    tokio::runtime::Builder::new_multi_thread()
+    let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .build()?
-        .block_on(init(config))
+        .build()?;
+    let result = runtime.block_on(init(config));
+    // Synchronous proof generation cannot be interrupted by aborting its task.
+    // Bound shutdown so a failed validator can exit and be restarted.
+    runtime.shutdown_timeout(std::time::Duration::from_secs(5));
+    result
 }
