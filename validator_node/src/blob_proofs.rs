@@ -112,8 +112,12 @@ impl BlobProofManager {
                 ));
             }
 
-            let prover_run_results =
-                Self::run_prover(&blob, local_image_elf, self.segment_limit_po2)?;
+            let segment_limit_po2 = self.segment_limit_po2;
+            let prover_run_results = tokio::task::spawn_blocking(move || {
+                Self::run_prover(&blob, local_image_elf, segment_limit_po2)
+            })
+            .await
+            .map_err(|error| format_error!("Proof worker panicked: {}", error))??;
 
             let proof_submission_input = SubmitProofInput {
                 image_id: blob_assignment.image_id,
