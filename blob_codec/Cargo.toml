@@ -10,7 +10,7 @@ miniz_oxide = "0.8.9"
 sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", rev = "244dc3b08788f7a4ccce14c66896ae3b4f24c166" }
 thiserror = { workspace = true }
 log_macros = { workspace = true }
-prover = { workspace = true }
+prover_interface = { path = "../prover/interface" }
 ddex_parser = { workspace = true }
 infer = "0.19.0"
 serde_valid = { workspace = true }
