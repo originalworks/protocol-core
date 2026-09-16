@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
 
-RUN apt-get update && apt install curl wget npm pkg-config nasm -y
+RUN apt-get update && apt install curl wget npm pkg-config nasm clang libclang-dev libc6-dev protobuf-compiler -y
 
 # rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
