@@ -3,8 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { deployRiscZeroGroth16Verifier } from "../actions/contract-deployment/RiscZeroGroth16Verifier/RiscZeroGroth16Verifier.deploy";
 import { verifyContracts } from "../actions/verify/verifyContract";
+import { required } from "../utils/required";
 
-const DDEX_EMITTER_ADDRESS = '0xDe804E8fc13883C447092d05F7968f86D1fD6847'
+const DDEX_EMITTER_ADDRESS = process.env.DDEX_EMITTER_ADDRESS;
+const VERIFIER_ROUTER_ADDRESS = process.env.RISC_ZERO_VERIFIER_ROUTER;
 
 const imageIdFromGeneratedSource = () => {
   const imageIdPath = path.resolve(__dirname, "../../contracts/ImageID.sol");
@@ -23,34 +25,28 @@ const imageIdFromGeneratedSource = () => {
 async function main() {
   const newImageId = imageIdFromGeneratedSource();
   const [deployer] = await ethers.getSigners();
-  const emitter = await ethers.getContractAt("DdexEmitter", DDEX_EMITTER_ADDRESS);
+  const emitterAddress = required(DDEX_EMITTER_ADDRESS, "DDEX_EMITTER_ADDRESS");
+  const routerAddress = required(
+    VERIFIER_ROUTER_ADDRESS,
+    "RISC_ZERO_VERIFIER_ROUTER"
+  );
+  const emitter = await ethers.getContractAt("DdexEmitter", emitterAddress, deployer);
 
-  const [previousBlobImageId] = await emitter.getSupportedBlobImageIds();
-  const [previousVerifierImageId] = await emitter.getSupportedVerifierImageIds();
-  
-  if (previousBlobImageId !== previousVerifierImageId) {
-    throw new Error(
-      `Blob and verifier image IDs differ: ${previousBlobImageId} != ${previousVerifierImageId}`
-    );
-  }
+  const [currentBlobImageId] = await emitter.getSupportedBlobImageIds();
+  const [currentVerifierImageId] = await emitter.getSupportedVerifierImageIds();
 
-  if (previousVerifierImageId.toLowerCase() === newImageId.toLowerCase()) {
+  if (currentVerifierImageId.toLowerCase() === newImageId.toLowerCase()) {
     console.log(
       `Image ID ${newImageId} is already current on the emitter; nothing to update.`
     );
     return;
   }
 
-  const previousVerifierAddress = await emitter.riscZeroGroth16Verifiers(previousBlobImageId);
-  if (previousVerifierAddress === ethers.ZeroAddress) {
-    throw new Error(`No verifier registered for previous image ID ${previousBlobImageId}`);
-  }
-
   console.log(`Deployer: ${await deployer.getAddress()}`);
-  console.log(`Emitter: ${DDEX_EMITTER_ADDRESS}`);
-  console.log(`Previous image ID: ${previousBlobImageId}`);
+  console.log(`Emitter: ${emitterAddress}`);
+  console.log(`Current blob image ID: ${currentBlobImageId}`);
   console.log(`New image ID: ${newImageId}`);
-  console.log(`Previous verifier: ${previousVerifierAddress}`);
+  console.log(`Verifier router: ${routerAddress}`);
 
   const deployment = await deployRiscZeroGroth16Verifier(deployer);
   const newVerifierAddress = await deployment.contract.getAddress();
@@ -58,21 +54,37 @@ async function main() {
 
   await verifyContracts(hre, [deployment.contractVerificationInput]);
 
+  const router = await ethers.getContractAt(
+    "RiscZeroVerifierRouter",
+    routerAddress,
+    deployer
+  );
+  const selector = await deployment.contract.SELECTOR();
+  const registeredVerifier = await router.verifiers(selector);
+  if (registeredVerifier === ethers.ZeroAddress) {
+    await (await router.addVerifier(selector, newVerifierAddress)).wait();
+    console.log(`Registered verifier selector ${selector} in router`);
+  } else if (registeredVerifier.toLowerCase() !== newVerifierAddress.toLowerCase()) {
+    throw new Error(
+      `Selector ${selector} is already registered to ${registeredVerifier}`
+    );
+  } else {
+    console.log(`Verifier selector ${selector} is already registered`);
+  }
+
   const targets = [
     await emitter.BLOB_PREVIOUS_IMAGE_ID(),
     await emitter.VERIFIER_PREVIOUS_IMAGE_ID(),
     await emitter.BLOB_CURRENT_IMAGE_ID(),
     await emitter.VERIFIER_CURRENT_IMAGE_ID(),
   ];
-  const imageIds = [previousBlobImageId, previousBlobImageId, newImageId, newImageId];
-  const verifiers = [
-    previousVerifierAddress,
-    previousVerifierAddress,
-    newVerifierAddress,
-    newVerifierAddress,
+  const imageIds = [
+    currentBlobImageId,
+    currentVerifierImageId,
+    newImageId,
+    newImageId,
   ];
-
-  const tx = await emitter.setImageIds(targets, imageIds, verifiers);
+  const tx = await emitter.setImageIds(targets, imageIds);
   await tx.wait();
   console.log(`DdexEmitter update transaction: ${tx.hash}`);
 

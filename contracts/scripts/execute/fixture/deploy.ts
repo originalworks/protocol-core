@@ -45,6 +45,7 @@ async function main() {
     fixtureOutput.ddexEmitter.contractVerificationInput,
     fixtureOutput.dataProvidersWhitelist.contractVerificationInput,
     fixtureOutput.validatorsWhitelist.contractVerificationInput,
+    fixtureOutput.verifierRouter.contractVerificationInput
   ]);
 }
 
