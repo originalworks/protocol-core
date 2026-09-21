@@ -1,10 +1,12 @@
 import { ethers, upgrades } from "hardhat";
 import { required } from "../utils/required";
+import { DdexEmitter } from "../../typechain-types";
 
-const DDEX_EMITTER_ADDRESS = process.env.DDEX_EMITTER_ADDRESS;
-const VERIFIER_ROUTER_ADDRESS = process.env.RISC_ZERO_VERIFIER_ROUTER;
+const DDEX_EMITTER_ADDRESS = '';
+const VERIFIER_ROUTER_ADDRESS = '';
 
 async function main() {
+  const [deployer] = await ethers.getSigners()
   const ddexEmitterAddress = required(
     DDEX_EMITTER_ADDRESS,
     "DDEX_EMITTER_ADDRESS"
@@ -14,12 +16,13 @@ async function main() {
     "RISC_ZERO_VERIFIER_ROUTER"
   );
   const DdexEmitterNewImplementation = await ethers.getContractFactory(
-    "DdexEmitter"
+    "DdexEmitter",
+    deployer
   );
   const emitter = await upgrades.upgradeProxy(
     ddexEmitterAddress,
     DdexEmitterNewImplementation
-  );
+  ) as unknown as DdexEmitter;
   await emitter.waitForDeployment();
 
   const tx = await emitter.setVerifierRouter(routerAddress);

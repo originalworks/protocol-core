@@ -34,13 +34,9 @@ async function main() {
 
   const [currentBlobImageId] = await emitter.getSupportedBlobImageIds();
   const [currentVerifierImageId] = await emitter.getSupportedVerifierImageIds();
-
-  if (currentVerifierImageId.toLowerCase() === newImageId.toLowerCase()) {
-    console.log(
-      `Image ID ${newImageId} is already current on the emitter; nothing to update.`
-    );
-    return;
-  }
+  const imageIdChanged =
+    currentBlobImageId.toLowerCase() !== newImageId.toLowerCase() ||
+    currentVerifierImageId.toLowerCase() !== newImageId.toLowerCase();
 
   console.log(`Deployer: ${await deployer.getAddress()}`);
   console.log(`Emitter: ${emitterAddress}`);
@@ -70,6 +66,13 @@ async function main() {
     );
   } else {
     console.log(`Verifier selector ${selector} is already registered`);
+  }
+
+  if (!imageIdChanged) {
+    console.log(
+      `Image ID ${newImageId} is already current on the emitter; leaving image ID slots unchanged.`
+    );
+    return;
   }
 
   const targets = [
