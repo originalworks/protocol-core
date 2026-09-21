@@ -26,10 +26,7 @@ contract DdexEmitter is
     mapping(bytes32 => address) public riscZeroGroth16Verifiers; // deprecated
     IRiscZeroVerifier public verifierRouter;
 
-    event VerifierRouterChanged(
-        address indexed previousRouter,
-        address indexed newRouter
-    );
+    event VerifierRouterChanged(address previousRouter, address newRouter);
 
     uint256[48] __gap;
 
