@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-alloy = "1.5.2"
-alloy-signer-aws = "1.5.2"
+alloy = "1.8.3"
+alloy-signer-aws = "1.8.3"
 anyhow.workspace = true
 aws-config = "1.8.12"
 aws-sdk-kms = "1.98.0"

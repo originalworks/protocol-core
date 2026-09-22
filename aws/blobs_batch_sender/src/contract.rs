@@ -99,7 +99,7 @@ impl SmartEoaManager {
                 blob_json_file
                     .tx_data
                     .blob_sidecar
-                    .proofs
+                    .cell_proofs
                     .first()
                     .expect("proof missing in input")
                     .clone(),

@@ -9,7 +9,7 @@ use ddex_parser::DdexParser;
 use decoder::blob_to_vecs;
 use errors::OwCodecError;
 use log_macros::loc;
-use prover::{ProvedMessage, ProverPublicOutputs, SubmitProofInput};
+use prover_interface::{ProvedMessage, ProverPublicOutputs, SubmitProofInput};
 use serde_valid::json::ToJsonString;
 use sha2::{Digest as _, Sha256};
 use std::fs;

@@ -15,14 +15,13 @@ pub fn init_sentry() -> Option<sentry::ClientInitGuard> {
 
     let environment = Config::get_env_var("ENVIRONMENT");
     if !disable_telemetry {
+        let client_options = sentry::ClientOptions::default()
+            .environment(environment.to_owned())
+            .attach_stacktrace(false)
+            .auto_session_tracking(true)
+            .maybe_release(sentry::release_name!());
         let guard: sentry::ClientInitGuard = sentry::init(("https://2cea3d6af1cb8e4bd9c7c39530d390a1@o4508766269014016.ingest.us.sentry.io/4508766275043328",
-            sentry::ClientOptions {
-                environment: Some(environment.to_owned().into()),
-                release: sentry::release_name!(),
-                attach_stacktrace: false,
-                auto_session_tracking: true,
-                ..Default::default()
-            },
+            client_options,
         ));
         log_info!("Telemetry has been initiated");
         Some(guard)

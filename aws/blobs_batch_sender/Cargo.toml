@@ -15,5 +15,5 @@ serde = { workspace = true }
 ow_wallet = { workspace = true }
 serde_json = { workspace = true }
 aws-sdk-s3 = "1.98.0"
-alloy = { version = "1.0.32", features = ["full"] }
+alloy = { version = "1.8.3", features = ["full"] }
 aws-sdk-secretsmanager = "1.95.0"

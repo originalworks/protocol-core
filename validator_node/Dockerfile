@@ -9,7 +9,7 @@ RUN echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-RUN apt-get update && apt install wget npm pkg-config docker-ce-cli -y
+RUN apt-get update && apt install wget npm pkg-config docker-ce-cli clang libclang-dev libc6-dev protobuf-compiler -y
 
 # cuda
 RUN wget -q https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_570.124.06_linux.run
@@ -29,7 +29,8 @@ RUN foundryup
 # risc0
 RUN curl -L https://risczero.com/install | bash 
 ENV PATH="/root/.risc0/bin:$PATH"
-RUN rzup install r0vm 2.0.2
+RUN rzup install r0vm 3.0.6
+RUN rzup install risc0-groth16
 
 
 RUN git clone https://github.com/originalworks/protocol-core.git
