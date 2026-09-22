@@ -187,6 +187,11 @@ impl BlobProofManager {
 
         let seal = encode_seal(&receipt)?;
 
+        log_info!(
+            "Groth16 verifier selector used by validator: 0x{}",
+            hex::encode(&seal[..4])
+        );
+
         let journal = receipt.journal.bytes.clone();
 
         let public_outputs: ProverPublicOutputs = ProverPublicOutputs::abi_decode(&journal)?;
