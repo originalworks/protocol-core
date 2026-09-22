@@ -43,8 +43,6 @@ pub struct Config {
     pub ddex_sequencer_address: Address,
     pub disable_telemetry: bool,
     pub ipfs_bridge_url: String,
-    pub local_ipfs: bool,
-    pub ipfs_api_base_url: String,
     pub ipfs_timeout: Duration,
     pub alt_ipfs_api_base_url: Option<String>,
     pub enable_heartbeat: bool,
@@ -93,17 +91,6 @@ impl Config {
             ipfs_bridge_url = format!("{}/", ipfs_bridge_url)
         }
 
-        let local_ipfs = matches!(
-            env::var("LOCAL_IPFS")
-                .unwrap_or_else(|_| "false".to_string())
-                .as_str(),
-            "1" | "true"
-        );
-        let ipfs_api_base_url = env::var("IPFS_API_BASE_URL")
-            .unwrap_or_else(|_| "http://127.0.0.1:5001".to_string())
-            .trim_end_matches('/')
-            .to_string();
-
         let ipfs_timeout = Duration::from_millis(
             env::var("IPFS_TIMEOUT")
                 .ok()
@@ -137,8 +124,6 @@ impl Config {
             ddex_sequencer_address,
             disable_telemetry,
             ipfs_bridge_url,
-            local_ipfs,
-            ipfs_api_base_url,
             ipfs_timeout,
             alt_ipfs_api_base_url,
             enable_heartbeat,
@@ -161,8 +146,6 @@ pub async fn run(config: &Config) -> anyhow::Result<()> {
     let ipfs_manager = IpfsManager::build(
         Arc::clone(&contracts_manager),
         config.ipfs_bridge_url.clone(),
-        config.local_ipfs,
-        config.ipfs_api_base_url.clone(),
         config.ipfs_timeout,
         config.alt_ipfs_api_base_url.clone(),
     )?;

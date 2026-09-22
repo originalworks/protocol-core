@@ -43,18 +43,10 @@ struct IpfsBridgeResponse {
     url: String,
 }
 
-#[derive(Debug, Deserialize)]
-#[allow(non_snake_case)]
-struct IpfsKuboResponse {
-    Hash: String,
-}
-
 pub struct IpfsManager {
     contracts_manager: Arc<ContractsManager>,
     blob_folder_path: String,
     ipfs_bridge_url: String,
-    local_ipfs: bool,
-    ipfs_api_base_url: String,
     ipfs_timeout: Duration,
     alt_ipfs_api_base_url: Option<String>,
 }
@@ -63,8 +55,6 @@ impl IpfsManager {
     pub fn build(
         contracts_manager: Arc<ContractsManager>,
         ipfs_bridge_url: String,
-        local_ipfs: bool,
-        ipfs_api_base_url: String,
         ipfs_timeout: Duration,
         alt_ipfs_api_base_url: Option<String>,
     ) -> anyhow::Result<Self> {
@@ -77,8 +67,6 @@ impl IpfsManager {
             contracts_manager,
             blob_folder_path,
             ipfs_bridge_url,
-            local_ipfs,
-            ipfs_api_base_url,
             ipfs_timeout,
             alt_ipfs_api_base_url,
         })
@@ -298,27 +286,7 @@ impl IpfsManager {
 
         let res: IpfsBridgeResponse;
 
-        if self.local_ipfs {
-            log::info!("Uploading zip to local Kubo IPFS...");
-            let response = REQWEST_CLIENT
-                .post(format!("{}/api/v0/add", self.ipfs_api_base_url))
-                .timeout(self.ipfs_timeout)
-                .multipart(form)
-                .send()
-                .await?;
-
-            if response.status().is_success() {
-                let kubo_response: IpfsKuboResponse = response.json().await?;
-                res = IpfsBridgeResponse {
-                    cid: kubo_response.Hash.clone(),
-                    url: format!("{}/ipfs/{}", self.ipfs_api_base_url, kubo_response.Hash),
-                };
-                log_info!("Successfully uploaded archive to local Kubo. CID: {}", res.cid);
-            } else {
-                let reason = response.text().await?;
-                return Err(format_error!("Kubo IPFS returned error: {}", reason));
-            }
-        } else if is_local() {
+        if is_local() {
             log::info!("Skipping upload to IPFS Bridge in local mode");
             res = IpfsBridgeResponse {
                 cid: "test_cid".to_string(),
