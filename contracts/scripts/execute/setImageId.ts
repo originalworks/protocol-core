@@ -1,5 +1,4 @@
 import { ethers } from "hardhat";
-import { required } from "../utils/required";
 // Targets:
 // CURRENT_BLOB = "0x01",
 // PREVIOUS_BLOB = "0x02",
@@ -8,12 +7,12 @@ import { required } from "../utils/required";
 
 const NEW_IMAGE_IDS: string[] = [];
 const TARGETS: string[] = [];
-const DDEX_EMITTER_ADDRESS = process.env.DDEX_EMITTER_ADDRESS;
+const DDEX_EMITTER_ADDRESS = '';
 
 async function main() {
   const ddexEmitter = await ethers.getContractAt(
     "DdexEmitter",
-    required(DDEX_EMITTER_ADDRESS, "DDEX_EMITTER_ADDRESS")
+    DDEX_EMITTER_ADDRESS
   );
 
   const tx = await ddexEmitter.setImageIds(

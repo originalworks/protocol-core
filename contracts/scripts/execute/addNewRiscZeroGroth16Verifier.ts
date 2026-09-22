@@ -3,10 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { deployRiscZeroGroth16Verifier } from "../actions/contract-deployment/RiscZeroGroth16Verifier/RiscZeroGroth16Verifier.deploy";
 import { verifyContracts } from "../actions/verify/verifyContract";
-import { required } from "../utils/required";
 
-const DDEX_EMITTER_ADDRESS = process.env.DDEX_EMITTER_ADDRESS;
-const VERIFIER_ROUTER_ADDRESS = process.env.RISC_ZERO_VERIFIER_ROUTER;
+const DDEX_EMITTER_ADDRESS = '';
+const VERIFIER_ROUTER_ADDRESS = '';
 
 const imageIdFromGeneratedSource = () => {
   const imageIdPath = path.resolve(__dirname, "../../contracts/ImageID.sol");
@@ -25,11 +24,8 @@ const imageIdFromGeneratedSource = () => {
 async function main() {
   const newImageId = imageIdFromGeneratedSource();
   const [deployer] = await ethers.getSigners();
-  const emitterAddress = required(DDEX_EMITTER_ADDRESS, "DDEX_EMITTER_ADDRESS");
-  const routerAddress = required(
-    VERIFIER_ROUTER_ADDRESS,
-    "RISC_ZERO_VERIFIER_ROUTER"
-  );
+  const emitterAddress = DDEX_EMITTER_ADDRESS;
+  const routerAddress = VERIFIER_ROUTER_ADDRESS
   const emitter = await ethers.getContractAt("DdexEmitter", emitterAddress, deployer);
 
   const [currentBlobImageId] = await emitter.getSupportedBlobImageIds();

@@ -1,18 +1,14 @@
 import { ethers } from "hardhat";
-import { required } from "../utils/required";
 
 const VERIFIER_ROUTER_ADDRESS = '' ;
 const VERIFIER_ADDRESS = '';
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const verifierRouterAddress = required(
-    VERIFIER_ROUTER_ADDRESS,
-    "VERIFIER_ROUTER_ADDRESS"
-  );
+  const verifierRouterAddress = VERIFIER_ROUTER_ADDRESS
 
   const router = await ethers.getContractAt("RiscZeroVerifierRouter", verifierRouterAddress, deployer);
-  const verifierAddress = required(VERIFIER_ADDRESS, "VERIFIER_ADDRESS");
+  const verifierAddress = VERIFIER_ADDRESS;
 
   const verifier = await ethers.getContractAt(
     "RiscZeroGroth16Verifier",
