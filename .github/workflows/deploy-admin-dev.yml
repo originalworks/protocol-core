@@ -1,0 +1,19 @@
+name: "Deploy OWEN admin to AWS dev"
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "admin/**"
+      - "aws/admin-infra/**"
+      - ".github/workflows/_deploy-admin-template.yml"
+      - ".github/workflows/deploy-admin-dev.yml"
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-admin-template.yml
+    with:
+      env: "dev"
+      run_id: ${{ github.run_id }}
+      publish_spa: true
+    secrets: inherit
