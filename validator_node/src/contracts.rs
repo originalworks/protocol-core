@@ -244,6 +244,7 @@ impl ContractsManager {
         let nonce = retry_rpc_call("eth_getTransactionCount", || async {
             self.provider
                 .get_transaction_count(self.signer.address())
+                .pending()
                 .await
         })
         .await?;
@@ -476,6 +477,7 @@ impl ContractsManager {
         let nonce = retry_rpc_call("eth_getTransactionCount", || async {
             self.provider
                 .get_transaction_count(self.signer.address())
+                .pending()
                 .await
         })
         .await?;
@@ -526,6 +528,7 @@ impl ContractsManager {
         let nonce = retry_rpc_call("eth_getTransactionCount", || async {
             self.provider
                 .get_transaction_count(self.signer.address())
+                .pending()
                 .await
         })
         .await?;
