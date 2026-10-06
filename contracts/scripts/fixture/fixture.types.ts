@@ -3,6 +3,7 @@ import {
   DdexEmitter,
   DdexSequencer,
   OwnToken,
+  RiscZeroVerifierRouter,
   StakeVault,
   Whitelist,
 } from "../../typechain-types";
@@ -26,6 +27,7 @@ export interface FixtureOutput {
   ownToken: DeploymentOutput<OwnToken>;
   stakeVault: DeploymentOutput<StakeVault>;
   ddexSequencer: DeploymentOutput<DdexSequencer>;
+  verifierRouter: DeploymentOutput<RiscZeroVerifierRouter>;
   ddexEmitter: DeploymentOutput<DdexEmitter> & {
     imageId: BytesLike;
   };
@@ -45,6 +47,7 @@ export interface FixtureAddresses {
   dataProvidersWhitelist: string;
   validatorsWhitelist: string;
   riscZeroGroth16Verifier: string;
+  verifierRouter: string;
   dataProviders: string[];
   validators: string[];
 }

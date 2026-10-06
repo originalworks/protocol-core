@@ -6,8 +6,8 @@ import { Signer } from "ethers";
 export async function deployRiscZeroGroth16Verifier(
   deployer: Signer
 ): Promise<DeploymentOutput<RiscZeroGroth16Verifier>> {
-  const ControlID = await ethers.getContractFactory("ControlID");
-  const controlId = await ControlID.deploy();
+  const ControlID = await ethers.getContractFactory("ControlID", deployer);
+  const controlId = await ControlID.connect(deployer).deploy();
   await controlId.waitForDeployment();
 
   const RiscZeroGroth16Verifier = await ethers.getContractFactory(

@@ -7,6 +7,7 @@
   "riscZeroGroth16Verifier": "0x2ac2289CF51Ae6484e7B674D2e3A6F277918CFA5",
   "dataProvidersWhitelist": "0x507130E7C281b2dA1F720e774b0501f7B504068A",
   "validatorsWhitelist": "0x0f65a2A8dFb75e47c4f3778806A4679F12118886",
+  "verifierRouter": "0x1bA324ac8f996e4cF24BA7cbB24Dd6B3ccb5D990",
   "dataProviders": [],
   "validators": []
 }

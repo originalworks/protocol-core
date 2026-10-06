@@ -12,6 +12,7 @@ import {
 import { deployRiscZeroGroth16Verifier } from "../actions/contract-deployment/RiscZeroGroth16Verifier/RiscZeroGroth16Verifier.deploy";
 import { deployDdexEmitter } from "../actions/contract-deployment/DdexEmitter/DdexEmitter.deploy";
 import { deployFakeVerifier } from "../actions/contract-deployment/FakeVerifier/FakeVerifier.deploy";
+import { deployRiscZeroVerifierRouter } from "../actions/contract-deployment/RiscZeroVerifierRouter/RiscZeroVerifierRouter.deploy";
 
 const SLASH_RATE = 1000;
 const DEFAULT_HEAD_PROCESSING_TIME_IN_BLOCKS = 1440; // 2 hours in blocks (assuming 5s block time)
@@ -65,11 +66,22 @@ export async function deployFixture(
   }
 
   _console.log("Deploying DdexEmitter...");
+  const verifierRouterOutput = await deployRiscZeroVerifierRouter(
+    input.deployer
+  );
   let riscZeroGroth16VerifierAddress: string;
+  const verifierRouterAddress =
+    await verifierRouterOutput.contract.getAddress();
   if (input.fakeRisc0Groth16Verifier) {
     _console.log("Deploying fake verifier...");
     const fakeVerifier = await deployFakeVerifier(input.deployer);
     riscZeroGroth16VerifierAddress = await fakeVerifier.getAddress();
+    await (
+      await verifierRouterOutput.contract.addVerifier(
+        "0x00000000",
+        riscZeroGroth16VerifierAddress
+      )
+    ).wait();
   } else {
     _console.log("Deploying real verifier...");
     const riscZeroGroth16VerifierOutput = await deployRiscZeroGroth16Verifier(
@@ -77,12 +89,18 @@ export async function deployFixture(
     );
     riscZeroGroth16VerifierAddress =
       await riscZeroGroth16VerifierOutput.contract.getAddress();
+    await (
+      await verifierRouterOutput.contract.addVerifier(
+        await riscZeroGroth16VerifierOutput.contract.SELECTOR(),
+        riscZeroGroth16VerifierAddress
+      )
+    ).wait();
   }
 
   const ddexEmitterOutput = await deployDdexEmitter({
     deployer: input.deployer,
     ddexSequencerAddress: await ddexSequencerOutput.contract.getAddress(),
-    _riscZeroGroth16VerifierAddress: riscZeroGroth16VerifierAddress,
+    _verifierRouterAddress: verifierRouterAddress,
     fakeImageId: !!input.fakeImageId,
   });
   await ddexSequencerOutput.contract.setDdexEmitter(
@@ -94,6 +112,7 @@ export async function deployFixture(
     ownToken: ownTokenOutput,
     stakeVault: stakeVaultOutput,
     ddexSequencer: ddexSequencerOutput,
+    verifierRouter: verifierRouterOutput,
     ddexEmitter: ddexEmitterOutput,
     dataProvidersWhitelist: validatorsWhitelistOutput,
     validatorsWhitelist: validatorsWhitelistOutput,
@@ -106,6 +125,7 @@ export async function deployFixture(
       ddexSequencer: await ddexSequencerOutput.contract.getAddress(),
       ddexEmitter: await ddexEmitterOutput.contract.getAddress(),
       riscZeroGroth16Verifier: riscZeroGroth16VerifierAddress,
+      verifierRouter: verifierRouterAddress,
       dataProvidersWhitelist:
         await dataProvidersWhitelistOutput.contract.getAddress(),
       validatorsWhitelist:

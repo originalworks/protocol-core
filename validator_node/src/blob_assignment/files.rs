@@ -42,17 +42,16 @@ impl BlobAssignmentFiles {
         }
     }
     pub fn build() -> anyhow::Result<Self> {
-        let mut json_str = String::new();
         let mut blob_assignment_files = BlobAssignmentFiles::new();
 
         fs::create_dir_all(&blob_assignment_files.downloaded_blobs_path)?;
         let json_file_path = Path::new(blob_assignment_files.json_file_path.as_str());
 
         if json_file_path.exists() {
-            json_str = fs::read_to_string(json_file_path)?;
+            let json_str = fs::read_to_string(json_file_path)?;
             blob_assignment_files = serde_json::from_str(&json_str)?;
         } else {
-            json_str = serde_json::to_string_pretty(&blob_assignment_files)?;
+            let json_str = serde_json::to_string_pretty(&blob_assignment_files)?;
             fs::write(json_file_path, json_str)?;
         }
         Ok(blob_assignment_files)

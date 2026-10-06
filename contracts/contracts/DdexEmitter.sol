@@ -14,7 +14,7 @@ contract DdexEmitter is
     IDdexEmitter,
     UUPSUpgradeable
 {
-    IRiscZeroVerifier riscZeroGroth16Verifier; // deprecated, using mapping instead
+    IRiscZeroVerifier riscZeroGroth16Verifier; // deprecated
     address ddexSequencerAddress;
 
     bytes1 public constant BLOB_CURRENT_IMAGE_ID = 0x01;
@@ -23,9 +23,12 @@ contract DdexEmitter is
     bytes1 public constant VERIFIER_PREVIOUS_IMAGE_ID = 0x04;
 
     mapping(bytes1 => bytes32) imageIds;
-    mapping(bytes32 => address) public riscZeroGroth16Verifiers;
+    mapping(bytes32 => address) public riscZeroGroth16Verifiers; // deprecated
+    IRiscZeroVerifier public verifierRouter;
 
-    uint256[49] __gap;
+    event VerifierRouterChanged(address previousRouter, address newRouter);
+
+    uint256[48] __gap;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -33,26 +36,36 @@ contract DdexEmitter is
     }
 
     function initialize(
-        address _riscZeroGroth16Verifier,
+        address _verifierRouter,
         address _ddexSequencerAddress
     ) public initializer {
+        require(
+            _verifierRouter != address(0),
+            "DdexEmitter: Router cannot be 0"
+        );
         imageIds[BLOB_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
         imageIds[VERIFIER_CURRENT_IMAGE_ID] = ImageID.DDEX_GUEST_ID;
-        riscZeroGroth16Verifiers[
-            ImageID.DDEX_GUEST_ID
-        ] = _riscZeroGroth16Verifier;
+        verifierRouter = IRiscZeroVerifier(_verifierRouter);
         ddexSequencerAddress = _ddexSequencerAddress;
         __Ownable_init(msg.sender);
     }
 
+    function setVerifierRouter(address _verifierRouter) external onlyOwner {
+        require(
+            _verifierRouter != address(0),
+            "DdexEmitter: Router cannot be 0"
+        );
+        address previousRouter = address(verifierRouter);
+        verifierRouter = IRiscZeroVerifier(_verifierRouter);
+        emit VerifierRouterChanged(previousRouter, _verifierRouter);
+    }
+
     function setImageIds(
         bytes1[] memory _targets,
-        bytes32[] memory _newImageIds,
-        address[] memory _riscZeroGroth16Verifiers
+        bytes32[] memory _newImageIds
     ) public onlyOwner {
         require(
-            _targets.length == _newImageIds.length &&
-                _newImageIds.length == _riscZeroGroth16Verifiers.length,
+            _targets.length == _newImageIds.length,
             "DdexEmitter: Mismatched array lengths"
         );
 
@@ -67,7 +80,6 @@ contract DdexEmitter is
 
             bytes32 previousImageId = imageIds[target];
             imageIds[target] = newImageId;
-            riscZeroGroth16Verifiers[newImageId] = _riscZeroGroth16Verifiers[i];
 
             emit ImageIdChanged(target, previousImageId, newImageId);
         }
@@ -116,11 +128,7 @@ contract DdexEmitter is
             _journal,
             (ProverPublicOutputs)
         );
-        IRiscZeroVerifier(riscZeroGroth16Verifiers[_imageId]).verify(
-            _seal,
-            _imageId,
-            sha256(_journal)
-        );
+        verifierRouter.verify(_seal, _imageId, sha256(_journal));
 
         if (proverPublicOutputs.valid) {
             emit BlobProcessed(proverPublicOutputs, _cid);

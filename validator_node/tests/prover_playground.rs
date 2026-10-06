@@ -11,11 +11,16 @@ fn prover_playground() {
 
     let blob = blob_codec::BlobCodec::from_file(format!("{}.json", path).as_str()).unwrap();
     let result =
-        BlobProofManager::run_prover(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 18);
+        BlobProofManager::run_prover(&blob.to_bytes().into(), prover::CURRENT_DDEX_GUEST_ELF, 19);
 
-    if let Ok(res) = result {
-        println!("Is valid: {}", res.public_outputs.valid);
-    } else {
-        dbg!("Nope");
+    match result {
+        Ok(res) => {
+            println!("Is valid: {}", res.public_outputs.valid);
+            assert!(
+                res.public_outputs.valid,
+                "Prover rejected the playground input"
+            );
+        }
+        Err(error) => panic!("Proving failed: {error:#}"),
     }
 }

@@ -12,12 +12,11 @@ export async function deployDdexEmitter(
     imageId: BytesLike;
   }
 > {
-  const riscZeroGroth16VerifierAddress =
-    input._riscZeroGroth16VerifierAddress ||
-    process.env.RISC_ZERO_GROTH16_VERIFIER;
+  const verifierRouterAddress =
+    input._verifierRouterAddress || process.env.RISC_ZERO_VERIFIER_ROUTER;
 
-  if (!riscZeroGroth16VerifierAddress) {
-    throw new Error(`Missing variable: riscZeroGroth16VerifierAddress`);
+  if (!verifierRouterAddress) {
+    throw new Error(`Missing variable: verifierRouterAddress`);
   }
 
   const DdexEmitter = await ethers.getContractFactory(
@@ -27,7 +26,7 @@ export async function deployDdexEmitter(
 
   const ddexEmitter = await upgrades.deployProxy(
     DdexEmitter,
-    [riscZeroGroth16VerifierAddress, input.ddexSequencerAddress],
+    [verifierRouterAddress, input.ddexSequencerAddress],
     {
       kind: "uups",
     }
@@ -59,8 +58,7 @@ export async function deployDdexEmitter(
     await (
       await contract.setImageIds(
         [blob_current_image_id_target, verifier_current_image_id_target],
-        [imageId, imageId],
-        [riscZeroGroth16VerifierAddress, riscZeroGroth16VerifierAddress]
+        [imageId, imageId]
       )
     ).wait();
   }

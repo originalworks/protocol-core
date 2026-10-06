@@ -1,3 +1,4 @@
+use log_macros::log_info;
 use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -12,6 +13,7 @@ pub async fn heartbeat_task(path: PathBuf) {
             .unwrap()
             .as_secs();
 
+        log_info!(format!("heartbeat: {}", now));
         let _ = fs::write(&path, now.to_string());
 
         sleep(interval).await;

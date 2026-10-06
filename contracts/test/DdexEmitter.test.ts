@@ -6,6 +6,7 @@ import {
 } from "../scripts/fixture/fixture.deploy";
 import { expect } from "chai";
 import hre from "hardhat";
+import { deployRiscZeroVerifierRouter } from "../scripts/actions/contract-deployment/RiscZeroVerifierRouter/RiscZeroVerifierRouter.deploy";
 
 const ZERO_BYTES32 =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -54,22 +55,19 @@ describe("DdexEmitter", () => {
     await expect(
       ddexEmitter.contract.setImageIds(
         ["0x00"],
-        [ethers.randomBytes(32)],
-        [ethers.Wallet.createRandom()]
+        [ethers.randomBytes(32)]
       )
     ).to.be.rejectedWith("DdexEmitter: Invalid target");
     await expect(
       ddexEmitter.contract.setImageIds(
         ["0x05"],
-        [ethers.randomBytes(32)],
-        [ethers.Wallet.createRandom()]
+        [ethers.randomBytes(32)]
       )
     ).to.be.rejectedWith("DdexEmitter: Invalid target");
     await expect(
       ddexEmitter.contract.setImageIds(
         ["0x01", "0x02"],
-        [ethers.randomBytes(32)],
-        [ethers.Wallet.createRandom()]
+        [ethers.randomBytes(32)]
       )
     ).to.be.rejectedWith("DdexEmitter: Mismatched array lengths");
 
@@ -97,11 +95,6 @@ describe("DdexEmitter", () => {
     const newCurrVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
     const newPrevVerifierImageId = ethers.hexlify(ethers.randomBytes(32));
 
-    const risc0Groth16Verifier1 = ethers.Wallet.createRandom().address;
-    const risc0Groth16Verifier2 = ethers.Wallet.createRandom().address;
-    const risc0Groth16Verifier3 = ethers.Wallet.createRandom().address;
-    const risc0Groth16Verifier4 = ethers.Wallet.createRandom().address;
-
     await (
       await ddexEmitter.contract.setImageIds(
         [
@@ -115,12 +108,6 @@ describe("DdexEmitter", () => {
           newPrevBlobImageId,
           newCurrVerifierImageId,
           newPrevVerifierImageId,
-        ],
-        [
-          risc0Groth16Verifier1,
-          risc0Groth16Verifier2,
-          risc0Groth16Verifier3,
-          risc0Groth16Verifier4,
         ]
       )
     ).wait();
@@ -133,21 +120,32 @@ describe("DdexEmitter", () => {
     expect(newPrevBlobImageId).to.equal(previousBlobImageId);
     expect(newCurrVerifierImageId).to.equal(currentVerifierImageId);
     expect(newPrevVerifierImageId).to.equal(previousVerifierImageId);
-    expect(
-      await ddexEmitter.contract.riscZeroGroth16Verifiers(currentBlobImageId)
-    ).to.equal(risc0Groth16Verifier1);
-    expect(
-      await ddexEmitter.contract.riscZeroGroth16Verifiers(newPrevBlobImageId)
-    ).to.equal(risc0Groth16Verifier2);
-    expect(
-      await ddexEmitter.contract.riscZeroGroth16Verifiers(
-        newCurrVerifierImageId
-      )
-    ).to.equal(risc0Groth16Verifier3);
-    expect(
-      await ddexEmitter.contract.riscZeroGroth16Verifiers(
-        newPrevVerifierImageId
-      )
-    ).to.equal(risc0Groth16Verifier4);
+  });
+
+  it("Allows the owner to update the verifier router", async () => {
+    const { ddexEmitter, fixtureAddresses } = fixture;
+    expect(await ddexEmitter.contract.verifierRouter()).to.equal(
+      fixtureAddresses.verifierRouter
+    );
+
+    const replacementRouter = await deployRiscZeroVerifierRouter(deployer);
+    const replacementRouterAddress =
+      await replacementRouter.contract.getAddress();
+
+    await expect(
+      ddexEmitter.contract
+        .connect(dataProviders[0])
+        .setVerifierRouter(replacementRouterAddress)
+    ).to.be.revertedWithCustomError(
+      ddexEmitter.contract,
+      "OwnableUnauthorizedAccount"
+    );
+
+    await (
+      await ddexEmitter.contract.setVerifierRouter(replacementRouterAddress)
+    ).wait();
+    expect(await ddexEmitter.contract.verifierRouter()).to.equal(
+      replacementRouterAddress
+    );
   });
 });

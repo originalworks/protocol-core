@@ -25,6 +25,11 @@ Resources:
       KeyName: validator-ec2
       IamInstanceProfile: !Ref ValidatorInstanceProfile
       AvailabilityZone: us-east-1a
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 2
+        InstanceMetadataTags: disabled
       Tags:
         - Key: ValidatorTag
           Value: ValidatorNodeEc2
