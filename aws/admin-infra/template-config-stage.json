@@ -1,0 +1,9 @@
+{
+    "Parameters": {
+        "Environment": "stage",
+        "MessageStatusTableName": "DdexMessageStatusStage",
+        "ProcessingStatusIndexName": "ProcessingStatusIndex",
+        "CognitoDomainPrefix": "owen-admin-stage",
+        "IdentityCenterSamlMetadataUrl": ""
+    }
+}

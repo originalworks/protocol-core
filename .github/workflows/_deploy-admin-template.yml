@@ -1,0 +1,55 @@
+name: "Deploy OWEN admin infrastructure and SPA"
+
+on:
+  workflow_call:
+    inputs:
+      env:
+        description: "Destination environment (e.g. dev, stage)"
+        required: true
+        type: string
+      run_id:
+        description: "github.run_id"
+        required: true
+        type: string
+      publish_spa:
+        description: "Whether to build and publish the React Admin SPA"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE_REVELATOR }}
+          role-session-name: protocol-core-admin-session-${{ inputs.run_id }}
+          role-duration-seconds: 1200
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: "Deploy AWS CloudFormation template"
+        working-directory: aws/admin-infra
+        run: make deploy-infra-${{ inputs.env }}
+
+      - name: "Publish SPA"
+        if: ${{ inputs.publish_spa }}
+        working-directory: aws/admin-infra
+        run: make publish-spa-${{ inputs.env }}

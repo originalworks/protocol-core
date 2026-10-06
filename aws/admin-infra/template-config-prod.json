@@ -1,0 +1,9 @@
+{
+    "Parameters": {
+        "Environment": "prod",
+        "MessageStatusTableName": "DdexMessageStatusProd",
+        "ProcessingStatusIndexName": "ProcessingStatusIndex",
+        "CognitoDomainPrefix": "owen-admin-prod",
+        "IdentityCenterSamlMetadataUrl": ""
+    }
+}
