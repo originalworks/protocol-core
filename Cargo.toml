@@ -24,7 +24,7 @@ serde_json = "1.0.141"
 reqwest = "0.12.22"
 dotenvy = "0.15.7"
 tokio = "1.46.1"
-anyhow = "1.0.98"
+anyhow = "1.0.102"
 sentry = { version = "0.49.2", features = ["log"] }
 sentry-log = "0.49.2"
 pretty_env_logger = "0.5.0"
