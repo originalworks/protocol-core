@@ -58,3 +58,7 @@ aws-integration = [
     "dep:aa-tx-request",
     "dep:aa-db-types",
 ]
+
+[[bin]]
+name = "aws_aa_owen_lambda"
+path = "src/bin/aws_aa_lambda.rs"
