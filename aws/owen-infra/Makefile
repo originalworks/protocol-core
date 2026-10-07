@@ -22,8 +22,8 @@ deploy-infra-stage:
 
 deploy-infra-dev: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(DEV_PARAMETERS_FILE))
 deploy-infra-dev: 
-	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(DEV_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(DEV_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset  --profile revelator-dev
+	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(DEV_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(DEV_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
 
 deploy-infra-prod: PARAMETERS=$(shell jq -r '.Parameters | to_entries | map("\(.key)=\(.value)") | join(" ")' $(PROD_PARAMETERS_FILE))
 deploy-infra-prod: 
-	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(PROD_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(PROD_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset --profile revelator-prod
+	sam deploy --template-file $(TEMPLATE_FILE) --stack-name $(PROD_STACK_NAME) --capabilities $(CAPABILITIES) --region $(REGION) --s3-bucket $(PROD_ARTIFACTS_BUCKET) --parameter-overrides $(PARAMETERS) --no-fail-on-empty-changeset
