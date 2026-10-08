@@ -37,6 +37,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: "Build with forge"
+        working-directory: contracts
+        run: forge build
+
       - name: "Compile Protocol's conracts"
         working-directory: contracts
         run: |
