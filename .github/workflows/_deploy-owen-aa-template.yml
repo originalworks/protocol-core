@@ -12,8 +12,8 @@ on:
         required: true
         type: string
 
-# env:
-#   FOUNDRY_PROFILE: ci
+env:
+  FOUNDRY_PROFILE: ci
 
 permissions:
   id-token: write
@@ -31,8 +31,6 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: 1.6.0-nightly
 
       - name: "Checkout"
         uses: actions/checkout@v7
@@ -41,7 +39,7 @@ jobs:
 
       - name: "Install npm dependencies"
         working-directory: contracts
-        run: npm i
+        run: npm ci
 
       - name: "Build with forge"
         working-directory: contracts
