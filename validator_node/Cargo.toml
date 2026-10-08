@@ -28,7 +28,7 @@ pretty_env_logger = { workspace = true }
 hex = "0.4.3"
 serde_valid = { workspace = true }
 cid = "0.11.1"
-multihash-codetable = { version = "0.1.4", default-features = false, features = [
+multihash-codetable = { version = "0.2.2", default-features = false, features = [
     "sha2",
 ] }
 once_cell = { workspace = true }

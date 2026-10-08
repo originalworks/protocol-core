@@ -1,8 +1,13 @@
-use alloy::{consensus::Blob, eips::eip7594::BlobTransactionSidecarEip7594};
+use alloy::{
+    consensus::Blob,
+    eips::eip7594::BlobTransactionSidecarEip7594,
+    primitives::{Bytes, FixedBytes},
+};
 use anyhow::Context;
 use blob_codec::BlobCodec;
 use log_macros::log_info;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct BlobTransactionData {
@@ -32,4 +37,16 @@ impl BlobTransactionData {
             blob_sha2,
         })
     }
+}
+
+pub fn commitment_to_blobhash(commitment: &Bytes) -> FixedBytes<32> {
+    let mut hasher = Sha256::new();
+    hasher.update(commitment);
+    let mut hashed_commitment = hasher.finalize();
+    hashed_commitment[0] = 1;
+
+    let mut fixed_bytes_input: [u8; 32] = [0u8; 32];
+    fixed_bytes_input.copy_from_slice(&hashed_commitment);
+
+    FixedBytes::<32>::from(fixed_bytes_input)
 }

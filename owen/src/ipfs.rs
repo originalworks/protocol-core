@@ -1,11 +1,11 @@
 use crate::{
+    config::core::Config,
     constants::{self, IPFS_API_ADD_FILE, REQWEST_CLIENT},
-    Config,
 };
 use alloy::hex;
 use anyhow::Context;
 use log_macros::{format_error, log_info};
-use ow_wallet::OwWallet;
+use ow_wallet_adapter::wallet::OwWallet;
 use reqwest::{multipart, Body};
 use serde::{Deserialize, Serialize};
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -22,28 +22,26 @@ struct IpfsBridgeResponse {
     url: String,
 }
 
-pub struct IpfsManager<'a> {
+pub struct IpfsManager {
     local_ipfs: bool,
     ipfs_api_base_url: String,
     ipfs_bridge_url: String,
-    ow_wallet: &'a OwWallet,
 }
 
-impl<'a> IpfsManager<'a> {
-    pub async fn build(config: &Config, ow_wallet: &'a OwWallet) -> anyhow::Result<Self> {
+impl IpfsManager {
+    pub async fn build(config: &Config) -> anyhow::Result<Self> {
         Ok(Self {
             local_ipfs: config.local_ipfs.clone(),
             ipfs_api_base_url: config.ipfs_api_base_url.clone(),
             ipfs_bridge_url: config.ipfs_bridge_url.clone(),
-            ow_wallet,
         })
     }
 
-    pub async fn pin_file(&self, path: &String) -> anyhow::Result<String> {
+    pub async fn pin_file(&self, path: &String, ow_wallet: &OwWallet) -> anyhow::Result<String> {
         if self.local_ipfs {
             Ok(self.pin_file_ipfs_kubo(path).await?)
         } else {
-            Ok(self.pin_file_ipfs_bridge(path).await?)
+            Ok(self.pin_file_ipfs_bridge(path, &ow_wallet).await?)
         }
     }
 
@@ -79,19 +77,23 @@ impl<'a> IpfsManager<'a> {
         Ok(multipart_form)
     }
 
-    async fn sign_authorization_header(&self) -> anyhow::Result<String> {
-        let signature = self.ow_wallet.sign_message(constants::CLIENT).await?;
+    async fn sign_authorization_header(&self, ow_wallet: &OwWallet) -> anyhow::Result<String> {
+        let signature = ow_wallet.sign_message(constants::CLIENT).await?;
 
         let authorization = format!("{}::0x{}", "OWEN", hex::encode(signature.as_bytes()));
         Ok(authorization)
     }
 
-    async fn pin_file_ipfs_bridge(&self, file_path: &String) -> anyhow::Result<String> {
+    async fn pin_file_ipfs_bridge(
+        &self,
+        file_path: &String,
+        ow_wallet: &OwWallet,
+    ) -> anyhow::Result<String> {
         log_info!("Pinning {} to IPFS using Ipfs Bridge...", file_path);
 
         let form = Self::file_to_multipart_form(&file_path, Some("image/avif")).await?;
 
-        let authorization = self.sign_authorization_header().await?;
+        let authorization = self.sign_authorization_header(&ow_wallet).await?;
 
         let response = REQWEST_CLIENT
             .post(format!("{}pin/file", self.ipfs_bridge_url))

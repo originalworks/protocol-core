@@ -14,8 +14,9 @@ jobs:
 
   deploy:
     needs: release
-    uses: ./.github/workflows/_deploy-owen-template.yml
+    uses: ./.github/workflows/_deploy-owen-aa-template.yml
     with:
       env: "stage"
       run_id: ${{ github.run_id }}
-    secrets: inherit
+    secrets:
+      aws_iam_workflow_role: ${{ secrets.IAM_WORKFLOW_ROLE_REVELATOR_DEV_STAGE }}

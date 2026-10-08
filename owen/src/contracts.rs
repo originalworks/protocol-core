@@ -1,5 +1,5 @@
 use crate::blob::BlobTransactionData;
-use crate::Config;
+use crate::config::core::Config;
 use alloy::primitives::FixedBytes;
 use alloy::providers::{Provider, ProviderBuilder};
 use alloy::sol_types::private::Bytes;
@@ -15,7 +15,7 @@ use alloy::{
     sol,
 };
 use log_macros::{format_error, log_info, log_warn};
-use ow_wallet::OwWallet;
+use ow_wallet_adapter::wallet::OwWallet;
 use serde_json::json;
 use DdexEmitter::getSupportedBlobImageIdsReturn;
 

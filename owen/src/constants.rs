@@ -6,14 +6,11 @@ pub const DEFAULT_IPFS_BRIDGE_URL: &str =
     "https://865rz5b07c.execute-api.us-east-1.amazonaws.com/prod/";
 pub const CLIENT: &[u8] = b"OWEN";
 pub const MAX_DDEX_PER_BLOB: i32 = 50;
-#[cfg(any(feature = "local-s3"))]
-pub const DEFAULT_DATABASE_NAME: &str = "sqlite";
 
 #[cfg(any(feature = "aws-integration"))]
 pub const BLOBS_QUEUE_MESSAGE_GROUP_ID: &str = "OwenBlobsQueueId";
 
-#[cfg(any(feature = "local-s3"))]
-pub const DEFAULT_TABLE_NAME: &str = "message_folders";
-
 pub static REQWEST_CLIENT: once_cell::sync::Lazy<reqwest::Client> =
     once_cell::sync::Lazy::new(|| reqwest::Client::new());
+pub const PROCESSED_BLOB_FOLDER: &str = "blobs";
+pub const AA_BLOB_SENDER_MAX_TX_AGE_SEC: u64 = 3600;

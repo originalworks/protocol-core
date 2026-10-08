@@ -3,11 +3,11 @@ STAGE_ARTIFACTS_BUCKET=owen-artifacts-stage
 STAGE_PARAMETERS_FILE=template-config-stage.json
 
 DEV_STACK_NAME=owen-infra-dev
-DEV_ARTIFACTS_BUCKET=owen-artifacts-dev
+DEV_ARTIFACTS_BUCKET=ow-protocol-artifacts
 DEV_PARAMETERS_FILE=template-config-dev.json
 
 PROD_STACK_NAME=owen-infra-prod
-PROD_ARTIFACTS_BUCKET=owen-artifacts-prod
+PROD_ARTIFACTS_BUCKET=ow-protocol-artifacts-prod
 PROD_PARAMETERS_FILE=template-config-prod.json
 
 TEMPLATE_FILE=template.yml
