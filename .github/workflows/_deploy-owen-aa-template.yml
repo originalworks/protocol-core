@@ -12,8 +12,8 @@ on:
         required: true
         type: string
 
-env:
-  FOUNDRY_PROFILE: ci
+# env:
+#   FOUNDRY_PROFILE: ci
 
 permissions:
   id-token: write
