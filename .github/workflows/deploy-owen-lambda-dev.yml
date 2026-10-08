@@ -16,5 +16,5 @@ jobs:
     with:
       env: "dev"
       run_id: ${{ github.run_id }}
+    secrets:
       aws_iam_workflow_role: ${{ secrets.IAM_WORKFLOW_ROLE_REVELATOR_DEV_STAGE }}
-    secrets: inherit
