@@ -31,6 +31,8 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly-2025-12-22
 
       - name: "Checkout"
         uses: actions/checkout@v7
