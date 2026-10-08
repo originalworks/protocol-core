@@ -12,8 +12,9 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/_deploy-owen-template.yml
+    uses: ./.github/workflows/_deploy-owen-aa-template.yml
     with:
       env: "dev"
       run_id: ${{ github.run_id }}
+      aws_iam_workflow_role: ${{ secrets.IAM_WORKFLOW_ROLE_REVELATOR_DEV_STAGE }}
     secrets: inherit

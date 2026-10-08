@@ -11,7 +11,10 @@ on:
         description: "github.run_id"
         required: true
         type: string
-
+      aws_iam_workflow_role:
+        description: "AWS IAM Role for this workflow"
+        required: true
+        type: string
 env:
   FOUNDRY_PROFILE: ci
 
@@ -135,7 +138,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-east-1
-          role-to-assume: ${{ secrets.IAM_WORKFLOW_ROLE_REVELATOR_DEV_STAGE }}
+          role-to-assume: ${{ inputs.aws_iam_workflow_role }}
           role-session-name: protocol-core-session-id-${{ inputs.run_id }}
           role-duration-seconds: 1200
 
