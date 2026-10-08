@@ -27,7 +27,7 @@ jobs:
       - name: Install Node 22
         uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "22.21"
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
