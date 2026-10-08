@@ -37,15 +37,17 @@ jobs:
         with:
           submodules: recursive
 
+      - name: "Install npm dependencies"
+        working-directory: contracts
+        run: npm i
+
       - name: "Build with forge"
         working-directory: contracts
         run: forge build
 
       - name: "Compile Protocol's conracts"
         working-directory: contracts
-        run: |
-          npm i
-          npx hardhat compile
+        run: npx hardhat compile
 
       - name: Upload contracts artifacts
         uses: actions/upload-artifact@v7
