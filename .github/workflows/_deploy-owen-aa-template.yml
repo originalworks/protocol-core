@@ -35,7 +35,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v7
         with:
-          submodules: recursive
+          submodules: true
 
       - name: "Install npm dependencies"
         working-directory: contracts
