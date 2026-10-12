@@ -1,0 +1,276 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: OWEN admin SPA (CloudFront + Cognito User Pool/Identity Pool). No API backend.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, stage, prod]
+  MessageStatusTableName:
+    Type: String
+  ProcessingStatusIndexName:
+    Type: String
+    Default: ProcessingStatusIndex
+  IdentityCenterSamlMetadataUrl:
+    Type: String
+    Default: ""
+    Description: "IAM Identity Center SAML metadata URL. Leave empty on first deploy, then set after creating the IdC custom SAML app."
+  CognitoDomainPrefix:
+    Type: String
+    Description: "Globally unique Cognito hosted UI domain prefix"
+
+Conditions:
+  HasSamlMetadata: !Not [!Equals [!Ref IdentityCenterSamlMetadataUrl, ""]]
+  NoSamlMetadata: !Equals [!Ref IdentityCenterSamlMetadataUrl, ""]
+
+Resources:
+  AdminSpaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "owen-admin-spa-${Environment}-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  AdminSpaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AdminSpaBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowCloudFrontOAC
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${AdminSpaBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AdminSpaDistribution}"
+
+  AdminSpaOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "owen-admin-oac-${Environment}"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AdminSpaDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: SpaS3Origin
+            DomainName: !GetAtt AdminSpaBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt AdminSpaOriginAccessControl.Id
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: SpaS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+        PriceClass: PriceClass_100
+
+  AdminUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "owen-admin-${Environment}"
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      UserPoolAddOns:
+        AdvancedSecurityMode: OFF
+
+  AdminUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref CognitoDomainPrefix
+      UserPoolId: !Ref AdminUserPool
+
+  IdentityCenterSamlProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Condition: HasSamlMetadata
+    Properties:
+      UserPoolId: !Ref AdminUserPool
+      ProviderName: IAMIdentityCenter
+      ProviderType: SAML
+      ProviderDetails:
+        MetadataURL: !Ref IdentityCenterSamlMetadataUrl
+      AttributeMapping:
+        email: email
+        username: email
+
+  AdminUserPoolClientBootstrap:
+    Type: AWS::Cognito::UserPoolClient
+    Condition: NoSamlMetadata
+    Properties:
+      ClientName: !Sub "owen-admin-spa-${Environment}"
+      UserPoolId: !Ref AdminUserPool
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - !Sub "https://${AdminSpaDistribution.DomainName}/"
+        - !Sub "https://${AdminSpaDistribution.DomainName}/auth-callback"
+        - http://localhost:5173/
+        - http://localhost:5173/auth-callback
+      LogoutURLs:
+        - !Sub "https://${AdminSpaDistribution.DomainName}/"
+        - http://localhost:5173/
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+
+  AdminUserPoolClientFederated:
+    Type: AWS::Cognito::UserPoolClient
+    Condition: HasSamlMetadata
+    DependsOn:
+      - IdentityCenterSamlProvider
+    Properties:
+      ClientName: !Sub "owen-admin-spa-${Environment}"
+      UserPoolId: !Ref AdminUserPool
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      SupportedIdentityProviders:
+        - IAMIdentityCenter
+      CallbackURLs:
+        - !Sub "https://${AdminSpaDistribution.DomainName}/"
+        - !Sub "https://${AdminSpaDistribution.DomainName}/auth-callback"
+        - http://localhost:5173/
+        - http://localhost:5173/auth-callback
+      LogoutURLs:
+        - !Sub "https://${AdminSpaDistribution.DomainName}/"
+        - http://localhost:5173/
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+
+  AdminIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Sub "owen_admin_${Environment}"
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !If
+            - HasSamlMetadata
+            - !Ref AdminUserPoolClientFederated
+            - !Ref AdminUserPoolClientBootstrap
+          ProviderName: !GetAtt AdminUserPool.ProviderName
+
+  AdminAuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "owen-admin-authenticated-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref AdminIdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: authenticated
+      Policies:
+        - PolicyName: ReadMessageStatusTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MessageStatusTableName}/index/*"
+
+  AdminIdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref AdminIdentityPool
+      Roles:
+        authenticated: !GetAtt AdminAuthenticatedRole.Arn
+
+Outputs:
+  CloudFrontUrl:
+    Description: Admin SPA URL
+    Value: !Sub "https://${AdminSpaDistribution.DomainName}"
+  UserPoolId:
+    Value: !Ref AdminUserPool
+  UserPoolClientId:
+    Value: !If
+      - HasSamlMetadata
+      - !Ref AdminUserPoolClientFederated
+      - !Ref AdminUserPoolClientBootstrap
+  IdentityPoolId:
+    Value: !Ref AdminIdentityPool
+  CognitoDomain:
+    Value: !Sub "https://${CognitoDomainPrefix}.auth.${AWS::Region}.amazoncognito.com"
+  AwsRegion:
+    Value: !Ref AWS::Region
+  MessageStatusTableName:
+    Value: !Ref MessageStatusTableName
+  ProcessingStatusIndexName:
+    Value: !Ref ProcessingStatusIndexName
+  SpaBucketName:
+    Value: !Ref AdminSpaBucket
+  CloudFrontDistributionId:
+    Value: !Ref AdminSpaDistribution
+  CognitoSamlAcsUrl:
+    Description: Use as ACS URL in Identity Center custom SAML application
+    Value: !Sub "https://${CognitoDomainPrefix}.auth.${AWS::Region}.amazoncognito.com/saml2/idpresponse"
+  CognitoSamlEntityId:
+    Description: Use as Application SAML audience / Entity ID in Identity Center
+    Value: !Sub "urn:amazon:cognito:sp:${AdminUserPool}"
