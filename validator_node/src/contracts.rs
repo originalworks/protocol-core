@@ -96,6 +96,10 @@ type HardlyTypedWsProvider = FillProvider<
     RootProvider,
 >;
 
+const PROOF_CONFIRMATION_TIMEOUT: Duration = Duration::from_secs(60);
+const PROOF_RECONCILIATION_GRACE_PERIOD: Duration = Duration::from_secs(120);
+const PROOF_RECONCILIATION_POLL_INTERVAL: Duration = Duration::from_secs(5);
+
 pub struct ContractsManager {
     pub sequencer: DdexSequencer::DdexSequencerInstance<HardlyTypedProvider>,
     pub emitter: DdexEmitter::DdexEmitterInstance<HardlyTypedProvider>,
@@ -495,14 +499,76 @@ impl ContractsManager {
                 .max_fee_per_gas(500000001);
         }
 
-        let receipt = tx_builder
-            .nonce(nonce)
-            .send()
-            .await?
-            .with_required_confirmations(2)
-            .with_timeout(Some(Duration::from_millis(60000)))
+        let pending = tx_builder.nonce(nonce).send().await?;
+        let tx_hash = *pending.tx_hash();
+        log_info!(
+            "Submitted proof transaction {}; waiting for confirmation",
+            tx_hash
+        );
+
+        // One confirmation is sufficient for the assignment protocol. The old
+        // fixed 60-second/two-confirmation policy caused otherwise valid
+        // transactions to be reported as failures on slow or congested RPCs.
+        let receipt = pending
+            .with_required_confirmations(1)
+            .with_timeout(Some(PROOF_CONFIRMATION_TIMEOUT))
             .get_receipt()
-            .await?;
+            .await;
+
+        let receipt = match receipt {
+            Ok(receipt) => receipt,
+            Err(wait_error) => {
+                let grace_period = PROOF_RECONCILIATION_GRACE_PERIOD;
+                let poll_interval = PROOF_RECONCILIATION_POLL_INTERVAL;
+                let deadline = tokio::time::Instant::now() + grace_period;
+                log_warn!(
+                    "Proof transaction {} exceeded the confirmation timeout; reconciling for {:?}",
+                    tx_hash,
+                    grace_period
+                );
+
+                loop {
+                    match self.provider.get_transaction_receipt(tx_hash).await {
+                        Ok(Some(receipt)) => {
+                            log_info!(
+                                "Reconciled proof transaction {}: {}",
+                                tx_hash,
+                                if receipt.status() { "confirmed" } else { "reverted" }
+                            );
+                            break receipt;
+                        }
+                        Ok(None) if tokio::time::Instant::now() < deadline => {
+                            tokio::time::sleep(poll_interval).await;
+                        }
+                        Ok(None) => {
+                            return Err(anyhow::anyhow!(
+                                "Proof transaction {} remains pending after {:?}; initial wait error: {}",
+                                tx_hash,
+                                PROOF_CONFIRMATION_TIMEOUT + grace_period,
+                                wait_error
+                            ));
+                        }
+                        Err(rpc_error) if tokio::time::Instant::now() < deadline => {
+                            log_warn!(
+                                "Unable to reconcile proof transaction {} yet: {}; retrying",
+                                tx_hash,
+                                rpc_error
+                            );
+                            tokio::time::sleep(poll_interval).await;
+                        }
+                        Err(rpc_error) => {
+                            return Err(anyhow::anyhow!(
+                                "Unable to reconcile proof transaction {} after {:?}: {}; initial wait error: {}",
+                                tx_hash,
+                                PROOF_CONFIRMATION_TIMEOUT + grace_period,
+                                rpc_error,
+                                wait_error
+                            ));
+                        }
+                    }
+                }
+            }
+        };
 
         sentry::configure_scope(|scope| {
             scope.set_extra("transaction", json!(receipt));
